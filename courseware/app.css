@@ -1,0 +1,1249 @@
+/* app.css - Courseware: avatar mode learning activities.
+   Ported from the "learning-activity" (Avatar MD) prototype onto the DS: every color, size, radius
+   and duration is a DS token (var(--ds-*)) or a calc() / color-mix() of DS tokens. Buttons, tabs,
+   the switch and icons are DS components; everything else is prototype-only and marked below. */
+
+:root {
+  /* Layout (all derived from DS spacing tokens) */
+  --app-header-h: calc(var(--ds-space-16) - var(--ds-space-2));                          /* 56px: DS tab height */
+  --app-product-header-h: var(--ds-space-16);                                            /* 64px */
+  --app-bar-h: calc(var(--ds-space-16) * 2 + var(--ds-space-4));                         /* 144px */
+  --app-card-w: calc(var(--ds-space-16) * 15 - var(--ds-space-1-5));                     /* 954px */
+  --app-flashcard-w: calc(var(--ds-space-16) * 14 + var(--ds-space-7));                  /* 924px */
+  --app-video-h: calc(var(--ds-space-16) * 8 + var(--ds-space-7));                       /* 540px */
+  --app-avatar-w: calc(var(--ds-space-16) * 6 + var(--ds-space-5-5));                    /* 406px */
+  --app-avatar-h: calc(var(--ds-space-16) * 8 + var(--ds-space-7) + var(--ds-space-0-25)); /* 541px */
+  --app-avatar-shrunk-w: calc(var(--ds-space-16) * 4 + var(--ds-space-4) + var(--ds-space-0-75)); /* 275px */
+  --app-avatar-shrunk-h: calc(var(--ds-space-16) * 5 + var(--ds-space-8) + var(--ds-space-3) + var(--ds-space-0-25)); /* 365px */
+  --app-steps-w: calc(var(--ds-space-16) * 10 - var(--ds-space-5));                      /* 620px */
+  --app-pill-h: calc(var(--ds-space-16) - var(--ds-space-2));                            /* 56px */
+  --app-controls-h: calc(var(--ds-space-16) + var(--ds-space-8));                        /* 96px */
+  --app-hint-h: calc(var(--ds-space-8) + var(--ds-space-2));                             /* 40px */
+  --app-row-min: calc(var(--ds-space-16) * 3 + var(--ds-space-2));                       /* 200px */
+  --app-image-min: calc(var(--ds-space-16) * 3 - var(--ds-space-2) - var(--ds-space-0-5)); /* 182px */
+  --app-blur: var(--ds-space-4);                                                          /* 16px */
+
+  /* Radius */
+  --app-radius-lg: calc(var(--ds-roundness-2) * 2);                                      /* 16px */
+  --app-radius-xl: calc(var(--ds-roundness-2) * 3);                                      /* 24px */
+
+  /* Type (DS sizes, scaled where the DS has no step) */
+  --app-font-reading-title: calc(var(--ds-font-size-5) * 1.5);                           /* 24px */
+  --app-font-reading: calc(var(--ds-font-size-5) * 1.25);                                /* 20px */
+  --app-font-h1: calc(var(--ds-font-size-5) * 2);                                        /* 32px */
+  --app-font-h1-compact: calc(var(--ds-font-size-5) * 1.5);                              /* 24px */
+  --app-font-milestone-compact: calc(var(--ds-font-size-6) * 2);                         /* 36px */
+  --app-tracking-eyebrow: calc(var(--ds-font-size-5) * 0.14);                            /* 2.24px */
+
+  /* Motion: multiples of --ds-duration-slow (0.2s) */
+  --app-dur-1: calc(var(--ds-duration-slow) * 1.5);                                      /* 0.3s */
+  --app-dur-2: calc(var(--ds-duration-slow) * 2);                                        /* 0.4s */
+  --app-dur-3: calc(var(--ds-duration-slow) * 3);                                        /* 0.6s */
+  --app-dur-4: calc(var(--ds-duration-slow) * 3.5);                                      /* 0.7s */
+  --app-dur-5: calc(var(--ds-duration-slow) * 4);                                        /* 0.8s */
+  --app-dur-6: calc(var(--ds-duration-slow) * 6);                                        /* 1.2s */
+  --app-dur-breathe: calc(var(--ds-duration-slow) * 12);                                 /* 2.4s */
+  --app-mesh-unit: calc(var(--ds-duration-slow) * 10);                                   /* 2s */
+
+  /* Glows and translucent fills (from DS tokens) */
+  --app-primary-glow: color-mix(in srgb, var(--ds-primary) 55%, transparent);
+  --app-primary-glow-soft: color-mix(in srgb, var(--ds-primary) 50%, transparent);
+  --app-primary-glow-strong: color-mix(in srgb, var(--ds-primary) 80%, transparent);
+  --app-primary-wash: color-mix(in srgb, var(--ds-primary) 35%, transparent);
+  --app-primary-clear: color-mix(in srgb, var(--ds-primary) 0%, transparent);
+
+  /* Prototype-only: light avatar-mode surfaces (from the LXP demo's avatar mode; DS candidate) */
+  --app-card-bg:
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--ds-primary) 9%, transparent), transparent 42%),
+    radial-gradient(circle at 0% 100%, color-mix(in srgb, var(--ds-primary-brighter) 7%, transparent), transparent 38%),
+    var(--app-card-fill);
+  --app-card-fill: var(--ds-tone-8);   /* white on the light page */
+  --app-card-border: 1px solid var(--ds-tone-6);
+  --app-card-shadow: 0 var(--ds-space-3) calc(var(--ds-space-8) + var(--ds-space-2)) color-mix(in srgb, var(--ds-b-100) 4%, transparent); /* 0 12px 40px, lighter than the LXP demo's 6% */
+  --app-tint-3: color-mix(in srgb, var(--ds-primary) 3%, transparent);
+  --app-tint-6: color-mix(in srgb, var(--ds-primary) 6%, transparent);
+  --app-tint-16: color-mix(in srgb, var(--ds-primary) 16%, transparent);
+  --app-avatar-glow-blur: calc(var(--ds-space-8) + var(--ds-space-4));              /* 48px */
+  --app-avatar-glow-radius: calc(var(--ds-space-16) + var(--ds-space-8));           /* 96px */
+  --app-tag-blur: var(--ds-space-3);                                                 /* 12px */
+
+  /* Prototype-only: celebration palette (DS candidate), mixed from DS brand tokens.
+     No white sparks: they would vanish on the light canvas. */
+  --app-spark-white: var(--ds-primary);
+  --app-spark-light: color-mix(in srgb, var(--ds-primary-brighter) 50%, var(--ds-w-100));
+  --app-spark-ring: color-mix(in srgb, var(--ds-primary-brighter) 70%, var(--ds-w-100));
+  --app-spark-blue: var(--ds-primary-brighter);
+  --app-spark-gold: color-mix(in srgb, var(--ds-accent) 60%, var(--ds-w-100));
+
+  /* Prototype-only: ambient mesh palette (DS candidate), mixed from DS brand tokens */
+  --app-mesh-blue: var(--ds-primary);
+  --app-mesh-azure: var(--ds-primary-brighter);
+  --app-mesh-violet: color-mix(in srgb, var(--ds-primary-brighter) 55%, var(--ds-danger-brighter));
+  --app-mesh-magenta: color-mix(in srgb, var(--ds-danger-brighter) 70%, var(--ds-primary-brighter));
+  --app-mesh-indigo: color-mix(in srgb, var(--ds-primary) 70%, var(--ds-danger));
+  --app-mesh-cyan: color-mix(in srgb, var(--ds-screen-green) 50%, var(--ds-primary-brighter));
+  --app-mesh-teal: var(--ds-screen-green);
+}
+
+/* Dark theme: the cards use the DS paper surface, a step lighter than the page */
+:root[data-theme="dark"] { --app-card-fill: var(--ds-paper); }
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--ds-background);
+  font-family: var(--ds-font-family);
+  -webkit-font-smoothing: antialiased;
+}
+
+p { margin: 0; }
+
+/* Reset for the prototype-only buttons (DS buttons bring their own styles) */
+.answer, .hint-button, .mic-pill, .resume-pill {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  background: none;
+  cursor: pointer;
+}
+
+.answer:focus-visible, .hint-button:focus-visible, .mic-pill:focus-visible, .resume-pill:focus-visible {
+  outline: 2px solid var(--ds-primary);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Root frame */
+.frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  min-width: calc(var(--ds-space-16) * 22 + var(--ds-space-8)); /* 1440px */
+  background: var(--ds-background);
+}
+
+/* =========================================================
+   Demo header: switches between activities (not part of the product).
+   DS tabs + DS switch.
+   ========================================================= */
+.site-header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-6);
+  height: var(--app-header-h);
+  padding: 0 var(--ds-space-6);
+  background: var(--ds-paper);
+  border-bottom: 1px solid var(--ds-tone-6);
+}
+
+/* the tablist's own bottom border would double the header's */
+.site-nav { border-bottom: 0; }
+.site-nav .ds-tab[hidden] { display: none; }
+
+/* right end of the header: Image and Dark theme switches */
+.site-header-end {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-6);
+  margin-left: auto;
+}
+
+.image-toggle[hidden] { display: none; }
+
+/* =========================================================
+   Prototype-only: unit progress (DS candidate: stepper)
+   ========================================================= */
+.product-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  /* above the milestone card, so dots gliding back to the top bar are never covered by it */
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--app-product-header-h);
+  padding: 0 var(--ds-space-6);
+}
+
+/* Compact in the top bar (small dots, no numbers). Inside the milestone slate the same list
+   gets bigger dots and their numbers (see .milestone-timeline). */
+.steps {
+  --dot: var(--ds-space-4);
+  --line: var(--ds-space-1);
+  display: flex;
+  align-items: center;
+  width: var(--app-steps-w);
+  min-width: var(--app-steps-w);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  transition: opacity var(--ds-duration-enter) ease;
+}
+
+/* the whole timeline faded out ("fade" variants) */
+.steps.faded {
+  opacity: 0;
+  transition: opacity var(--app-dur-1) ease;
+}
+
+.step { display: flex; align-items: center; }
+
+/* every milestone after the first brings its own connector, so the segments share the width equally */
+.step + .step { flex: 1 1 0; }
+
+@property --fill {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+/* connector to the previous milestone: fills (animated) once that milestone is completed */
+.step + .step::before {
+  --fill: 0%;
+  content: "";
+  flex: 1 1 0;
+  height: var(--line);
+  margin: 0 var(--ds-space-2);
+  border-radius: var(--line);
+  background: linear-gradient(to right, var(--ds-primary) var(--fill), var(--ds-tone-6) var(--fill));
+  transition: --fill var(--app-dur-4) ease, opacity var(--app-dur-1) ease;
+}
+
+.step.done + .step::before { --fill: 100%; }
+
+/* connectors fade away while the timeline relocates, then fade back in */
+.steps.lines-hidden .step + .step::before { opacity: 0; }
+
+.step-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--dot);
+  height: var(--dot);
+  border-radius: 50%;
+  background: var(--ds-tone-6);
+  font-size: var(--ds-font-size-5);
+  font-weight: var(--ds-font-weight-bold);
+  line-height: normal;
+  color: var(--ds-tone-2);
+  transition: background var(--app-dur-1) ease, color var(--app-dur-1) ease, box-shadow var(--app-dur-1) ease;
+}
+
+/* numbers are hidden in the top bar and fade in once the dots arrive in the milestone slate */
+.step-dot > span {
+  text-box: trim-both cap alphabetic;
+  opacity: 0;
+  transition: opacity var(--ds-duration-exit) ease;
+}
+
+.steps.numbered .step-dot > span { opacity: 1; }
+
+/* current milestone: blue inset ring, white number */
+.step.current .step-dot {
+  background: var(--ds-tone-8);
+  box-shadow: inset 0 0 0 2px var(--ds-primary);
+  color: var(--ds-primary);
+}
+
+/* completed milestone: blue */
+.step.done .step-dot {
+  background: var(--ds-primary);
+  box-shadow: none;
+  color: var(--ds-primary-text-contrast);
+}
+
+/* milestone just activated: the dot pops and keeps a soft glow */
+.step.celebrate .step-dot {
+  box-shadow: 0 0 var(--ds-space-5) var(--ds-space-0-5) var(--app-primary-glow);
+  animation: milestone-pop var(--app-dur-4) ease-out;
+}
+
+.step.current.celebrate .step-dot {
+  box-shadow: inset 0 0 0 2px var(--ds-primary), 0 0 var(--ds-space-5) var(--ds-space-0-5) var(--app-primary-glow);
+}
+
+/* lesson completed: the last milestone gets a much bigger pop and glow */
+.step.finale .step-dot {
+  box-shadow: 0 0 calc(var(--ds-space-8) + var(--ds-space-4)) var(--ds-space-2-5) var(--app-primary-glow-strong);
+  animation: finale-pop var(--app-dur-6) ease-out;
+}
+
+@keyframes milestone-pop {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.5); }
+  100% { transform: scale(1); }
+}
+
+@keyframes finale-pop {
+  0%   { transform: scale(1); }
+  25%  { transform: scale(2); }
+  45%  { transform: scale(1.3); }
+  65%  { transform: scale(1.6); }
+  100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step.celebrate .step-dot, .step.finale .step-dot { animation: none; }
+}
+
+/* =========================================================
+   Prototype-only: celebration effects (sparks, rings, line of fire)
+   ========================================================= */
+.sparks {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.spark, .spark-ring, .spark-glow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* soft flash of light behind the dot (lesson completed only); app.js centers it by half its size */
+.spark-glow {
+  width: calc(var(--ds-space-16) * 6 + var(--ds-space-4)); /* 400px */
+  height: calc(var(--ds-space-16) * 6 + var(--ds-space-4));
+  background: radial-gradient(circle,
+    color-mix(in srgb, var(--app-spark-light) 50%, transparent) 0%,
+    color-mix(in srgb, var(--ds-primary) 30%, transparent) 35%,
+    var(--app-primary-clear) 70%);
+}
+
+/* sized to the dot by script */
+.spark-ring {
+  border: 2px solid var(--app-spark-ring);
+  box-shadow: 0 0 var(--ds-space-4) var(--app-primary-glow-strong);
+}
+
+/* Lesson completed: the head of the line of fire (app.js centers it by half its size) */
+.fire-head {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(var(--ds-space-8) + var(--ds-space-1)); /* 36px */
+  height: calc(var(--ds-space-8) + var(--ds-space-1));
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    color-mix(in srgb, var(--ds-w-100) 95%, transparent) 0%,
+    color-mix(in srgb, var(--app-spark-light) 80%, transparent) 28%,
+    color-mix(in srgb, var(--ds-primary) 45%, transparent) 52%,
+    var(--app-primary-clear) 72%);
+  pointer-events: none;
+}
+
+.fire-head::after {
+  content: "";
+  position: absolute;
+  inset: var(--ds-space-3);
+  border-radius: 50%;
+  background: var(--ds-w-100);
+  box-shadow: 0 0 var(--ds-space-3) var(--ds-space-1) var(--app-spark-light);
+  animation: fire-flicker calc(var(--ds-duration-slow) * 0.7) ease-in-out infinite alternate;
+}
+
+@keyframes fire-flicker {
+  from { transform: scale(0.75); }
+  to   { transform: scale(1.3); }
+}
+
+.fire-trail {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: var(--ds-space-2);
+  border-radius: var(--ds-space-2);
+  transform-origin: 0 50%;
+  background: linear-gradient(to right, color-mix(in srgb, var(--app-spark-blue) 0%, transparent) 0%, var(--app-spark-blue) 55%, var(--ds-w-100) 100%);
+  box-shadow: 0 0 var(--ds-space-3-5) var(--ds-space-0-75) color-mix(in srgb, var(--app-spark-blue) 70%, transparent);
+  pointer-events: none;
+}
+
+/* =========================================================
+   Avatar view
+   ========================================================= */
+.avatar-view {
+  position: relative;
+  flex: 1 0 0;
+  min-height: 1px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: clip;
+  isolation: isolate;
+  /* plain DS surface background (no tints or wash) */
+  background: var(--ds-background);
+  color: var(--ds-tone-1);
+}
+
+/* ===== Prototype-only: ambient mesh gradient (DS candidate). On by default; B toggles it. ===== */
+.mesh {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--ds-background);
+  opacity: 0;
+  transition: opacity var(--app-dur-5) ease;
+}
+
+/* on the light canvas the blobs are a pastel wash */
+.mesh-blob { opacity: 0.5; }
+
+.avatar-view.mesh-on .mesh { opacity: 1; }
+
+.mesh-blob {
+  position: absolute;
+  left: calc(var(--x) - 35vmax);
+  top: calc(var(--y) - 35vmax);
+  width: 70vmax;
+  height: 70vmax;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--c) 0%, transparent 100%);
+  will-change: transform;
+  transition: opacity var(--app-dur-3) ease;
+  animation: mesh-drift calc(var(--app-mesh-unit) * var(--t)) ease-in-out calc(var(--app-mesh-unit) * var(--d)) infinite alternate;
+}
+
+@keyframes mesh-drift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(var(--dx), var(--dy)) scale(var(--s)); }
+}
+
+/* Eleven blobs spread over the screen; the ones behind the text (left, center) stay dim.
+   --t / --d are loop length / delay in --app-mesh-unit (2s) steps. */
+.mesh-blob:nth-child(1)  { --x: 10%;  --y: 92%;  --c: color-mix(in srgb, var(--app-mesh-blue) 55%, transparent);    --t: 17; --d: -3;    --dx: 12vw;  --dy: -10vh; --s: 1.2; }
+.mesh-blob:nth-child(2)  { --x: 90%;  --y: 85%;  --c: color-mix(in srgb, var(--app-mesh-violet) 45%, transparent);  --t: 22; --d: -9.5;  --dx: -14vw; --dy: -8vh;  --s: 1.15; }
+.mesh-blob:nth-child(3)  { --x: 50%;  --y: 112%; --c: color-mix(in srgb, var(--app-mesh-cyan) 28%, transparent);    --t: 26; --d: -15.5; --dx: 10vw;  --dy: -12vh; --s: 1.25; }
+.mesh-blob:nth-child(4)  { --x: 100%; --y: 42%;  --c: color-mix(in srgb, var(--app-mesh-magenta) 24%, transparent); --t: 20; --d: -6;    --dx: -10vw; --dy: 12vh;  --s: 1.1; }
+.mesh-blob:nth-child(5)  { --x: -4%;  --y: 58%;  --c: color-mix(in srgb, var(--app-mesh-indigo) 24%, transparent);  --t: 24; --d: -12.5; --dx: 7vw;   --dy: -6vh;  --s: 1.15; }
+.mesh-blob:nth-child(6)  { --x: 6%;   --y: 4%;   --c: color-mix(in srgb, var(--app-mesh-azure) 34%, transparent);   --t: 23; --d: -7;    --dx: 9vw;   --dy: 10vh;  --s: 1.2; }
+.mesh-blob:nth-child(7)  { --x: 94%;  --y: 6%;   --c: color-mix(in srgb, var(--app-mesh-violet) 32%, transparent);  --t: 19; --d: -11;   --dx: -9vw;  --dy: 11vh;  --s: 1.15; }
+.mesh-blob:nth-child(8)  { --x: 46%;  --y: 52%;  --c: color-mix(in srgb, var(--app-mesh-indigo) 13%, transparent);  --t: 28; --d: -17.5; --dx: 8vw;   --dy: -7vh;  --s: 1.2; }
+.mesh-blob:nth-child(9)  { --x: 80%;  --y: 52%;  --c: color-mix(in srgb, var(--app-mesh-teal) 16%, transparent);    --t: 21; --d: -4.5;  --dx: -7vw;  --dy: 9vh;   --s: 1.15; }
+.mesh-blob:nth-child(10) { --x: 50%;  --y: -4%;  --c: color-mix(in srgb, var(--app-mesh-indigo) 17%, transparent);  --t: 25; --d: -14;   --dx: 6vw;   --dy: 6vh;   --s: 1.15; }
+.mesh-blob:nth-child(11) { --x: 32%;  --y: 116%; --c: color-mix(in srgb, var(--app-mesh-teal) 14%, transparent);    --t: 29; --d: -8.5;  --dx: 8vw;   --dy: -9vh;  --s: 1.2; }
+
+/* a light vignette settles the edges */
+.mesh::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: none;
+}
+
+/* fine static grain (procedural noise texture, not an icon): hides banding on dark gradients */
+.mesh::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mesh-blob { animation: none; }
+}
+
+/* (the dark theme's background lift is not needed on the light canvas) */
+.bg-lift { display: none; }
+
+
+/* =========================================================
+   Activity canvas
+   ========================================================= */
+.canvas {
+  flex: 1 0 0;
+  min-height: 1px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-4);
+  /* fills the space between the progress bar and the bottom bar, with 32px of air */
+  padding: calc(var(--app-product-header-h) + var(--ds-space-8)) calc(var(--ds-space-8) + var(--ds-space-4)) calc(var(--app-bar-h) + var(--ds-space-8));
+}
+
+/* Only the current activity is shown */
+.canvas:not(.active) { display: none; }
+
+/* ===== Prototype-only: activity cards (DS candidate: translucent card) ===== */
+.reading-card {
+  position: relative;
+  z-index: 1; /* above Julia's glow, which spreads past her frame */
+  flex-shrink: 0;
+  width: var(--app-card-w);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ds-space-8);
+  padding: var(--ds-space-8);
+  overflow: clip;
+  border: var(--app-card-border);
+  border-radius: var(--app-radius-xl);
+  background: var(--app-card-bg);
+  box-shadow: var(--app-card-shadow);
+}
+
+.reading-text,
+.input-box {
+  flex: 1 0 0;
+  min-height: 1px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-8);
+  border-radius: var(--ds-roundness-3);
+  background: var(--ds-tone-7);
+  color: var(--ds-tone-1);
+  word-break: break-word;
+}
+
+.reading-text { overflow: hidden; }
+
+.reading-text .reading-title {
+  width: 100%;
+  flex-shrink: 0;
+  font-size: var(--app-font-reading-title);
+  font-weight: var(--ds-font-weight-bold);
+  line-height: normal;
+}
+
+.reading-text .reading-body {
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  font-size: var(--app-font-reading);
+  font-weight: var(--ds-font-weight-regular);
+  line-height: 1.5;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ds-tone-5) transparent;
+  -webkit-mask-image: linear-gradient(to bottom, var(--ds-b-100) calc(100% - var(--ds-space-8) - var(--ds-space-4)), transparent 100%);
+  mask-image: linear-gradient(to bottom, var(--ds-b-100) calc(100% - var(--ds-space-8) - var(--ds-space-4)), transparent 100%);
+}
+
+/* Input activity: a text field that wears the reading box's surface */
+.input-box {
+  border: 0;
+  resize: none;
+  outline: none;
+  font: inherit;
+  font-size: var(--app-font-reading);
+  font-weight: var(--ds-font-weight-regular);
+  line-height: 1.5;
+  /* a white field with a hairline border (LXP demo's "write your own" field) */
+  background: var(--ds-tone-8);
+  box-shadow: inset 0 0 0 1px var(--ds-tone-5);
+  transition: box-shadow var(--ds-duration-base) ease;
+}
+
+.input-box::placeholder { color: var(--ds-tone-3); opacity: 1; }
+
+.input-box:focus-visible { box-shadow: inset 0 0 0 1px var(--ds-primary), 0 0 0 var(--ds-space-1) var(--app-tint-6); }
+
+/* Short variant: a single-line field sized for one sentence */
+.reading-card.short { justify-content: space-between; }
+.input-box.short { flex: none; min-height: 0; padding: var(--ds-space-6) var(--ds-space-8); }
+
+/* Text/input (left) and image (right) side by side in one row; the image is sized by the row's
+   height at its own ratio and never takes more than half the row's width */
+.input-row {
+  flex: 1 1 0;
+  min-height: var(--app-row-min);
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+  gap: var(--ds-space-8);
+  container-type: size;
+}
+
+.input-row .input-image-wrap { flex: none; width: auto; min-height: 0; container-type: normal; align-self: flex-start; }
+.input-row .input-image { width: min(100cqh * var(--ratio), (100cqw - var(--ds-space-8)) / 2); }
+.input-row textarea.input-box,
+.input-row .reading-text { flex: 1 1 0; min-width: 0; min-height: 0; width: auto; }
+.input-activity .cta-button,
+.read-aloud .read-button { flex-shrink: 0; }
+
+/* Image toggled off (header switch) */
+.images-off .input-image-wrap { display: none; }
+
+.reading-card.short .text,
+.flashcard .text { flex: 1 1 0; min-height: 0; }
+
+/* Image box: takes the space left between the title and the field; the image sits at its top left,
+   scaled to fit at its own ratio (--ratio, set inline on the <img>) */
+.input-image-wrap {
+  flex: 1 1 0;
+  min-height: var(--app-image-min);
+  width: 100%;
+  container-type: size;
+}
+
+.input-image {
+  --ratio: 16 / 9;
+  display: block;
+  width: min(100cqw, 100cqh * var(--ratio));
+  aspect-ratio: var(--ratio);
+  object-fit: contain;
+  border-radius: var(--ds-roundness-2);
+}
+
+/* ===== Prototype-only: reading button states (DS candidate: success and overlay button variants) ===== */
+/* "Done reading": green */
+.ds-btn.read-button.finish {
+  background: var(--ds-success);
+  color: var(--ds-success-text-contrast);
+}
+
+/* "Read again": the DS secondary look */
+.ds-btn.read-button.again {
+  background: var(--ds-tone-6);
+  color: var(--ds-tone-1);
+}
+
+/* ----- Quiz card ----- */
+.flashcard {
+  position: relative;
+  z-index: 1; /* above Julia's glow, which spreads past her frame */
+  flex-shrink: 0;
+  width: var(--app-flashcard-w);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ds-space-16);
+  padding: calc(var(--ds-space-8) + var(--ds-space-4));
+  overflow: clip;
+  border: var(--app-card-border);
+  border-radius: var(--app-radius-xl);
+  background: var(--app-card-bg);
+  box-shadow: var(--app-card-shadow);
+}
+
+.text {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ds-space-8);
+}
+
+.title {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ds-space-2);
+  font-weight: var(--ds-font-weight-bold);
+  word-break: break-word;
+}
+
+.title .eyebrow {
+  font-size: var(--ds-font-size-5);
+  line-height: normal;
+  letter-spacing: var(--app-tracking-eyebrow);
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ds-primary);
+}
+
+.title h1 {
+  margin: 0;
+  width: 100%;
+  font-size: var(--app-font-h1);
+  font-weight: var(--ds-font-weight-bold);
+  line-height: 1.2;
+  letter-spacing: calc(var(--ds-space-0-25) * -0.4);
+  color: var(--ds-tone-1);
+}
+
+.answers {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ds-space-4);
+}
+
+/* ===== Prototype-only: quiz answer option (DS candidate) ===== */
+.answer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-radius: var(--ds-roundness-3);
+  background: var(--ds-tone-8);
+  box-shadow: inset 0 0 0 1px var(--ds-tone-5);
+  text-align: left;
+  transition: background var(--ds-duration-slow) ease, box-shadow var(--ds-duration-slow) ease;
+}
+
+.answer:hover { background: var(--app-tint-3); box-shadow: inset 0 0 0 1px var(--ds-primary); }
+
+.answer[aria-checked="true"] { background: var(--app-tint-6); box-shadow: inset 0 0 0 2px var(--ds-primary); }
+
+.answer .label {
+  font-size: var(--ds-font-size-6);
+  font-weight: var(--ds-font-weight-regular);
+  line-height: normal;
+  white-space: nowrap;
+  color: var(--ds-tone-1);
+}
+
+/* letter badge */
+.pill {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  flex-shrink: 0;
+  justify-content: center;
+  width: var(--ds-space-8);
+  height: var(--ds-space-8);
+  border-radius: 50%;
+  background: var(--ds-tone-6);
+  font-size: var(--ds-font-size-4);
+  font-weight: var(--ds-font-weight-bold);
+  line-height: normal;
+  white-space: nowrap;
+  color: var(--ds-tone-2);
+  transition: background var(--ds-duration-slow) ease, color var(--ds-duration-slow) ease;
+}
+
+.pill > span { text-box: trim-both cap alphabetic; }
+
+.answer[aria-checked="true"] .pill {
+  background: var(--ds-primary);
+  color: var(--ds-primary-text-contrast);
+}
+
+/* Quiz with an image: answers in a 2x2 grid (back to a list when the image is off) */
+.frame:not(.images-off) .flashcard.with-image .answers {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+.frame:not(.images-off) .flashcard.with-image .answer { justify-content: flex-start; min-width: 0; }
+.frame:not(.images-off) .flashcard.with-image .answer .label { white-space: normal; }
+
+.cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== Prototype-only: breathing outline around a primary CTA (DS candidate) ===== */
+.ds-btn.outlined { position: relative; }
+
+.ds-btn.outlined::after {
+  content: "";
+  position: absolute;
+  inset: calc(var(--ds-space-1-5) * -1);
+  border: 2px solid var(--ds-primary);
+  border-radius: calc(var(--ds-roundness-1) + var(--ds-space-1-5));
+  pointer-events: none;
+  animation: cta-outline var(--app-dur-breathe) ease-in-out infinite;
+}
+
+@keyframes cta-outline {
+  0%, 100% { opacity: 0.2; transform: scale(1); }
+  50%      { opacity: 0.85; transform: scale(1.03); }
+}
+
+/* =========================================================
+   Prototype-only: avatar tile (DS candidate)
+   ========================================================= */
+.avatar {
+  position: relative;
+  isolation: isolate;
+  flex-shrink: 0;
+  width: var(--app-avatar-w);
+  height: var(--app-avatar-h);
+  border-radius: var(--app-radius-lg);
+  transition: width var(--app-dur-1) ease, height var(--app-dur-1) ease;
+}
+
+/* Soft shadow behind the avatar (LXP demo avatar mode): a still of her, blurred, scaled to 92.7% and
+   moved down 7.7% of her height, so the glow takes her own colors */
+.avatar-glow {
+  position: absolute;
+  z-index: -1;
+  left: 3.65%;
+  top: 7.67%;
+  width: 92.7%;
+  height: 92.7%;
+  object-fit: cover;
+  border-radius: var(--app-avatar-glow-radius);
+  filter: blur(var(--app-avatar-glow-blur));
+  pointer-events: none;
+}
+
+/* Name strip along the bottom of her frame: white text over a backdrop blur and a dark-to-clear
+   gradient. Only while she is big; it leaves as soon as she shrinks. */
+.avatar-tag {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  padding: var(--ds-space-4);
+  border-radius: 0 0 var(--app-radius-lg) var(--app-radius-lg);
+  -webkit-backdrop-filter: blur(var(--app-tag-blur));
+  backdrop-filter: blur(var(--app-tag-blur));
+  background: linear-gradient(to top, var(--ds-b-60), transparent);
+  color: var(--ds-w-100);
+  line-height: var(--ds-line-height-21);
+  pointer-events: none;
+  transition: opacity var(--app-dur-1) ease;
+}
+
+.avatar-tag p { margin: 0; }
+.avatar-tag-name { font-size: var(--ds-font-size-6); font-weight: var(--ds-font-weight-bold); }
+.avatar-tag-title { font-size: var(--ds-font-size-5); }
+
+.avatar.shrunk .avatar-tag { opacity: 0; }
+
+.avatar.shrunk {
+  width: var(--app-avatar-shrunk-w);
+  height: var(--app-avatar-shrunk-h);
+}
+
+.avatar video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+  border-radius: var(--app-radius-lg);
+}
+
+/* Hint button over the avatar (shown when shrunk) */
+.hint-button {
+  position: absolute;
+  left: 50%;
+  bottom: var(--ds-space-4);
+  transform: translate(-50%, var(--ds-space-2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--app-hint-h);
+  padding: 0 var(--ds-space-4);
+  border-radius: var(--ds-roundness-2);
+  background: var(--ds-b-60);
+  -webkit-backdrop-filter: blur(var(--app-blur));
+  backdrop-filter: blur(var(--app-blur));
+  font-size: var(--ds-font-size-5);
+  font-weight: var(--ds-font-weight-bold);
+  line-height: normal;
+  white-space: nowrap;
+  color: var(--ds-w-100);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--app-dur-1) ease, transform var(--app-dur-1) ease, visibility var(--app-dur-1);
+}
+
+.hint-button > span { text-box: trim-both cap alphabetic; }
+
+.avatar.shrunk .hint-button {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+/* hidden while the hint video is playing */
+.avatar.shrunk.hint-playing .hint-button {
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, var(--ds-space-2));
+}
+
+/* =========================================================
+   Bottom bar: pinned to the bottom of the viewport
+   ========================================================= */
+.bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* light: no scrim, the controls sit straight on the canvas */
+}
+
+.indicators {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) 0;
+}
+
+.indicators .message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--ds-space-8);
+  padding: var(--ds-space-2);
+  transition: opacity var(--app-dur-1) ease, visibility var(--app-dur-1);
+}
+
+.indicators .message.away { opacity: 0; visibility: hidden; }
+
+.indicators .message p {
+  font-size: var(--ds-font-size-5);
+  font-weight: var(--ds-font-weight-bold);
+  font-style: italic;
+  line-height: normal;
+  text-align: center;
+  white-space: nowrap;
+  color: var(--ds-tone-2);
+  text-box: trim-both cap alphabetic;
+}
+
+.controls {
+  position: relative;
+  width: 100%;
+  height: var(--app-controls-h);
+}
+
+/* DS End button on the bar's right edge */
+.end-pill {
+  position: absolute;
+  top: 50%;
+  right: var(--ds-space-4);
+  transform: translateY(-50%);
+}
+
+/* ===== Prototype-only: mic pill (DS candidate, shared with the Genie avatar call) ===== */
+.mic-pill {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  height: var(--app-pill-h);
+  padding: var(--ds-space-4);
+  border-radius: var(--app-pill-h);
+  background: var(--ds-tone-7);
+  color: var(--ds-tone-1);
+  transition: background var(--ds-duration-base) ease, box-shadow var(--app-dur-1) ease, opacity var(--app-dur-1) ease, visibility var(--app-dur-1);
+}
+
+.mic-pill:hover { background: var(--ds-tone-6); }
+
+/* Muted: red inner border + glow */
+.mic-pill.muted {
+  box-shadow: inset 0 0 0 2px var(--ds-danger), 0 0 var(--app-pill-h) 0 color-mix(in srgb, var(--ds-danger) 30%, transparent);
+}
+
+/* Listening: blue inner border + soft blue glow */
+.mic-pill.listening {
+  box-shadow: inset 0 0 0 2px var(--ds-primary), 0 0 var(--app-pill-h) 0 var(--app-primary-glow-soft);
+}
+
+/* Resume pill: takes the mic pill's place while watching */
+.resume-pill {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  height: var(--app-pill-h);
+  padding: 0 var(--ds-space-4);
+  border-radius: var(--app-pill-h);
+  background: var(--ds-tone-7);
+  font-size: var(--ds-font-size-5);
+  font-weight: var(--ds-font-weight-bold);
+  line-height: normal;
+  white-space: nowrap;
+  color: var(--ds-tone-1);
+  opacity: 0;
+  visibility: hidden;
+  transition: background var(--app-dur-1) ease, color var(--app-dur-1) ease, opacity var(--app-dur-1) ease, visibility var(--app-dur-1);
+}
+
+.resume-pill > span { text-box: trim-both cap alphabetic; }
+
+/* Video ended: the pill becomes the primary CTA */
+.resume-pill.ready {
+  background: var(--ds-primary);
+  color: var(--ds-primary-text-contrast);
+}
+
+/* Crossfade: mic pill out, resume pill in */
+.bottom-bar.watching .mic-pill { opacity: 0; visibility: hidden; }
+.bottom-bar.watching .resume-pill { opacity: 1; visibility: visible; }
+
+/* =========================================================
+   Activity: watch a video
+   ========================================================= */
+.canvas.watch { padding-inline: var(--ds-space-8); }
+
+.video-card {
+  position: relative;
+  z-index: 1; /* above Julia's glow */
+  flex-shrink: 0;
+  width: var(--app-card-w);
+  height: var(--app-video-h);
+  overflow: hidden;
+  border-radius: var(--app-radius-lg);
+  background: var(--ds-b-100);
+  transition: width var(--app-dur-1) ease, margin-right var(--app-dur-1) ease, opacity var(--app-dur-1) ease, visibility var(--app-dur-1);
+}
+
+/* fixed width so the player is clipped, not reflowed, while the card collapses */
+.video-card .player { width: var(--app-card-w); height: 100%; }
+
+/* "Watch clip" label over the video (clicks pass through to the player) */
+.video-label {
+  position: absolute;
+  left: var(--ds-space-8);
+  bottom: var(--ds-space-8);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  height: calc(var(--ds-space-8) + var(--ds-space-4));
+  padding: 0 var(--ds-space-4);
+  border-radius: var(--ds-roundness-2);
+  background: var(--ds-b-60);
+  font-size: var(--ds-font-size-5);
+  font-weight: var(--ds-font-weight-bold);
+  line-height: normal;
+  white-space: nowrap;
+  color: var(--ds-w-100);
+  pointer-events: none;
+}
+
+.video-label > span { text-box: trim-both cap alphabetic; }
+
+/* After "I'm done watching": the player slides away while the avatar comes back */
+.canvas.watch.done .video-card {
+  width: 0;
+  margin-right: calc(var(--ds-space-4) * -1);
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* While watching: the avatar fades out and the video re-centers */
+.canvas.watch .avatar {
+  transition: width var(--app-dur-1) ease, margin-left var(--app-dur-1) ease, opacity var(--app-dur-1) ease;
+}
+
+.canvas.watch.watching .avatar {
+  width: 0;
+  margin-left: calc(var(--ds-space-4) * -1);
+  opacity: 0;
+  overflow: hidden;
+}
+
+/* =========================================================
+   Activity: end of milestone / lesson completed
+   ========================================================= */
+.canvas.milestone { padding-inline: var(--ds-space-8); }
+
+.milestone-card {
+  position: relative;
+  z-index: 1; /* above the avatar, so dots gliding in from the top bar are never covered */
+  flex-shrink: 0;
+  width: 0;
+  height: 100%;
+  margin-right: calc(var(--ds-space-4) * -1);
+  overflow: clip;
+  border-radius: var(--app-radius-xl);
+  background: var(--app-card-bg);
+  box-shadow: var(--app-card-shadow);
+  opacity: 0;
+  visibility: hidden;
+  transition: width var(--app-dur-3) ease, margin-right var(--app-dur-3) ease, opacity var(--app-dur-3) ease, visibility var(--app-dur-3);
+}
+
+.canvas.milestone.side .milestone-card {
+  outline: var(--app-card-border);
+  outline-offset: -1px;
+  width: var(--app-flashcard-w);
+  margin-right: 0;
+  opacity: 1;
+  visibility: visible;
+}
+
+.canvas.milestone.settled .milestone-card { overflow: visible; }
+
+/* fixed width so the content is clipped, not reflowed, while the card opens */
+.milestone-card-inner {
+  width: var(--app-flashcard-w);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: var(--ds-space-16);
+  padding: calc(var(--ds-space-8) + var(--ds-space-4));
+  text-align: center;
+}
+
+.milestone-card .title { align-items: center; }
+.milestone-card .title h1 { font-size: var(--ds-font-size-7); }
+
+/* the title is revealed at the moment the milestone is reached */
+.milestone-title {
+  opacity: 0;
+  transform: translateY(var(--ds-space-3));
+  transition: opacity var(--app-dur-3) ease, transform var(--app-dur-3) ease;
+}
+
+.canvas.milestone.reached .milestone-title { opacity: 1; transform: none; }
+
+/* the timeline moves here from the top bar: 40px dots, thicker lines */
+.milestone-timeline {
+  width: 100%;
+  max-width: var(--app-steps-w);
+  min-height: calc(var(--ds-space-8) + var(--ds-space-2));
+}
+
+.milestone-timeline .steps {
+  --dot: calc(var(--ds-space-8) + var(--ds-space-2));
+  --line: var(--ds-space-2);
+  width: 100%;
+  min-width: 0;
+}
+
+/* "Continue learning": revealed once the new milestone is active */
+.milestone-cta {
+  display: flex;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(var(--ds-space-3));
+  transition: opacity var(--app-dur-2) ease, transform var(--app-dur-2) ease, visibility var(--app-dur-2);
+}
+
+.canvas.milestone.ready .milestone-cta {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+/* Lesson completed: the "Next lesson" button takes the timeline's place */
+.milestone-stage {
+  display: grid;
+  width: 100%;
+  justify-items: center;
+  align-items: center;
+}
+
+.milestone-stage > * { grid-area: 1 / 1; }
+
+.canvas.lesson .milestone-cta { transform: scale(0.85); }
+
+.canvas.lesson.consumed .milestone-timeline { visibility: hidden; }
+
+@media (prefers-reduced-motion: reduce) {
+  .milestone-title, .milestone-cta, .canvas.lesson .milestone-cta { transform: none; }
+  .ds-btn.outlined::after { animation: none; opacity: 0.6; }
+}
+
+/* =========================================================
+   Splash: the "Start demo" click unlocks sound / autoplay
+   ========================================================= */
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: var(--ds-z-modal);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--ds-space-8) + var(--ds-space-2));
+  background: var(--app-card-bg);
+  transition: opacity var(--app-dur-2) ease, visibility var(--app-dur-2);
+}
+
+.splash.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.splash h1 {
+  margin: 0;
+  font-size: var(--ds-font-size-7);
+  font-weight: var(--ds-font-weight-bold);
+  line-height: 1.2;
+  letter-spacing: calc(var(--ds-space-0-25) * -0.4);
+  color: var(--ds-tone-1);
+}
+
+/* =========================================================
+   Short viewports: everything tightens so the card still fits. Must stay last.
+   ========================================================= */
+@media (max-height: 900px) {
+  .canvas { padding-block: calc(var(--app-product-header-h) + var(--ds-space-4)) calc(var(--app-bar-h) + var(--ds-space-4)); }
+
+  .title h1 { font-size: var(--app-font-h1-compact); }
+  .milestone-card .title h1 { font-size: var(--app-font-milestone-compact); }
+
+  .flashcard { gap: var(--ds-space-8); padding: var(--ds-space-8); }
+  .reading-card { gap: var(--ds-space-6); padding: var(--ds-space-6); }
+  .milestone-card-inner { gap: var(--ds-space-8); padding: var(--ds-space-8); }
+  .text { gap: var(--ds-space-6); }
+
+  .answers { gap: var(--ds-space-3); }
+  .answer { padding: var(--ds-space-2) var(--ds-space-3); }
+  .answer .label { font-size: var(--ds-font-size-5); }
+
+  .reading-text, .input-box { padding: var(--ds-space-6); }
+  .reading-text { gap: var(--ds-space-3); }
+  .reading-text .reading-title { font-size: var(--app-font-reading); }
+  .reading-text .reading-body { font-size: var(--ds-font-size-5); line-height: 1.4; }
+  .input-box { font-size: var(--ds-font-size-6); }
+  .input-box.short { padding: var(--ds-space-4) var(--ds-space-6); }
+  .input-image-wrap { min-height: 0; }
+}
+
+@container (max-height: 79px) {
+  .input-image { display: none; }
+}
