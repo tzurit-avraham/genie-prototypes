@@ -1,0 +1,2277 @@
+/* app.css - styles for Genie demo with chat turns & corporate backdrop.
+   Uses only DS tokens (var(--ds-*)). */
+
+:root {
+  --app-genie-width: calc(var(--ds-space-16) * 6 + var(--ds-space-4)); /* 400px */
+  --app-genie-header-height: calc(var(--ds-space-8) + var(--ds-space-6)); /* 56px */
+  --app-radius-lg: calc(var(--ds-roundness-2) * 2);             /* 16px */
+  --app-radius-xl: calc(var(--ds-roundness-2) * 3);             /* 24px */
+  --app-font-size-h3: calc(var(--ds-font-size-5) * 1.5);        /* 24px */
+  --app-font-size-lg: calc(var(--ds-font-size-5) * 1.25);       /* 20px */
+  --app-genie-collapsed-size: calc(var(--ds-space-16) * 3 + var(--ds-space-2)); /* 200px */
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--ds-background);
+  color: var(--ds-tone-1);
+  font-family: var(--ds-font-family);
+  font-size: var(--ds-font-size-4);
+  line-height: var(--ds-line-height-20);
+  overflow-x: hidden;
+}
+
+/* =========================================================
+   Background: static, non-interactive capture of corp.kaltura.com
+   ========================================================= */
+.kaltura-site {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: var(--ds-b-100);
+}
+
+/* =========================================================
+   Collapsed floating avatar button
+   ========================================================= */
+.app-genie-collapsed {
+  position: fixed;
+  right: var(--ds-space-8);
+  bottom: var(--ds-space-8);
+  z-index: var(--ds-z-dropdown);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: var(--app-genie-collapsed-size);
+  height: var(--app-genie-collapsed-size);
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--app-radius-xl);
+  overflow: hidden;
+  cursor: pointer;
+  outline: none;
+  box-shadow: var(--ds-shadow-floating);
+  transition: transform var(--ds-duration-base), box-shadow var(--ds-duration-base);
+}
+
+.app-genie-collapsed:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 1px var(--ds-b-20), 0 var(--ds-space-2) calc(var(--ds-space-5) * 3) calc(var(--ds-space-4) * -1) var(--ds-b-20);
+}
+
+.app-genie-collapsed:focus-visible {
+  outline: var(--ds-space-0-5) solid var(--ds-primary);
+  outline-offset: var(--ds-space-0-5);
+}
+
+.app-genie-collapsed[hidden] {
+  display: none;
+}
+
+.app-genie-collapsed-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.app-genie-collapsed-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 46.5%, var(--ds-b-100) 100%);
+  pointer-events: none;
+}
+
+.app-genie-collapsed-label {
+  position: relative;
+  z-index: 1;
+  margin-bottom: calc(var(--ds-space-8) + var(--ds-space-1-5));
+  font-family: var(--ds-font-family);
+  font-size: var(--app-font-size-lg);
+  font-weight: var(--ds-font-weight-bold);
+  color: var(--ds-w-100);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* =========================================================
+   Prototype-only: unread dot on the launcher (DS candidate)
+   ========================================================= */
+.app-genie-collapsed-dot {
+  position: absolute;
+  top: var(--ds-space-4);
+  right: var(--ds-space-4);
+  z-index: 1;
+  width: var(--ds-space-4);
+  height: var(--ds-space-4);
+  border-radius: 50%;
+  background: var(--ds-danger-brighter);
+  box-shadow: 0 0 0 var(--ds-space-0-5) var(--ds-w-100);
+  pointer-events: none;
+  animation: app-dot-in var(--ds-duration-enter) var(--ds-ease-out);
+}
+
+.app-genie-collapsed-dot[hidden] {
+  display: none;
+}
+
+/* =========================================================
+   Prototype-only: message teaser above the launcher (DS candidate)
+   ========================================================= */
+.app-genie-teaser {
+  position: fixed;
+  right: var(--ds-space-8);
+  bottom: calc(var(--ds-space-8) + var(--app-genie-collapsed-size) + var(--ds-space-3));
+  z-index: var(--ds-z-dropdown);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-1);
+  width: calc(var(--app-genie-collapsed-size) + var(--ds-space-16)); /* 264px */
+  padding: var(--ds-space-3) var(--ds-space-1) var(--ds-space-3) var(--ds-space-4);
+  background: var(--ds-background);
+  border-radius: var(--app-radius-lg);
+  box-shadow: var(--ds-shadow-floating);
+  transform-origin: bottom right;
+  animation: app-teaser-in var(--ds-duration-enter) var(--ds-ease-out);
+  transition: transform var(--ds-duration-base);
+}
+
+.app-genie-teaser:hover {
+  transform: translateY(-2px);
+}
+
+.app-genie-teaser[hidden] {
+  display: none;
+}
+
+.app-genie-teaser-body {
+  flex: 1;
+  min-width: 0;
+  padding: var(--ds-space-0-5) 0 0;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--ds-font-family);
+  color: var(--ds-tone-1);
+}
+
+.app-genie-teaser-body:focus-visible {
+  outline: 2px solid var(--ds-primary);
+  outline-offset: 2px;
+}
+
+.app-genie-teaser-text {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: var(--ds-font-size-4);
+  line-height: var(--ds-line-height-20);
+}
+
+@keyframes app-teaser-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--ds-space-2)) scale(0.96);
+  }
+}
+
+@keyframes app-dot-in {
+  from {
+    transform: scale(0);
+  }
+  60% {
+    transform: scale(1.25);
+  }
+}
+
+/* =========================================================
+   Genie Widget Container
+   ========================================================= */
+.app-genie,
+.app-genie * {
+  box-sizing: border-box;
+}
+
+.app-genie {
+  position: fixed;
+  top: var(--ds-space-8);
+  right: var(--ds-space-8);
+  bottom: var(--ds-space-8);
+  z-index: var(--ds-z-dropdown);
+  display: flex;
+  flex-direction: column;
+  width: var(--app-genie-width);
+  overflow: clip;
+  background: var(--ds-background);
+  color: var(--ds-tone-1);
+  border-radius: var(--app-radius-lg);
+  box-shadow: 0 0 0 1px var(--ds-b-20), 0 var(--ds-space-2) calc(var(--ds-space-5) * 3) calc(var(--ds-space-4) * -1) var(--ds-b-20);
+}
+
+.app-genie[hidden] {
+  display: none;
+}
+
+/* Row under the header: chat column + optional document canvas */
+.app-genie-main {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.app-genie-view {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  flex-direction: column;
+}
+
+/* ----- Header ----- */
+.app-genie-header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--ds-space-2);
+  width: 100%;
+  height: var(--app-genie-header-height);
+  padding: 0 var(--ds-space-1) 0 var(--ds-space-4);
+  border-bottom: 1px solid var(--ds-tone-6);
+}
+
+.app-genie-header-icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: calc(var(--ds-space-8) + var(--ds-space-1));
+  height: calc(var(--ds-space-8) + var(--ds-space-1));
+}
+
+.app-genie-header-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--ds-font-size-5);
+  font-weight: var(--ds-font-weight-bold);
+  line-height: normal;
+}
+
+/* ----- Body (Scrollable stream) ----- */
+.app-genie-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  padding: var(--ds-space-4);
+  overflow-y: auto;
+  gap: var(--ds-space-4);
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.app-genie-body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* ----- Initial state (vertically centered in body) ----- */
+.app-genie-initial {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: auto 0;
+  gap: var(--ds-space-4);
+  width: 100%;
+}
+
+.app-genie-initial[hidden] {
+  display: none;
+}
+
+.app-genie-title {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  height: calc(var(--ds-space-8) + var(--ds-space-3));
+}
+
+.app-genie-title-icon {
+  display: block;
+  flex-shrink: 0;
+  width: var(--ds-space-8);
+  height: var(--ds-space-8);
+  margin-bottom: var(--ds-space-3);
+}
+
+.app-genie-heading {
+  margin: 0;
+  font-size: var(--app-font-size-h3);
+  font-weight: var(--ds-font-weight-bold);
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.app-genie-avatar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--app-radius-lg);
+}
+
+.app-genie-avatar-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.app-genie-avatar-overlay {
+  position: relative;
+  height: 57%;
+  background: linear-gradient(to bottom, transparent 28%, var(--ds-b-20));
+  pointer-events: none;
+}
+
+.app-genie-start {
+  position: absolute;
+  bottom: calc(var(--ds-space-2) + var(--ds-space-0-25));
+  left: 50%;
+  translate: -50% 0;
+  height: var(--ds-space-6);
+  white-space: nowrap;
+}
+
+.app-genie-or {
+  margin: 0;
+  font-size: var(--ds-font-size-5);
+  font-weight: var(--ds-font-weight-bold);
+  letter-spacing: var(--ds-space-0-25);
+  text-transform: uppercase;
+  color: var(--ds-tone-2);
+}
+
+/* Slot for composer inside initial centered state */
+.app-initial-composer-slot {
+  width: 100%;
+}
+
+/* Suggestion pills */
+.app-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-1);
+  max-width: 100%;
+  padding: calc(var(--ds-space-1) + var(--ds-space-0-5)) var(--ds-space-2);
+  border: none;
+  border-radius: var(--ds-roundness-2);
+  font-family: var(--ds-font-family);
+  font-size: var(--ds-font-size-4);
+  font-weight: var(--ds-font-weight-bold);
+  line-height: var(--ds-line-height-16);
+  text-align: center;
+  cursor: pointer;
+  transition: background var(--ds-duration-base);
+}
+
+.app-pill-primary {
+  background: var(--ds-primary);
+  color: var(--ds-primary-text-contrast);
+}
+.app-pill-primary:hover {
+  background: var(--ds-primary-darker);
+}
+
+/* Suggestion pills hug their text, capped so long prompts wrap */
+.app-pill-secondary {
+  width: auto;
+  max-width: min(100%, calc(var(--ds-space-16) * 7)); /* 448px */
+  padding-inline: var(--ds-space-3);
+  background: var(--ds-tone-6);
+  color: var(--ds-tone-1);
+}
+.app-pill-secondary:hover {
+  background: var(--ds-tone-5);
+}
+
+/* =========================================================
+   Chat Stream & Messages
+   ========================================================= */
+.app-chat-stream {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  width: 100%;
+}
+
+/* User message bubble */
+.app-user-msg {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.app-user-bubble {
+  max-width: 85%;
+  padding: var(--ds-space-2-5) var(--ds-space-3-5);
+  background: var(--ds-tone-6);
+  color: var(--ds-tone-1);
+  border-radius: var(--ds-roundness-2);
+  font-size: var(--ds-font-size-5); /* 16px */
+  line-height: var(--ds-line-height-24);
+}
+
+/* Agent message block (matches Figma 18540-13118) */
+.app-agent-msg {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2); /* 8px gap between avatar and answer */
+  width: 100%;
+}
+
+.app-agent-header {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.app-agent-avatar {
+  width: var(--ds-space-8);
+  height: var(--ds-space-8);
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.app-agent-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.app-agent-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  font-size: var(--ds-font-size-5); /* 16px */
+  line-height: var(--ds-line-height-24);
+  color: var(--ds-tone-1);
+}
+
+.app-agent-content p {
+  margin: 0;
+}
+
+.app-agent-highlights {
+  margin: 0;
+  padding-left: var(--ds-space-5);
+}
+
+.app-agent-highlights li {
+  margin-bottom: var(--ds-space-1);
+}
+
+/* Recommended media player */
+.app-media-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  width: 100%;
+}
+
+.app-media-player-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--ds-roundness-2);
+  overflow: hidden;
+  background: #000;
+}
+
+.app-media-player-wrap [id^="kaltura_player"] {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.app-media-thumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--ds-roundness-2);
+  overflow: hidden;
+}
+
+.app-media-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ----- Prototype-only: video thumbnail with play overlay (DS candidate) ----- */
+.app-media-play {
+  display: block;
+  padding: 0;
+  border: none;
+  background: var(--ds-b-100);
+  cursor: pointer;
+}
+
+.app-media-play img {
+  transition: transform var(--ds-duration-enter) var(--ds-ease-out), opacity var(--ds-duration-base);
+}
+
+.app-media-play:hover img {
+  transform: scale(1.03);
+  opacity: 0.85;
+}
+
+.app-media-play .ds-btn-circular {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.app-media-play:hover .ds-btn-circular {
+  background: var(--ds-b-70);
+}
+
+.app-media-play:focus-visible {
+  outline: 2px solid var(--ds-primary);
+  outline-offset: 2px;
+}
+
+.app-media-badge {
+  position: absolute;
+  bottom: var(--ds-space-2);
+  right: var(--ds-space-2);
+}
+
+.app-media-title {
+  margin: 0;
+  font-size: var(--ds-font-size-5); /* 16px */
+  line-height: var(--ds-line-height-24);
+  font-weight: var(--ds-font-weight-bold);
+  color: var(--ds-tone-1);
+}
+
+/* =========================================================
+   GenUI Formatted Card (Turn 2 solution overview)
+   Clean, unboxed layout with DS components
+   ========================================================= */
+.app-genui-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  margin-top: var(--ds-space-4); /* 16px space above the card/h4 */
+  padding: 0;
+  background: transparent;
+  border: none;
+  width: 100%;
+}
+
+.app-genui-header {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: var(--ds-space-2);
+}
+
+.app-genui-title {
+  margin: 0;
+  font-size: var(--ds-font-size-6); /* 18px (H4) */
+  font-weight: var(--ds-font-weight-bold);
+  line-height: var(--ds-line-height-24);
+  color: var(--ds-tone-1);
+}
+
+.app-genui-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-7);
+}
+
+/* Row-based related resource item without dividing lines or boxes */
+.app-resource-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-3-5);
+  padding: 0;
+  border: none;
+}
+
+.app-resource-thumb {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--ds-roundness-2);
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--ds-tone-6);
+}
+
+.app-resource-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.app-resource-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  min-width: 0;
+  flex: 1;
+}
+
+.app-resource-eyebrow {
+  margin: 0;
+  font-size: var(--ds-font-size-2); /* 12px */
+  font-weight: var(--ds-font-weight-bold);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--ds-tone-3);
+  line-height: var(--ds-line-height-16);
+}
+
+.app-resource-title {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  font-size: var(--ds-font-size-5); /* 16px */
+  font-weight: var(--ds-font-weight-bold);
+  line-height: var(--ds-line-height-24);
+  color: var(--ds-tone-1);
+  cursor: pointer;
+  transition: color var(--ds-duration-base);
+}
+
+.app-resource-title:hover {
+  color: var(--ds-primary);
+}
+
+.app-resource-desc {
+  margin: var(--ds-space-1) 0 0;
+  font-size: var(--ds-font-size-5); /* 16px */
+  line-height: var(--ds-line-height-24);
+  color: var(--ds-tone-1);
+}
+
+/* Video variant: play button centred on the thumbnail, duration in the corner */
+.app-resource-thumb-video .ds-btn-circular {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.app-resource-duration {
+  position: absolute;
+  right: var(--ds-space-1);
+  bottom: var(--ds-space-1);
+}
+
+/* Source chip flows inline right after the description text */
+.app-resource-chip {
+  padding-left: var(--ds-space-2);
+  margin-left: var(--ds-space-1);
+  vertical-align: middle;
+}
+
+.app-resource-chip ds-icon {
+  color: var(--ds-tone-3);
+  flex-shrink: 0;
+}
+
+/* Agent message actions & sources toolbar */
+.app-agent-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  margin-top: var(--ds-space-1);
+}
+
+/* Overlapping media source thumbnails (matches Figma 18540-13118) */
+.app-agent-sources {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  margin-left: auto;
+}
+
+.app-sources-thumbs {
+  display: flex;
+  align-items: center;
+}
+
+.app-source-thumb {
+  position: relative;
+  width: var(--ds-space-8);   /* 32px */
+  height: var(--ds-space-8);  /* 32px */
+  border-radius: var(--ds-roundness-1);
+  overflow: hidden;
+  border: 2px solid var(--ds-background);
+  margin-right: -16px; /* overlapping stack */
+  flex-shrink: 0;
+}
+
+.app-source-thumb:nth-child(1) { z-index: 3; }
+.app-source-thumb:nth-child(2) { z-index: 2; }
+.app-source-thumb:nth-child(3) { z-index: 1; margin-right: 0; }
+
+.app-source-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.app-sources-label {
+  font-family: var(--ds-font-family);
+  font-size: var(--ds-font-size-4);
+  font-weight: var(--ds-font-weight-bold);
+  color: var(--ds-tone-1);
+  white-space: nowrap;
+}
+
+/* Next steps block */
+.app-next-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  margin-top: var(--ds-space-3);
+}
+
+.app-next-steps-title {
+  margin: 0;
+  font-size: var(--ds-font-size-2);
+  font-weight: var(--ds-font-weight-bold);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--ds-tone-3);
+}
+
+.app-next-step-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--ds-space-2) var(--ds-space-3);
+  background: transparent;
+  border: 1px solid var(--ds-tone-5);
+  border-radius: var(--ds-roundness-2);
+  color: var(--ds-tone-1);
+  font-family: var(--ds-font-family);
+  font-size: var(--ds-font-size-4);
+  font-weight: var(--ds-font-weight-bold);
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--ds-duration-base);
+}
+
+.app-next-step-btn:hover {
+  background: var(--ds-tone-6);
+  border-color: var(--ds-tone-4);
+}
+
+.app-next-step-icon {
+  display: grid;
+  place-items: center;
+  width: var(--ds-space-6);
+  height: var(--ds-space-6);
+  border-radius: var(--ds-roundness-1);
+  background: var(--ds-tone-6);
+  color: var(--ds-tone-1);
+  flex-shrink: 0;
+}
+
+/* =========================================================
+   Meeting Scheduler Wizard (Piece 4)
+   ========================================================= */
+.app-wizard-card {
+  position: relative;
+  isolation: isolate; /* keeps the booked green wash (::before) behind the content */
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
+  /* Primary wash, strongest at the top-left corner, never fades to white so the card always reads as a surface */
+  background-color: var(--ds-background);
+  background-image: linear-gradient(160deg, var(--ds-primary-tint-10), var(--ds-primary-tint-6) 50%);
+  border-radius: var(--ds-roundness-2);
+  width: 100%;
+}
+
+.app-wizard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+  padding-bottom: var(--ds-space-2);
+}
+
+.app-wizard-title {
+  margin: 0;
+  font-size: var(--ds-font-size-4);
+  font-weight: var(--ds-font-weight-bold);
+  color: var(--ds-tone-1);
+}
+
+/* ----- Prototype-only: step pills progress indicator (DS candidate) ----- */
+.app-wizard-steps {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--ds-space-1);
+}
+
+.app-wizard-step-seg {
+  width: var(--ds-space-2);
+  height: var(--ds-space-1-5);
+  border-radius: var(--ds-space-1);
+  background: var(--ds-tone-5);
+  transition: width var(--ds-duration-enter) var(--ds-ease-out), background var(--ds-duration-enter) var(--ds-ease-out);
+}
+
+/* Completed steps: primary dot. Current step: stretched primary pill. */
+.app-wizard-steps[data-step="1"] .app-wizard-step-seg:nth-child(1),
+.app-wizard-steps[data-step="2"] .app-wizard-step-seg:nth-child(2) {
+  width: var(--ds-space-6);
+  background: var(--ds-primary);
+}
+
+.app-wizard-steps[data-step="2"] .app-wizard-step-seg:nth-child(1) {
+  background: var(--ds-primary);
+}
+
+/* All done: both segments stretch and turn green */
+.app-wizard-steps[data-step="done"] .app-wizard-step-seg {
+  width: var(--ds-space-6);
+  background: var(--ds-success);
+}
+
+.app-wizard-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+/* Step 1 field grid */
+.app-wizard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ds-space-2-5) var(--ds-space-3);
+}
+
+.app-wizard-grid .ds-form-field {
+  margin-bottom: 0;
+}
+
+.app-wizard-grid .ds-form-field.span-2 {
+  grid-column: span 2;
+}
+
+/* Step 2 date and slot selectors (labels use DS ds-form-label / ds-form-desc) */
+.app-wizard-body > .ds-form-field {
+  margin-bottom: 0;
+}
+
+/* Space between the Date and Time groups */
+.app-wizard-body > .ds-form-field + .ds-form-field {
+  margin-top: var(--ds-space-3);
+}
+
+.app-wizard-body > .ds-form-field > .ds-form-label {
+  margin-bottom: var(--ds-space-2);
+}
+
+.app-wizard-pills {
+  display: flex;
+  gap: var(--ds-space-1-5);
+  flex-wrap: wrap;
+}
+
+.app-wizard-pill {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ds-space-1-5) var(--ds-space-2);
+  background: var(--ds-background);
+  border: 1px solid var(--ds-tone-5);
+  border-radius: var(--ds-roundness-1);
+  cursor: pointer;
+  color: var(--ds-tone-1);
+  font-family: var(--ds-font-family);
+  font-size: var(--ds-font-size-3);
+  transition: all var(--ds-duration-base);
+  flex: 1;
+  min-width: 80px;
+}
+
+.app-wizard-pill:hover {
+  background: var(--ds-tone-6);
+  border-color: var(--ds-tone-4);
+}
+
+.app-wizard-pill-sub {
+  font-size: var(--ds-font-size-1);
+  color: var(--ds-tone-3);
+}
+
+/* Time slots: one stacked column per time of day */
+.app-wizard-slots {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ds-space-3);
+}
+
+.app-wizard-slot-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1-5);
+}
+
+/* Selected state, shared by date pills and time slots: blue outline, white text */
+.app-wizard-pill.active,
+.app-wizard-slot.active,
+.app-wizard-pill.active:hover,
+.app-wizard-slot.active:hover {
+  background: var(--ds-background);
+  border-color: var(--ds-primary);
+  box-shadow: inset 0 0 0 1px var(--ds-primary);
+  color: var(--ds-tone-1);
+  font-weight: var(--ds-font-weight-bold);
+}
+
+.app-wizard-pill.active .app-wizard-pill-sub {
+  color: var(--ds-tone-1);
+}
+
+.app-wizard-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--ds-space-8);
+  background: var(--ds-background);
+  border: 1px solid var(--ds-tone-5);
+  border-radius: var(--ds-roundness-1);
+  color: var(--ds-tone-1);
+  font-family: var(--ds-font-family);
+  font-size: var(--ds-font-size-3);
+  font-weight: var(--ds-font-weight-bold);
+  cursor: pointer;
+  transition: all var(--ds-duration-base);
+}
+
+.app-wizard-slot:hover {
+  background: var(--ds-tone-6);
+  border-color: var(--ds-tone-4);
+}
+
+
+/* Step 3 Confirmation state */
+.app-wizard-confirmed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2-5);
+  align-items: center;
+  text-align: center;
+  padding: var(--ds-space-2) 0;
+}
+
+.app-wizard-check-badge {
+  display: grid;
+  place-items: center;
+  width: var(--ds-space-16);
+  height: var(--ds-space-16);
+  border-radius: 50%;
+  background: var(--ds-success);
+  color: var(--ds-success-text-contrast);
+}
+
+.app-wizard-conf-title {
+  margin: 0;
+  font-size: var(--ds-font-size-6); /* 18px (H4) */
+  font-weight: var(--ds-font-weight-bold);
+  line-height: var(--ds-line-height-24);
+  color: var(--ds-tone-1);
+}
+
+.app-wizard-conf-sub {
+  margin: 0;
+  font-size: var(--ds-font-size-4); /* 14px */
+  line-height: var(--ds-line-height-20);
+  color: var(--ds-tone-2);
+}
+
+.app-wizard-details-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 720px; /* centered by the parent's align-items: center when the card expands */
+  margin-top: var(--ds-space-2);
+  padding: var(--ds-space-4);
+  border: 1px solid var(--ds-tone-6);
+  border-radius: var(--ds-roundness-2);
+  text-align: left;
+}
+
+.app-wizard-detail-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-font-size-5); /* 16px */
+  line-height: var(--ds-line-height-24);
+  color: var(--ds-tone-1);
+}
+
+.app-wizard-detail-item ds-icon {
+  color: var(--ds-primary-brighter);
+}
+
+.app-wizard-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ds-space-2);
+  padding-top: var(--ds-space-1);
+}
+
+/* Success state: no header (title + step pills), centered .ics action */
+.app-wizard-booked .app-wizard-header {
+  display: none;
+}
+
+.app-wizard-booked .app-wizard-footer {
+  justify-content: center;
+}
+
+/* =========================================================
+   Qualification card (Turn 4): reuses the wizard card, one question per step
+   ========================================================= */
+
+/* Step pills for any number of steps: done = primary dot, current = stretched primary pill */
+.app-wizard-step-seg.is-done {
+  background: var(--ds-primary);
+}
+
+.app-wizard-step-seg.is-current {
+  width: var(--ds-space-6);
+  background: var(--ds-primary);
+}
+
+.app-qualify-step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+/* Header title stays put between questions; only the body and footer slide */
+#qualify-card .app-wizard-title {
+  animation: none;
+}
+
+.app-qualify-question {
+  margin: 0;
+  font-size: var(--ds-font-size-5); /* 16px */
+  line-height: var(--ds-line-height-24);
+  color: var(--ds-tone-1);
+}
+
+/* Done state: recap only, no header, centered edit action */
+.app-qualify-done .app-wizard-header {
+  display: none;
+}
+
+.app-qualify-done .app-wizard-footer {
+  justify-content: center;
+}
+
+/* ----- Checkbox options as selectable tiles ----- */
+.app-qualify-checks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ds-space-2);
+}
+
+.app-qualify-check {
+  padding: var(--ds-space-2-5) var(--ds-space-3);
+  background: var(--ds-background);
+  border: 1px solid var(--ds-tone-5);
+  border-radius: var(--ds-roundness-1);
+  transition: border-color var(--ds-duration-base), box-shadow var(--ds-duration-base);
+}
+
+.app-qualify-check:hover {
+  border-color: var(--ds-tone-4);
+}
+
+.app-qualify-check:has(.ds-checkbox-input:checked) {
+  border-color: var(--ds-primary);
+  box-shadow: inset 0 0 0 1px var(--ds-primary);
+}
+
+/* ----- Prototype-only: range slider (DS candidate) ----- */
+.app-range {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+.app-range-value {
+  margin: 0;
+  font-size: var(--ds-font-size-4);
+  color: var(--ds-tone-2);
+}
+
+.app-range-value strong {
+  font-size: var(--app-font-size-h3);
+  font-weight: var(--ds-font-weight-bold);
+  line-height: var(--ds-line-height-24);
+  color: var(--ds-tone-1);
+}
+
+.app-range-input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: var(--ds-space-1);
+  margin: var(--ds-space-2) 0;
+  border-radius: var(--ds-space-1);
+  background: linear-gradient(to right, var(--ds-primary) var(--fill, 0%), var(--ds-tone-5) var(--fill, 0%));
+  cursor: pointer;
+}
+
+.app-range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: var(--ds-space-5);
+  height: var(--ds-space-5);
+  border: 2px solid var(--ds-primary);
+  border-radius: 50%;
+  background: var(--ds-background);
+  box-shadow: var(--ds-shadow-menu);
+  transition: transform var(--ds-duration-base);
+}
+
+.app-range-input::-moz-range-thumb {
+  width: var(--ds-space-5);
+  height: var(--ds-space-5);
+  border: 2px solid var(--ds-primary);
+  border-radius: 50%;
+  background: var(--ds-background);
+  box-shadow: var(--ds-shadow-menu);
+  transition: transform var(--ds-duration-base);
+}
+
+.app-range-input:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+
+.app-range-input:active::-moz-range-thumb {
+  transform: scale(1.15);
+}
+
+.app-range-input:focus-visible {
+  outline: 2px solid var(--ds-primary);
+  outline-offset: var(--ds-space-2);
+}
+
+.app-range-scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--ds-font-size-2);
+  color: var(--ds-tone-3);
+}
+
+/* =========================================================
+   Processing State (pulsing loader)
+   ========================================================= */
+.app-processing {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  width: 100%;
+}
+
+.app-processing[hidden] {
+  display: none;
+}
+
+.app-processing-avatar {
+  width: var(--ds-space-8);
+  height: var(--ds-space-8);
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.app-processing-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.app-processing-bubble {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  background: var(--ds-tone-6);
+  border-radius: var(--ds-roundness-2);
+}
+
+.app-processing-dot {
+  width: var(--ds-space-1-5);
+  height: var(--ds-space-1-5);
+  border-radius: 50%;
+  background: var(--ds-tone-3);
+  animation: app-pulse 1.2s infinite ease-in-out;
+}
+
+.app-processing-dot:nth-child(2) { animation-delay: 0.2s; }
+.app-processing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes app-pulse {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1.1); }
+}
+
+/* =========================================================
+   Composer (placed in center on init, pinned to bottom after turn 1)
+   ========================================================= */
+.app-composer-bar {
+  padding: var(--ds-space-4);
+  border-top: none;
+  background: var(--ds-background);
+  flex-shrink: 0;
+}
+
+.app-composer-bar[hidden] {
+  display: none;
+}
+
+/* ===== Prototype-only: follow-up bubbles above the composer (DS candidate) ===== */
+.app-followups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  width: 100%;
+  margin-bottom: var(--ds-space-2);
+  justify-content: flex-start; /* left-aligned with the avatar */
+}
+
+.app-followups[hidden] {
+  display: none;
+}
+
+.app-followup {
+  max-width: 100%;
+  padding: var(--ds-space-1) var(--ds-space-3);
+  background: var(--ds-background);
+  border: 1px solid var(--ds-tone-5);
+  border-radius: var(--ds-roundness-3);
+  color: var(--ds-tone-1);
+  font-family: var(--ds-font-family);
+  font-size: var(--ds-font-size-4);
+  font-weight: var(--ds-font-weight-bold);
+  line-height: var(--ds-line-height-16);
+  text-align: left;
+  cursor: pointer;
+  animation: app-followup-in var(--ds-duration-base) ease-out both;
+  transition: background var(--ds-duration-base), border-color var(--ds-duration-base);
+}
+
+.app-followup:hover {
+  background: var(--ds-tone-6);
+  border-color: var(--ds-tone-4);
+}
+
+@keyframes app-followup-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.app-composer-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  width: 100%;
+}
+
+.app-composer-avatar-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  width: 102px;
+  min-width: 102px;
+  height: 102px;
+  padding: 0 0 var(--ds-space-2);
+  border: none;
+  border-radius: var(--ds-roundness-2);
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--ds-tone-6);
+  flex-shrink: 0;
+}
+
+.app-composer-avatar-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.app-composer-avatar-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.2) 40%, transparent 70%);
+  pointer-events: none;
+}
+
+.app-composer-avatar-badge {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  color: var(--ds-w-100);
+  font-family: var(--ds-font-family);
+  font-size: var(--ds-font-size-3);
+  font-weight: var(--ds-font-weight-bold);
+  pointer-events: none;
+}
+
+.app-composer-avatar-badge ds-icon {
+  color: var(--ds-w-100);
+}
+
+.app-composer {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3);
+  background: var(--ds-background);
+  border: 1px solid var(--ds-tone-4);
+  border-radius: var(--ds-roundness-2);
+  transition: border-color var(--ds-duration-base);
+  width: 100%;
+  min-height: 102px;
+}
+
+.app-composer:focus-within {
+  border-color: var(--ds-primary);
+}
+
+.app-composer-input {
+  display: block;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  color: var(--ds-tone-1);
+  font-family: var(--ds-font-family);
+  font-size: var(--ds-font-size-4);
+  line-height: var(--ds-line-height-20);
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.app-composer-input::placeholder {
+  color: var(--ds-tone-3);
+  opacity: 1;
+}
+
+.app-composer-menu {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+}
+
+.app-composer-spacer {
+  flex: 1;
+}
+
+.app-submit-btn {
+  transition: all var(--ds-duration-base);
+}
+
+/* Legal disclaimer under the composer (initial and pinned states) */
+.app-composer-disclaimer {
+  margin: var(--ds-space-2) 0 0;
+  font-size: var(--ds-font-size-2);
+  line-height: var(--ds-line-height-16);
+  color: var(--ds-tone-3);
+  text-align: center;
+}
+
+/* =========================================================
+   Fullscreen State (triggered by expand icon in header)
+   ========================================================= */
+.app-genie.app-genie-fullscreen {
+  /* Floating panel inset from the viewport: 32px desktop, 16px below 1024, full bleed on mobile */
+  --app-fullscreen-inset: var(--ds-space-8);
+  top: var(--app-fullscreen-inset);
+  right: var(--app-fullscreen-inset);
+  bottom: var(--app-fullscreen-inset);
+  left: var(--app-fullscreen-inset);
+  width: auto;
+  animation: none;
+}
+
+@media (max-width: 1023px) {
+  .app-genie.app-genie-fullscreen {
+    --app-fullscreen-inset: var(--ds-space-4);
+  }
+}
+
+@media (max-width: 767px) {
+  .app-genie.app-genie-fullscreen {
+    --app-fullscreen-inset: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
+/* Agent avatar hangs outside the content column: avatar (32) + gap (16) */
+.app-genie.app-genie-fullscreen {
+  --app-agent-gutter: calc(var(--ds-space-8) + var(--ds-space-4)); /* 48px */
+}
+
+/* Side padding grows by the gutter so the content column stays 928px and the avatar isn't clipped */
+.app-genie.app-genie-fullscreen .app-genie-body {
+  max-width: calc(960px + var(--app-agent-gutter) * 2);
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--ds-space-6) calc(var(--ds-space-4) + var(--app-agent-gutter));
+  gap: var(--ds-space-6); /* matches the message gap, so the typing indicator gets 24px too */
+}
+
+/* Avatar and answer side by side, avatar outside the column */
+.app-genie.app-genie-fullscreen .app-agent-msg {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--ds-space-4);
+  margin-left: calc(var(--app-agent-gutter) * -1);
+  width: calc(100% + var(--app-agent-gutter));
+}
+
+.app-genie.app-genie-fullscreen .app-agent-content {
+  flex: 1;
+  min-width: 0;
+  padding-top: var(--ds-space-1); /* centers the first 24px line on the 32px avatar */
+}
+
+/* Expanded widget: no close (X); minimize first to get it back */
+.app-genie.app-genie-fullscreen [data-action="close-genie"] {
+  display: none;
+}
+
+.app-genie.app-genie-fullscreen .app-processing {
+  gap: var(--ds-space-4);
+  margin-left: calc(var(--app-agent-gutter) * -1);
+}
+
+.app-genie.app-genie-fullscreen .app-genie-initial {
+  max-width: 720px;
+  width: 100%;
+  margin: auto auto;
+}
+
+.app-genie.app-genie-fullscreen .app-chat-stream {
+  width: 100%;
+  gap: var(--ds-space-6); /* 24px between messages */
+}
+
+.app-genie.app-genie-fullscreen .app-composer-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-top: none;
+  background: var(--ds-background);
+  /* Same side padding as the chat body, so the composer sits on the content column's edge */
+  padding: var(--ds-space-4) calc(var(--ds-space-4) + var(--app-agent-gutter));
+}
+
+.app-genie.app-genie-fullscreen .app-composer-bar .app-composer-wrap,
+.app-genie.app-genie-fullscreen .app-composer-bar .app-followups {
+  max-width: calc(960px - var(--ds-space-4) * 2); /* 928px, the content column width */
+  width: 100%;
+}
+
+.app-genie.app-genie-fullscreen .app-composer-bar .app-composer {
+  max-width: none;
+  width: 100%;
+}
+
+.app-genie.app-genie-fullscreen .app-wizard-card {
+  gap: var(--ds-space-6);
+  padding: calc(var(--ds-space-8) + var(--ds-space-2)); /* 40px */
+}
+
+.app-genie.app-genie-fullscreen .app-wizard-header {
+  padding-bottom: var(--ds-space-4);
+}
+
+.app-genie.app-genie-fullscreen .app-wizard-title {
+  font-size: var(--ds-font-size-6);
+}
+
+.app-genie.app-genie-fullscreen .app-wizard-conf-sub {
+  font-size: var(--ds-font-size-5); /* 16px */
+  line-height: var(--ds-line-height-24);
+}
+
+.app-genie.app-genie-fullscreen .app-wizard-grid {
+  gap: var(--ds-space-4) var(--ds-space-5);
+}
+
+.app-genie.app-genie-fullscreen .app-resource-thumb {
+  width: 140px;
+  height: 140px;
+  aspect-ratio: 1 / 1;
+}
+
+/* =========================================================
+   Prototype-only: document canvas side panel (DS candidate)
+   Gemini-style side by side: chat on the left, floating rounded PDF viewer on the right
+   ========================================================= */
+.app-genie.app-genie-fullscreen.app-genie-canvas-open .app-genie-view {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.app-genie.app-genie-fullscreen.app-genie-canvas-open .app-genie-body {
+  max-width: 100%;
+}
+
+.app-genie.app-genie-fullscreen.app-genie-canvas-open .app-composer-bar .app-composer-wrap,
+.app-genie.app-genie-fullscreen.app-genie-canvas-open .app-composer-bar .app-followups {
+  max-width: 100%;
+}
+
+.app-canvas-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-width: 0;
+  /* Bottom edge lines up with the composer: bar padding + disclaimer line + disclaimer gap */
+  margin: var(--ds-space-6) var(--ds-space-6) calc(var(--ds-space-4) + var(--ds-line-height-16) + var(--ds-space-2)) var(--ds-space-2);
+  overflow: hidden;
+  background: var(--ds-paper);
+  border: 1px solid var(--ds-tone-6);
+  border-radius: var(--app-radius-lg);
+  animation: app-canvas-in var(--ds-duration-enter) var(--ds-ease-out);
+}
+
+.app-canvas-panel[hidden] {
+  display: none;
+}
+
+@keyframes app-canvas-in {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--ds-space-8) * -1));
+  }
+}
+
+/* Canvas sits on the left of the chat; the docked widget grows leftward to make room */
+.app-canvas-panel {
+  order: -1;
+  margin-left: var(--ds-space-6);
+  margin-right: var(--ds-space-2);
+}
+.app-genie {
+  transition: width var(--ds-duration-enter) var(--ds-ease-out);
+}
+.app-genie.app-genie-canvas-open:not(.app-genie-fullscreen) {
+  width: calc(100vw - var(--ds-space-8) * 2);
+}
+.app-genie.app-genie-canvas-open:not(.app-genie-fullscreen) .app-genie-view {
+  flex: 0 0 var(--app-genie-width);
+}
+
+/* Close: reverse of the open slide, then JS hides the panel */
+.app-canvas-panel.app-canvas-closing {
+  animation: app-canvas-out var(--ds-duration-exit) ease-in forwards;
+  pointer-events: none;
+}
+
+@keyframes app-canvas-out {
+  to {
+    opacity: 0;
+    transform: translateX(calc(var(--ds-space-8) * -1));
+  }
+}
+
+.app-canvas-header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--ds-space-2);
+  height: var(--app-genie-header-height);
+  padding: 0 var(--ds-space-1) 0 var(--ds-space-4);
+  border-bottom: 1px solid var(--ds-tone-6);
+}
+
+.app-canvas-header-info {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.app-canvas-title {
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--ds-font-size-5);
+  font-weight: var(--ds-font-weight-bold);
+  color: var(--ds-tone-1);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.app-canvas-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+}
+
+.app-canvas-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* ----- Video canvas: same right-side panel as documents ----- */
+.app-genie-canvas-video #canvas-download {
+  display: none;
+}
+
+.app-canvas-video {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  overflow: hidden;
+  background: var(--ds-b-100);
+}
+
+/* Blurred thumbnail fills the space around the player */
+.app-canvas-video-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(var(--ds-space-8));
+  transform: scale(1.2); /* hides the soft edges the blur creates */
+}
+
+.app-canvas-video .app-media-player-wrap {
+  border-radius: 0;
+}
+
+/* ----- PDF pages: edge to edge in the canvas, thin gap between pages ----- */
+.app-canvas-pages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+}
+
+.app-pdf-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  flex-shrink: 0;
+  width: 100%;
+  aspect-ratio: 8.5 / 11;
+  padding: var(--ds-space-6);
+  background: var(--ds-w-100);
+  color: var(--ds-b-70);
+  font-size: var(--ds-font-size-4);
+  line-height: var(--ds-line-height-21);
+}
+
+/* Cover bleeds to the page edges (cancels the page padding on top and sides) */
+.app-pdf-cover {
+  display: block;
+  width: calc(100% + var(--ds-space-6) * 2);
+  max-width: none;
+  margin: calc(var(--ds-space-6) * -1) calc(var(--ds-space-6) * -1) 0;
+  aspect-ratio: 16 / 7;
+  object-fit: cover;
+}
+
+.app-pdf-tag {
+  margin: var(--ds-space-2) 0 0;
+  font-size: var(--ds-font-size-1);
+  font-weight: var(--ds-font-weight-bold);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--ds-primary);
+}
+
+.app-pdf-title {
+  margin: 0;
+  font-size: var(--app-font-size-h3);
+  font-weight: var(--ds-font-weight-bold);
+  line-height: 1.25;
+  color: var(--ds-b-100);
+}
+
+.app-pdf-sub {
+  margin: 0;
+  font-size: var(--ds-font-size-5);
+  color: var(--ds-b-60);
+}
+
+.app-pdf-meta {
+  display: flex;
+  gap: var(--ds-space-6);
+  margin: 0;
+  padding: var(--ds-space-3) 0;
+  border-top: 2px solid var(--ds-primary);
+  border-bottom: 1px solid var(--ds-b-20);
+  font-size: var(--ds-font-size-2);
+}
+
+.app-pdf-meta div {
+  display: flex;
+  flex-direction: column;
+}
+
+.app-pdf-meta dt {
+  color: var(--ds-b-60);
+}
+
+.app-pdf-meta dd {
+  margin: 0;
+  font-weight: var(--ds-font-weight-bold);
+  color: var(--ds-b-100);
+}
+
+.app-pdf-h2 {
+  margin: var(--ds-space-2) 0 0;
+  font-size: var(--ds-font-size-6);
+  font-weight: var(--ds-font-weight-bold);
+  color: var(--ds-b-100);
+}
+
+.app-pdf-p {
+  margin: 0;
+}
+
+.app-pdf-flow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-4);
+  background: var(--ds-primary-tint-6);
+  border-radius: var(--ds-roundness-2);
+}
+
+.app-pdf-flow ds-icon {
+  flex-shrink: 0;
+  color: var(--ds-b-40);
+}
+
+.app-pdf-step {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--ds-space-0-5);
+  font-size: var(--ds-font-size-2);
+  line-height: var(--ds-line-height-16);
+}
+
+.app-pdf-step-num {
+  font-weight: var(--ds-font-weight-bold);
+  color: var(--ds-primary);
+}
+
+.app-pdf-step strong {
+  font-size: var(--ds-font-size-4);
+  color: var(--ds-b-100);
+}
+
+.app-pdf-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: var(--ds-space-3);
+  border-top: 1px solid var(--ds-b-20);
+  font-size: var(--ds-font-size-1);
+  color: var(--ds-b-60);
+}
+
+/* =========================================================
+   Prototype-only: motion (DS candidate)
+   1. Widget expand: morphs from the collapsed avatar tile (bottom-right) to the full panel
+   2. Answer reveal: chunks fade in one after another
+   ========================================================= */
+.app-genie {
+  animation: app-genie-expand var(--ds-duration-enter) var(--ds-ease-out);
+}
+
+.app-genie-view {
+  animation: app-fade-up var(--ds-duration-enter) var(--ds-ease-out) var(--ds-duration-slow) backwards;
+}
+
+@keyframes app-genie-expand {
+  from {
+    clip-path: inset(
+      calc(100% - var(--app-genie-collapsed-size)) 0 0 calc(100% - var(--app-genie-collapsed-size))
+      round var(--app-radius-xl)
+    );
+  }
+  to {
+    clip-path: inset(0 round var(--app-radius-lg));
+  }
+}
+
+@keyframes app-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(var(--ds-space-2));
+  }
+}
+
+.app-chunk-pending {
+  display: none !important;
+}
+
+.app-chunk-in {
+  animation: app-fade-up var(--ds-duration-enter) var(--ds-ease-out);
+}
+
+/* ----- Prototype-only: wizard motion (DS candidate) -----
+   Load: fields cascade in. Step change: current step slides out, card height eases,
+   next step cascades in from the direction of travel. */
+.app-wizard-card {
+  --wiz-dx: 0px;
+  --wiz-dy: var(--ds-space-2);
+}
+
+.app-wizard-card.app-wiz-enter-forward {
+  --wiz-dx: var(--ds-space-4);
+  --wiz-dy: 0px;
+}
+
+.app-wizard-card.app-wiz-enter-back {
+  --wiz-dx: calc(var(--ds-space-4) * -1);
+  --wiz-dy: 0px;
+}
+
+.app-wiz-busy {
+  overflow: hidden;
+}
+
+.app-wiz-resize {
+  transition: height var(--ds-duration-enter) var(--ds-ease-out);
+}
+
+/* Staggered entrance for each field / pill / slot / button */
+.app-wiz-item-in {
+  animation: app-wiz-item var(--ds-duration-enter) var(--ds-ease-out) calc(var(--i, 0) * var(--ds-duration-fast) / 2) backwards;
+}
+
+.app-wizard-check-badge.app-wiz-item-in {
+  animation-name: app-wiz-pop;
+}
+
+@keyframes app-wiz-item {
+  from {
+    opacity: 0;
+    transform: translate(var(--wiz-dx), var(--wiz-dy));
+  }
+}
+
+@keyframes app-wiz-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.08);
+  }
+}
+
+/* Leaving step slides out opposite to the direction of travel */
+.app-wiz-leave-forward :is(.app-wizard-title, .app-wizard-body, .app-wizard-footer) {
+  animation: app-wiz-out-left var(--ds-duration-slow) ease-in forwards;
+}
+
+.app-wiz-leave-back :is(.app-wizard-title, .app-wizard-body, .app-wizard-footer) {
+  animation: app-wiz-out-right var(--ds-duration-slow) ease-in forwards;
+}
+
+.app-wiz-enter-forward .app-wizard-title,
+.app-wiz-enter-back .app-wizard-title {
+  animation: app-wiz-item var(--ds-duration-enter) var(--ds-ease-out);
+}
+
+@keyframes app-wiz-out-left {
+  to {
+    opacity: 0;
+    transform: translateX(calc(var(--ds-space-4) * -1));
+  }
+}
+
+@keyframes app-wiz-out-right {
+  to {
+    opacity: 0;
+    transform: translateX(var(--ds-space-4));
+  }
+}
+
+/* ===== Prototype-only: meeting booked celebration (DS candidate: success tint token) =====
+   Green wash spreads out from the check badge over the blue card, the card glows once,
+   the badge sends out two ripples and the check mark spins in. */
+.app-wizard-card {
+  --app-success-tint: color-mix(in srgb, var(--ds-success) 12%, transparent);
+}
+
+.app-wizard-card.app-wizard-booked {
+  animation: app-wiz-glow calc(var(--ds-duration-enter) * 2) var(--ds-ease-out);
+}
+
+/* Opaque white base so the green fully replaces the blue */
+.app-wizard-booked::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background-color: var(--ds-background);
+  background-image: linear-gradient(160deg, var(--app-success-tint), color-mix(in srgb, var(--ds-success) 6%, transparent) 50%);
+  animation: app-wiz-wash calc(var(--ds-duration-enter) * 2) var(--ds-ease-out);
+}
+
+.app-wizard-booked .app-wizard-check-badge {
+  position: relative;
+}
+
+.app-wizard-booked .app-wizard-check-badge::before,
+.app-wizard-booked .app-wizard-check-badge::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--ds-success);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  animation: app-wiz-ripple calc(var(--ds-duration-enter) * 2) var(--ds-ease-out) var(--ds-duration-slow);
+}
+
+.app-wizard-booked .app-wizard-check-badge::after {
+  animation-delay: calc(var(--ds-duration-slow) + var(--ds-duration-exit));
+}
+
+.app-wizard-booked .app-wizard-check-badge ds-icon {
+  animation: app-wiz-check var(--ds-duration-enter) var(--ds-ease-out) var(--ds-duration-slow) backwards;
+}
+
+.app-wizard-booked .app-wizard-detail-item ds-icon {
+  color: var(--ds-success);
+}
+
+@keyframes app-wiz-wash {
+  from {
+    clip-path: circle(0 at 50% 30%);
+  }
+  to {
+    clip-path: circle(150% at 50% 30%);
+  }
+}
+
+@keyframes app-wiz-glow {
+  from {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--ds-success) 35%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 var(--ds-space-3) transparent;
+  }
+}
+
+@keyframes app-wiz-ripple {
+  from {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.8);
+  }
+}
+
+@keyframes app-wiz-check {
+  from {
+    opacity: 0;
+    transform: scale(0.4) rotate(-30deg);
+  }
+}
+
+/* ===== Prototype-only: title slate (slate.html) ===== */
+/* Centra No1, Kaltura's brand font, loaded from corp.kaltura.com (same source as the site snapshot) */
+@font-face { font-family: CentraNo1; font-weight: 400; font-display: swap; src: url("https://corp.kaltura.com/wp-content/themes/airfleet/dist/fonts/CentraNo1-Book.286483c4cb.woff") format("woff"); }
+@font-face { font-family: CentraNo1; font-weight: 500; font-display: swap; src: url("https://corp.kaltura.com/wp-content/themes/airfleet/dist/fonts/CentraNo1-Medium.b8e1357af0.woff") format("woff"); }
+@font-face { font-family: CentraNo1; font-weight: 700; font-display: swap; src: url("https://corp.kaltura.com/wp-content/themes/airfleet/dist/fonts/CentraNo1-Bold.d40cb0371f.woff") format("woff"); }
+body.app-slate {
+  min-height: 100vh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  padding: var(--ds-space-8) var(--ds-space-16);
+  box-sizing: border-box;
+  background: var(--ds-paper);
+  font-family: CentraNo1, var(--ds-font-family);
+  color: var(--ds-tone-1);
+}
+.app-slate-logo { display: block; align-self: flex-start; height: var(--ds-space-8); }
+/* Two columns: title + CTA left, mockup right */
+.app-slate-main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  align-items: center;
+  gap: var(--ds-space-16);
+}
+.app-slate-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ds-space-8);
+}
+.app-slate-title {
+  margin: 0;
+  font-size: calc(var(--ds-font-size-7) * 1.75); /* 84px */
+  font-weight: var(--ds-font-weight-bold);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+/* Larger than ds-btn-lg: 56px tall, 20px label */
+.app-slate-cta {
+  height: calc(var(--ds-space-16) - var(--ds-space-2));
+  padding: 0 var(--ds-space-8);
+  gap: var(--ds-space-2);
+  font-family: inherit;
+  font-size: var(--app-font-size-lg);
+  text-decoration: none;
+}
+@media (max-width: 1023px) {
+  .app-slate-main { grid-template-columns: 1fr; }
+}
+/* Browser-window frame */
+.app-slate-mockup {
+  border: 1px solid var(--ds-tone-5);
+  border-radius: var(--ds-roundness-3);
+  background: var(--ds-background);
+  box-shadow: var(--ds-shadow-floating);
+  overflow: hidden;
+}
+.app-slate-window-bar {
+  display: flex;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-bottom: 1px solid var(--ds-tone-5);
+}
+.app-slate-window-dot {
+  width: var(--ds-space-3);
+  height: var(--ds-space-3);
+  border-radius: 50%;
+  background: var(--ds-tone-5);
+}
+.app-slate-screen {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1440 / 900;
+}
+
+/* ===== Prototype-only: avatar call view (DS candidate, Figma 25237:9999) ===== */
+.app-avatar-call {
+  position: absolute;
+  inset: 0;
+  z-index: 10; /* above the sources thumbnails (z-index 3) */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: inherit;
+  overflow: hidden;
+  color: var(--ds-w-100);
+  background:
+    linear-gradient(199deg, transparent 0%, color-mix(in srgb, var(--ds-primary) 35%, transparent) 100%),
+    var(--ds-b-100);
+  animation: app-fade-in var(--ds-duration-enter) var(--ds-ease-out);
+}
+.app-avatar-call[hidden] { display: none; }
+@keyframes app-fade-in { from { opacity: 0; } }
+
+.app-avatar-call-header {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  width: 100%;
+  height: var(--app-genie-header-height);
+  padding: 0 var(--ds-space-1) 0 var(--ds-space-4);
+  flex-shrink: 0;
+}
+.app-avatar-call-title {
+  flex: 1;
+  margin: 0;
+  font-size: var(--ds-font-size-5);
+  font-weight: var(--ds-font-weight-bold);
+}
+.app-avatar-call-icon-btn {
+  display: flex;
+  align-items: center;
+  padding: var(--ds-space-1);
+  border: 0;
+  border-radius: var(--ds-roundness-1);
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+.app-avatar-call-icon-btn:hover { background: var(--ds-w-20); }
+
+/* Avatar video fills the space between header and controls, max 600px wide */
+.app-avatar-call-stage {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-height: 0;
+  padding: 0 var(--ds-space-8) var(--ds-space-8);
+}
+.app-avatar-call-video {
+  width: 100%;
+  max-width: 600px;
+  /* Never taller than 2:3 (width:height); in a short space it just gets wider */
+  aspect-ratio: 2 / 3;
+  height: auto;
+  max-height: 100%;
+  align-self: center;
+  object-fit: cover;
+  border-radius: var(--app-radius-lg);
+}
+
+/* Joining (loading) state: soft blue glow + "Joining..." in place of the avatar */
+.app-avatar-call-joining {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  flex: 1;
+}
+.app-avatar-call-glow {
+  position: relative;
+  width: calc(var(--ds-space-16) * 5 + var(--ds-space-2) + var(--ds-space-0-5)); /* 330px */
+  max-width: 100%;
+  aspect-ratio: 1;
+}
+.app-avatar-call-glow::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(var(--ds-space-16) + var(--ds-space-4)); /* 80px */
+  height: calc(var(--ds-space-16) + var(--ds-space-4));
+  border-radius: 50%;
+  background: var(--ds-primary);
+  filter: blur(calc(var(--ds-space-16) - var(--ds-space-1))); /* 60px */
+  transform: translate(-50%, -50%);
+  animation: app-avatar-glow 1.6s ease-in-out infinite;
+}
+@keyframes app-avatar-glow {
+  50% { transform: translate(-50%, -50%) scale(1.4); opacity: 0.7; }
+}
+.app-avatar-call-joining-text {
+  margin: 0;
+  font-size: calc(var(--ds-font-size-7) / 2); /* 24px */
+  font-weight: var(--ds-font-weight-bold);
+}
+.app-avatar-call.is-joining .app-avatar-call-joining { display: flex; }
+.app-avatar-call.is-joining .app-avatar-call-video { display: none; }
+.app-avatar-call.is-joining .app-avatar-call-hint { visibility: hidden; }
+.app-avatar-call-video { animation: app-fade-in var(--ds-duration-enter) var(--ds-ease-out); }
+
+.app-avatar-call-hint {
+  margin: 0;
+  padding: var(--ds-space-2);
+  font-size: var(--ds-font-size-5);
+  font-weight: var(--ds-font-weight-bold);
+  font-style: italic;
+}
+
+.app-avatar-call-controls {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: calc(var(--ds-space-16) + var(--ds-space-8)); /* 96px */
+  flex-shrink: 0;
+}
+.app-avatar-call-mic {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  height: calc(var(--ds-space-16) - var(--ds-space-2)); /* 56px */
+  padding: var(--ds-space-4);
+  border: 0;
+  border-radius: calc(var(--ds-space-16) - var(--ds-space-2));
+  background: var(--ds-b-60);
+  color: inherit;
+  cursor: pointer;
+}
+.app-avatar-call-end {
+  position: absolute;
+  right: var(--ds-space-4);
+  display: flex;
+  align-items: center;
+  padding: var(--ds-space-1);
+  border: 0;
+  border-radius: var(--ds-roundness-1);
+  background: var(--ds-danger);
+  color: var(--ds-w-100);
+  cursor: pointer;
+}
+.app-avatar-call-end:hover { background: var(--ds-danger-darker); }

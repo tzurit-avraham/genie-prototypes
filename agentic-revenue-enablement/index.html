@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kaltura Video Solutions | Enterprise Learning</title>
+  <link rel="stylesheet" href="../ds/styles.css">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+  <!-- Background: static capture of corp.kaltura.com (site blocks iframe embedding via CSP frame-ancestors) -->
+  <!-- Scrollable, links/buttons disabled inside the snapshot -->
+  <iframe class="kaltura-site" src="assets/kaltura-corp.html" title="Kaltura website" tabindex="-1" aria-hidden="true"></iframe>
+
+  <!-- Message teaser above the launcher: excerpt of the proactive greeting, opens the widget on click -->
+  <div class="app-genie-teaser" id="genie-teaser" hidden>
+    <button class="app-genie-teaser-body" type="button" data-action="open-genie">
+      <span class="app-genie-teaser-text" id="genie-teaser-text"></span>
+    </button>
+    <button class="ds-btn ds-btn-sm ds-btn-secondary ds-btn-borderless ds-btn-icon" type="button" data-action="dismiss-teaser" aria-label="Dismiss message">
+      <ds-icon name="clear" size="16"></ds-icon>
+    </button>
+  </div>
+
+  <!-- Collapsed floating avatar button (32px from bottom-right) -->
+  <button class="app-genie-collapsed" id="genie-collapsed" aria-label="Open Ask anything" aria-expanded="false" aria-controls="genie">
+    <img class="app-genie-collapsed-img" src="assets/avatar-collapsed.png" alt="">
+    <div class="app-genie-collapsed-scrim" aria-hidden="true"></div>
+    <span class="app-genie-collapsed-label">Ask anything</span>
+    <!-- Unread dot: shown when the agent sends a proactive message while collapsed -->
+    <span class="app-genie-collapsed-dot" id="genie-unread" aria-hidden="true" hidden></span>
+  </button>
+
+  <!-- Expanded floating Genie widget (32px padding from top, right, bottom) -->
+  <aside class="app-genie" id="genie" role="dialog" aria-label="Ask anything" hidden>
+      <!-- Header spans the full widget, above both the chat and the document canvas -->
+      <header class="app-genie-header">
+        <span class="app-genie-header-icon"><ds-icon name="gen-ai"></ds-icon></span>
+        <h2 class="app-genie-header-title">Ask anything</h2>
+        <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless ds-btn-icon" aria-label="More actions">
+          <ds-icon name="more-vertical"></ds-icon>
+        </button>
+        <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless ds-btn-icon" aria-label="Expand" data-action="toggle-fullscreen">
+          <ds-icon id="expand-icon" name="expand"></ds-icon>
+        </button>
+        <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless ds-btn-icon" aria-label="Close" data-action="close-genie">
+          <ds-icon name="clear"></ds-icon>
+        </button>
+      </header>
+
+    <!-- Chat column + optional document canvas, side by side -->
+    <div class="app-genie-main">
+    <div class="app-genie-view">
+
+      <!-- Scrollable conversation area -->
+      <div class="app-genie-body" id="genie-body">
+
+        <!-- Initial state: video avatar + greeting + composer -->
+        <div class="app-genie-initial" id="genie-initial">
+          <div class="app-genie-title">
+            <img class="app-genie-title-icon" src="assets/gen-ai-gradient.svg" alt="">
+            <h1 class="app-genie-heading">Ask me anything</h1>
+          </div>
+
+          <div class="app-genie-avatar">
+            <img class="app-genie-avatar-img" src="assets/avatar.png" alt="Your AI avatar">
+            <div class="app-genie-avatar-overlay"></div>
+            <button class="app-pill app-pill-primary app-genie-start">
+              <ds-icon name="voice" size="16"></ds-icon>
+              <span class="app-pill-label">Start conversation</span>
+            </button>
+          </div>
+
+          <p class="app-genie-or">or</p>
+
+          <!-- Input section sits here during initial state (centered with content) -->
+          <div class="app-initial-composer-slot" id="initial-composer-slot">
+            <p class="app-composer-disclaimer">AI-generated content may contain errors or omissions.</p>
+          </div>
+        </div>
+
+        <!-- Chat messages container (turns append here) -->
+        <div class="app-chat-stream" id="chat-stream"></div>
+
+        <!-- Processing indicator (hidden by default) -->
+        <div class="app-processing" id="processing-indicator" hidden>
+          <div class="app-processing-avatar">
+            <img src="assets/chat-avatar.png" alt="">
+          </div>
+          <div class="app-processing-bubble">
+            <span class="app-processing-dot"></span>
+            <span class="app-processing-dot"></span>
+            <span class="app-processing-dot"></span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Persistent bottom composer (hidden initially, shown when turn 1 starts) -->
+      <div class="app-composer-bar" id="bottom-composer-bar" hidden>
+        <!-- Follow-up bubbles for the latest agent answer (filled by app.js) -->
+        <div class="app-followups" id="followups" hidden></div>
+        <div class="app-composer-wrap" id="composer-wrap">
+          <button class="app-composer-avatar-btn" type="button" aria-label="Start conversation">
+            <img class="app-composer-avatar-img" src="assets/avatar.png" alt="">
+            <div class="app-composer-avatar-scrim"></div>
+            <span class="app-composer-avatar-badge">
+              <ds-icon name="voice" size="16"></ds-icon>
+              <span>Start</span>
+            </span>
+          </button>
+          <!-- The composer element moves here after the first turn begins -->
+        </div>
+        <p class="app-composer-disclaimer">AI-generated content may contain errors or omissions.</p>
+      </div>
+
+      <!-- The shared composer element (starts inside initial slot, moves to bottom-composer-bar on first turn) -->
+      <div class="app-composer" id="composer-box">
+        <textarea class="app-composer-input" id="prompt-input" rows="1" placeholder="Ask me anything" aria-label="Ask me anything"></textarea>
+        <div class="app-composer-menu">
+          <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless ds-btn-icon" aria-label="Add attachment">
+            <ds-icon name="add"></ds-icon>
+          </button>
+
+          <div class="ds-select-wrapper" id="mode-select">
+            <button class="ds-select ds-select-borderless" aria-haspopup="listbox" aria-label="Answer mode">
+              <span>Fast answer</span>
+              <ds-icon class="ds-select-chevron" name="chevron-down" size="16"></ds-icon>
+            </button>
+            <div class="ds-select-menu" role="listbox"></div>
+          </div>
+
+          <span class="app-composer-spacer"></span>
+
+          <!-- Submit button: secondary/disabled by default, becomes ds-btn-primary when active -->
+          <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-icon app-submit-btn" id="prompt-submit" aria-label="Send" disabled>
+            <ds-icon name="arrow-right"></ds-icon>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Side Canvas Panel: PDF viewer card next to the chat (Gemini-style side by side) -->
+    <aside class="app-canvas-panel" id="canvas-panel" hidden aria-label="Viewer">
+      <header class="app-canvas-header">
+        <div class="app-canvas-header-info">
+          <ds-icon id="canvas-icon" name="pdf"></ds-icon>
+          <span class="app-canvas-title" id="canvas-title"></span>
+        </div>
+        <div class="app-canvas-header-actions">
+          <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless ds-btn-icon" id="canvas-download" aria-label="Download document">
+            <ds-icon name="download"></ds-icon>
+          </button>
+          <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless ds-btn-icon" data-action="close-canvas" aria-label="Close viewer">
+            <ds-icon name="clear"></ds-icon>
+          </button>
+        </div>
+      </header>
+
+      <!-- Pages are rendered from data.js when a document is opened -->
+      <div class="app-canvas-body" id="canvas-body"></div>
+    </aside>
+    </div>
+
+    <!-- Avatar call: covers the widget when the visitor clicks the avatar (Figma 25237:9999) -->
+    <div class="app-avatar-call" id="avatar-call" hidden>
+      <header class="app-avatar-call-header">
+        <span class="app-genie-header-icon"><ds-icon name="gen-ai"></ds-icon></span>
+        <h2 class="app-avatar-call-title">Ask anything</h2>
+        <button class="app-avatar-call-icon-btn" type="button" aria-label="Back to chat" data-action="end-avatar-call">
+          <ds-icon name="minimize"></ds-icon>
+        </button>
+        <button class="app-avatar-call-icon-btn" type="button" aria-label="Close" data-action="close-genie">
+          <ds-icon name="clear"></ds-icon>
+        </button>
+      </header>
+      <div class="app-avatar-call-stage">
+        <!-- Loading state while the avatar joins (Figma 10070:5974) -->
+        <div class="app-avatar-call-joining" aria-live="polite">
+          <span class="app-avatar-call-glow" aria-hidden="true"></span>
+          <p class="app-avatar-call-joining-text">Joining...</p>
+        </div>
+        <video class="app-avatar-call-video" id="avatar-call-video" src="assets/avatar.mp4" poster="assets/avatar.png" muted loop playsinline preload="auto" aria-label="Your AI avatar"></video>
+      </div>
+      <p class="app-avatar-call-hint">Talk to interrupt</p>
+      <div class="app-avatar-call-controls">
+        <button class="app-avatar-call-mic" type="button" aria-label="Microphone settings">
+          <ds-icon name="microphone"></ds-icon>
+          <ds-icon name="chevron-down" size="16"></ds-icon>
+        </button>
+        <button class="app-avatar-call-end" type="button" aria-label="End call" data-action="end-avatar-call">
+          <ds-icon name="clear"></ds-icon>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <script src="https://cdnapisec.kaltura.com/p/811441/embedPlaykitJs/uiconf_id/51773822"></script>
+  <script src="../ds/ds-icons.js"></script>
+  <script src="../ds/ds.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

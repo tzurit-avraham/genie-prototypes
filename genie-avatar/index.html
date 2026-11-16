@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Genie | Kaltura</title>
+  <link rel="stylesheet" href="../ds/styles.css">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+  <!-- Kaltura app header (Figma 14402:24174) -->
+  <header class="app-header">
+    <div class="app-header-start">
+      <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless ds-btn-icon app-header-btn" type="button" aria-label="Menu">
+        <ds-icon name="menu"></ds-icon>
+      </button>
+      <img class="app-header-logo" src="assets/kaltura-logo-white.svg" width="149.444" height="36" alt="Kaltura">
+    </div>
+    <div class="app-header-end">
+      <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless app-header-btn" type="button" data-action="new-thread">
+        <ds-icon name="gen-ai"></ds-icon> Ask anything
+      </button>
+      <label class="app-header-search">
+        <ds-icon name="search"></ds-icon>
+        <input class="ds-input ds-input-md" type="search" placeholder="Search" aria-label="Search">
+      </label>
+      <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless ds-btn-icon app-header-btn" type="button" aria-label="Profile">
+        <ds-icon name="user"></ds-icon>
+      </button>
+      <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless app-header-btn" type="button" aria-label="Language: English">
+        EN <ds-icon name="chevron-down" size="16"></ds-icon>
+      </button>
+    </div>
+  </header>
+
+  <main class="app-main">
+
+    <!-- Genie screen: fills the viewport under the header -->
+    <section class="app-genie" id="genie">
+
+      <!-- Genie app bar (Figma 14452:56182) -->
+      <div class="app-genie-bar">
+        <div class="app-genie-bar-crumbs" id="genie-crumbs"></div>
+        <div class="app-genie-bar-actions">
+          <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless" type="button" data-action="new-thread">
+            <ds-icon name="create"></ds-icon> New thread
+          </button>
+          <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless" type="button" data-action="history">
+            <ds-icon name="time"></ds-icon> History
+          </button>
+        </div>
+      </div>
+
+      <!-- Scrollable content: start screen, then the conversation -->
+      <div class="app-genie-body" id="genie-body">
+        <div class="app-genie-column">
+
+          <!-- Start screen (Figma 14402:24183) -->
+          <div class="app-genie-initial" id="genie-initial">
+            <div class="app-genie-title">
+              <img class="app-genie-title-icon" src="assets/gen-ai-gradient.svg" alt="">
+              <h1 class="app-genie-heading">Ask me anything</h1>
+            </div>
+
+            <div class="app-genie-avatar">
+              <img class="app-genie-avatar-img" src="assets/avatar.png" alt="Your AI avatar">
+              <div class="app-genie-avatar-overlay"></div>
+              <button class="ds-btn ds-btn-lg ds-btn-primary app-genie-start" type="button" data-action="start-avatar-call">
+                <ds-icon name="voice" size="16"></ds-icon> Start conversation
+              </button>
+            </div>
+
+            <p class="app-genie-or">or</p>
+
+            <div class="app-initial-composer-slot" id="initial-composer-slot">
+              <div class="app-suggestions" id="suggestions"></div>
+            </div>
+          </div>
+
+          <!-- Conversation turns -->
+          <div class="app-chat-stream" id="chat-stream"></div>
+
+          <!-- Processing indicator -->
+          <div class="app-processing" id="processing-indicator" hidden>
+            <div class="app-processing-avatar"><img src="assets/avatar.png" alt=""></div>
+            <div class="app-processing-bubble">
+              <span class="app-processing-dot"></span>
+              <span class="app-processing-dot"></span>
+              <span class="app-processing-dot"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recommended channels, below the fold on the start screen -->
+        <section class="app-channels" id="channels" aria-labelledby="channels-title">
+          <h2 class="app-channels-title" id="channels-title">Explore recommended channels</h2>
+          <div class="app-channels-grid" id="channels-grid"></div>
+          <button class="ds-btn ds-btn-md ds-btn-secondary" type="button" data-action="show-more">Show more</button>
+        </section>
+      </div>
+
+      <!-- Bottom composer bar (shown after the first question) -->
+      <div class="app-composer-bar" id="bottom-composer-bar" hidden>
+        <div class="app-genie-column">
+          <div class="app-followups" id="followups" hidden></div>
+          <div class="app-composer-wrap" id="composer-wrap">
+            <button class="app-composer-avatar-btn" type="button" aria-label="Start conversation" data-action="start-avatar-call">
+              <img class="app-composer-avatar-img" src="assets/avatar.png" alt="">
+              <div class="app-composer-avatar-scrim"></div>
+              <span class="app-composer-avatar-badge"><ds-icon name="voice" size="16"></ds-icon><span>Start</span></span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shared composer (starts in the start screen, moves to the bottom bar) -->
+      <div class="app-composer" id="composer-box">
+        <textarea class="app-composer-input" id="prompt-input" rows="1" placeholder="Ask me anything" aria-label="Ask me anything"></textarea>
+        <div class="app-composer-menu">
+          <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless app-composer-preset" type="button" data-preset="flashcards" aria-pressed="false">
+            <ds-icon name="copy"></ds-icon> Flashcards
+          </button>
+          <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless app-composer-preset" type="button" data-preset="text" aria-pressed="false">
+            <ds-icon name="document"></ds-icon> Text
+          </button>
+          <div class="ds-select-wrapper" id="mode-select">
+            <button class="ds-select ds-select-borderless" aria-haspopup="listbox" aria-label="Answer mode">
+              <span>Fast answer</span>
+              <ds-icon class="ds-select-chevron" name="chevron-down" size="16"></ds-icon>
+            </button>
+            <div class="ds-select-menu" role="listbox"></div>
+          </div>
+          <span class="app-composer-spacer"></span>
+          <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-icon app-submit-btn" id="prompt-submit" type="button" aria-label="Send" disabled>
+            <ds-icon name="arrow-right"></ds-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Footer disclaimer -->
+      <p class="app-disclaimer">AI-generated content may contain errors or omissions.</p>
+
+      <!-- Avatar call: covers the Genie screen (repurposed from Agentic Revenue Enablement) -->
+      <div class="app-avatar-call" id="avatar-call" hidden>
+        <header class="app-avatar-call-header">
+          <span class="app-avatar-call-header-icon"><ds-icon name="gen-ai"></ds-icon></span>
+          <h2 class="app-avatar-call-title">Ask anything</h2>
+          <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless ds-btn-icon" type="button" aria-label="Back to chat" data-action="end-avatar-call">
+            <ds-icon name="minimize"></ds-icon>
+          </button>
+        </header>
+        <div class="app-avatar-call-stage">
+          <div class="app-avatar-call-joining" aria-live="polite">
+            <span class="app-avatar-call-glow" aria-hidden="true"></span>
+            <p class="app-avatar-call-joining-text">Joining...</p>
+          </div>
+          <img class="app-avatar-call-video" src="assets/avatar.png" alt="Your AI avatar">
+        </div>
+        <p class="app-avatar-call-hint">Talk to interrupt</p>
+        <div class="app-avatar-call-controls">
+          <button class="app-avatar-call-mic" type="button" aria-label="Microphone settings">
+            <ds-icon name="microphone"></ds-icon>
+            <ds-icon name="chevron-down" size="16"></ds-icon>
+          </button>
+          <button class="ds-btn ds-btn-lg ds-btn-danger ds-btn-icon app-avatar-call-end" type="button" aria-label="End call" data-action="end-avatar-call">
+            <ds-icon name="clear"></ds-icon>
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="../ds/ds-icons.js"></script>
+  <script src="../ds/ds.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
