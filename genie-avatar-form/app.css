@@ -1662,6 +1662,23 @@ body {
 [data-form-look="after"] .app-genie:not(.app-genie-narrow) .app-call-form .app-form { border: 0; }
 [data-form-look="after"] .app-call-form .app-form { background-color: var(--ds-elevated); }
 [data-form-look="after"] .app-genie-narrow .app-call-form .app-form { border-radius: 0; }
+
+/* The sheet keeps room for the scrollbar on both sides (see the call sheet below). That room is
+   the sheet's, not the card's: paint it like the card, so the card's wash reaches the edges */
+[data-form-look="after"] .app-genie-narrow .app-call-form {
+  background-color: var(--ds-elevated);
+  background-image: linear-gradient(160deg, var(--ds-primary-tint-10), var(--ds-primary-tint-6) 50%);
+  background-attachment: local; /* scrolls with the card */
+}
+
+[data-form-look="after"][data-done-wash="plain"] .app-genie-narrow .app-call-form:has(.app-form[data-step="done"]) {
+  background-image: none;
+}
+
+[data-form-look="after"][data-done-wash="green"] .app-genie-narrow .app-call-form:has(.app-form[data-step="done"]) {
+  background-color: var(--ds-background);
+  background-image: linear-gradient(160deg, color-mix(in srgb, var(--ds-success) 12%, transparent), color-mix(in srgb, var(--ds-success) 6%, transparent) 50%);
+}
 [data-form-look="after"] .app-genie-narrow .app-call-form .app-form-footer {
   margin: 0 calc(var(--ds-space-4) * -1);
   padding: var(--ds-space-3) var(--ds-space-4);
