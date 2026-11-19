@@ -63,12 +63,16 @@
               <h1 class="app-genie-heading">Ask me anything</h1>
             </div>
 
-            <div class="app-genie-avatar">
-              <img class="app-genie-avatar-img" src="assets/avatar.png" alt="Your AI avatar">
-              <div class="app-genie-avatar-overlay"></div>
-              <button class="ds-btn ds-btn-lg ds-btn-primary app-genie-start" type="button" data-action="start-avatar-call">
-                <ds-icon name="voice" size="16"></ds-icon> Start conversation
-              </button>
+            <!-- Holder: the avatar + its soft glow (the card clips its contents, so the glow sits beside it) -->
+            <div class="app-avatar-holder app-genie-avatar-holder">
+              <div class="app-genie-avatar">
+                <img class="app-genie-avatar-img" src="assets/avatar.png" alt="Your AI avatar">
+                <div class="app-genie-avatar-overlay"></div>
+                <button class="ds-btn ds-btn-lg ds-btn-primary app-genie-start" type="button" data-action="start-avatar-call">
+                  <ds-icon name="voice" size="16"></ds-icon> Start conversation
+                </button>
+              </div>
+              <img class="app-avatar-glow" src="assets/avatar.png" alt="" aria-hidden="true">
             </div>
 
             <p class="app-genie-or">or</p>
@@ -155,21 +159,44 @@
             <span class="app-avatar-call-glow" aria-hidden="true"></span>
             <p class="app-avatar-call-joining-text">Joining...</p>
           </div>
-          <img class="app-avatar-call-video" src="assets/avatar.png" alt="Your AI avatar">
+          <div class="app-avatar-holder app-avatar-call-holder">
+            <img class="app-avatar-call-video" src="assets/avatar.png" alt="Your AI avatar">
+            <img class="app-avatar-glow" src="assets/avatar.png" alt="" aria-hidden="true">
+          </div>
         </div>
-        <p class="app-avatar-call-hint">Talk to interrupt</p>
         <div class="app-avatar-call-controls">
-          <button class="app-avatar-call-mic" type="button" aria-label="Microphone settings">
-            <ds-icon name="microphone"></ds-icon>
-            <ds-icon name="chevron-down" size="16"></ds-icon>
-          </button>
-          <button class="ds-btn ds-btn-lg ds-btn-danger ds-btn-icon app-avatar-call-end" type="button" aria-label="End call" data-action="end-avatar-call">
-            <ds-icon name="clear"></ds-icon>
+          <!-- Mic pill + device menu (menu items rendered from data.js) -->
+          <div class="app-avatar-call-mic-wrap">
+            <button class="app-avatar-call-mic" id="mic-menu-btn" type="button" aria-label="Microphone and speaker settings" aria-haspopup="true" aria-expanded="false" aria-controls="mic-menu">
+              <ds-icon name="microphone"></ds-icon>
+              <ds-icon name="chevron-up" size="16"></ds-icon>
+            </button>
+            <div class="ds-select-menu app-device-menu" id="mic-menu" role="menu" aria-label="Audio devices" hidden></div>
+          </div>
+          <!-- End: same as the courseware End button -->
+          <button class="ds-btn ds-btn-xl ds-btn-danger app-avatar-call-end" type="button" data-action="end-avatar-call">
+            <span>End</span>
+            <ds-icon name="exit"></ds-icon>
           </button>
         </div>
       </div>
     </section>
   </main>
+
+  <!-- Prototype-only: theme panel, switches light / dark -->
+  <div class="app-theme-panel">
+    <span class="app-theme-panel-label">Theme</span>
+    <div class="ds-segmented" role="radiogroup" aria-label="Theme" id="theme-switch">
+      <button class="ds-segmented-item" role="radio" aria-checked="true" data-value="light"><ds-icon class="ds-segmented-icon" name="light"></ds-icon><span>Light</span></button>
+      <button class="ds-segmented-item" role="radio" aria-checked="false" data-value="dark"><ds-icon class="ds-segmented-icon" name="contrast"></ds-icon><span>Dark</span></button>
+    </div>
+    <!-- TEMP: avatar glow before/after comparison, remove after decision -->
+    <span class="app-theme-panel-label">Avatar glow</span>
+    <div class="ds-segmented" role="radiogroup" aria-label="Avatar glow preview" id="glow-switch">
+      <button class="ds-segmented-item" role="radio" aria-checked="false" data-value="before"><span>Before</span></button>
+      <button class="ds-segmented-item" role="radio" aria-checked="true" data-value="after"><span>After</span></button>
+    </div>
+  </div>
 
   <script src="../ds/ds-icons.js"></script>
   <script src="../ds/ds.js"></script>

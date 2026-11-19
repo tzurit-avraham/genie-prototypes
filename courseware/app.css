@@ -5,7 +5,6 @@
 
 :root {
   /* Layout (all derived from DS spacing tokens) */
-  --app-header-h: calc(var(--ds-space-16) - var(--ds-space-2));                          /* 56px: DS tab height */
   --app-product-header-h: var(--ds-space-16);                                            /* 64px */
   --app-bar-h: calc(var(--ds-space-16) * 2 + var(--ds-space-4));                         /* 144px */
   --app-card-w: calc(var(--ds-space-16) * 15 - var(--ds-space-1-5));                     /* 954px */
@@ -23,27 +22,25 @@
   --app-image-min: calc(var(--ds-space-16) * 3 - var(--ds-space-2) - var(--ds-space-0-5)); /* 182px */
   --app-blur: var(--ds-space-4);                                                          /* 16px */
 
-  /* Radius */
+  /* Radius roles: controls var(--ds-roundness-2), answers and inner boxes var(--ds-roundness-3),
+     large cards and panels this one token (the DS tops out at 12px). Circles and pills keep their
+     shape (50% / full height). */
   --app-radius-lg: calc(var(--ds-roundness-2) * 2);                                      /* 16px */
-  --app-radius-xl: calc(var(--ds-roundness-2) * 3);                                      /* 24px */
 
-  /* Type (DS sizes, scaled where the DS has no step) */
-  --app-font-reading-title: calc(var(--ds-font-size-5) * 1.5);                           /* 24px */
-  --app-font-reading: calc(var(--ds-font-size-5) * 1.25);                                /* 20px */
-  --app-font-h1: calc(var(--ds-font-size-5) * 2);                                        /* 32px */
-  --app-font-h1-compact: calc(var(--ds-font-size-5) * 1.5);                              /* 24px */
-  --app-font-milestone-compact: calc(var(--ds-font-size-6) * 2);                         /* 36px */
+  /* Type: two steps above the DS scale (which jumps from 18px to 48px). Everything else is a DS
+     size. Line heights: 1.5 for body, 1.2 for titles, DS line-height tokens on DS sizes. */
+  --app-font-body: calc(var(--ds-font-size-5) * 1.5);                                    /* 24px: reading text, fields, speech bubble */
+  --app-font-title: calc(var(--ds-font-size-5) * 2);                                     /* 32px: activity titles */
   --app-tracking-eyebrow: calc(var(--ds-font-size-5) * 0.14);                            /* 2.24px */
 
-  /* Motion: multiples of --ds-duration-slow (0.2s) */
-  --app-dur-1: calc(var(--ds-duration-slow) * 1.5);                                      /* 0.3s */
-  --app-dur-2: calc(var(--ds-duration-slow) * 2);                                        /* 0.4s */
+  /* Motion: everyday transitions use the DS durations (--ds-duration-exit 0.35s,
+     --ds-duration-enter 0.5s). These longer ones, multiples of --ds-duration-slow (0.2s), are only
+     for the milestone celebration and the ambient loops. */
   --app-dur-3: calc(var(--ds-duration-slow) * 3);                                        /* 0.6s */
   --app-dur-4: calc(var(--ds-duration-slow) * 3.5);                                      /* 0.7s */
   --app-dur-5: calc(var(--ds-duration-slow) * 4);                                        /* 0.8s */
   --app-dur-6: calc(var(--ds-duration-slow) * 6);                                        /* 1.2s */
   --app-dur-breathe: calc(var(--ds-duration-slow) * 12);                                 /* 2.4s */
-  --app-mesh-unit: calc(var(--ds-duration-slow) * 10);                                   /* 2s */
 
   /* Glows and translucent fills (from DS tokens) */
   --app-primary-glow: color-mix(in srgb, var(--ds-primary) 55%, transparent);
@@ -53,40 +50,31 @@
   --app-primary-clear: color-mix(in srgb, var(--ds-primary) 0%, transparent);
 
   /* Prototype-only: light avatar-mode surfaces (from the LXP demo's avatar mode; DS candidate) */
-  --app-card-bg:
-    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--ds-primary) 9%, transparent), transparent 42%),
-    radial-gradient(circle at 0% 100%, color-mix(in srgb, var(--ds-primary-brighter) 7%, transparent), transparent 38%),
-    var(--app-card-fill);
-  --app-card-fill: var(--ds-tone-8);   /* white on the light page */
-  --app-card-border: 1px solid var(--ds-tone-6);
-  --app-card-shadow: 0 var(--ds-space-3) calc(var(--ds-space-8) + var(--ds-space-2)) color-mix(in srgb, var(--ds-b-100) 4%, transparent); /* 0 12px 40px, lighter than the LXP demo's 6% */
-  --app-tint-3: color-mix(in srgb, var(--ds-primary) 3%, transparent);
-  --app-tint-6: color-mix(in srgb, var(--ds-primary) 6%, transparent);
-  --app-tint-16: color-mix(in srgb, var(--ds-primary) 16%, transparent);
+  --app-card-bg: var(--app-card-fill); /* plain fill, no blue gradient */
+  --app-card-fill: var(--ds-elevated); /* one token: white in light, a step lighter than the page in dark */
+  --app-card-border: 1px solid var(--ds-tone-5); /* DS card/surface border */
+  /* Prototype-only: the LXP card shadow, copied exactly (lxp-teams demo1 .deck: 0 12px 40px rgba(0,0,0,.06)).
+     Not a DS shadow (DS candidate). The panel switch "LXP card shadow" off shows the earlier DS shadow. */
+  --app-card-shadow: 0 var(--ds-space-3) var(--ds-space-10) color-mix(in srgb, var(--ds-b-100) 6%, transparent);
   --app-avatar-glow-blur: calc(var(--ds-space-8) + var(--ds-space-4));              /* 48px */
   --app-avatar-glow-radius: calc(var(--ds-space-16) + var(--ds-space-8));           /* 96px */
   --app-tag-blur: var(--ds-space-3);                                                 /* 12px */
 
   /* Prototype-only: celebration palette (DS candidate), mixed from DS brand tokens.
-     No white sparks: they would vanish on the light canvas. */
+     No white sparks: they would vanish on the light canvas. Same colors in both themes. */
   --app-spark-white: var(--ds-primary);
   --app-spark-light: color-mix(in srgb, var(--ds-primary-brighter) 50%, var(--ds-w-100));
   --app-spark-ring: color-mix(in srgb, var(--ds-primary-brighter) 70%, var(--ds-w-100));
   --app-spark-blue: var(--ds-primary-brighter);
   --app-spark-gold: color-mix(in srgb, var(--ds-accent) 60%, var(--ds-w-100));
 
-  /* Prototype-only: ambient mesh palette (DS candidate), mixed from DS brand tokens */
-  --app-mesh-blue: var(--ds-primary);
-  --app-mesh-azure: var(--ds-primary-brighter);
-  --app-mesh-violet: color-mix(in srgb, var(--ds-primary-brighter) 55%, var(--ds-danger-brighter));
-  --app-mesh-magenta: color-mix(in srgb, var(--ds-danger-brighter) 70%, var(--ds-primary-brighter));
-  --app-mesh-indigo: color-mix(in srgb, var(--ds-primary) 70%, var(--ds-danger));
-  --app-mesh-cyan: color-mix(in srgb, var(--ds-screen-green) 50%, var(--ds-primary-brighter));
-  --app-mesh-teal: var(--ds-screen-green);
 }
 
-/* Dark theme: the cards use the DS paper surface, a step lighter than the page */
-:root[data-theme="dark"] { --app-card-fill: var(--ds-paper); }
+/* Card gradient: the soft blue radials stay on the light canvas only. In dark they tinted the
+   cards bluish grey, so dark cards are the plain surface. (A per-theme swap: an exception to the
+   same-token rule, asked for in the design audit, item 3.4.) */
+
+
 
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -140,33 +128,78 @@ p { margin: 0; }
 }
 
 /* =========================================================
-   Demo header: switches between activities (not part of the product).
-   DS tabs + DS switch.
+   Prototype-only: floating demo panel (not part of the product; DS candidate: floating panel)
+   Switches between activities (DS tabs) and holds the Image / Dark theme switches. It floats over
+   the screen and can be dragged from anywhere on it, tabs and switches included (app.js: a press
+   that moves is a drag, a press that doesn't is a click); the spot is remembered.
    ========================================================= */
-.site-header {
+.demo-panel {
+  position: fixed;
+  /* default spot: bottom-left corner (app.js switches to left/top once dragged) */
+  left: var(--ds-space-4);
+  bottom: var(--ds-space-4);
+  z-index: var(--ds-z-dropdown); /* above the activity and the pause layer, under the splash */
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--ds-tone-6);
+  border-radius: var(--app-radius-lg);
+  background: var(--ds-elevated);
+  box-shadow: var(--ds-shadow-floating);
+  max-height: 100vh; /* on a short screen the panel scrolls instead of running off it */
+  overflow-y: auto;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+.demo-panel-handle {
   flex: none;
   display: flex;
   align-items: center;
-  gap: var(--ds-space-6);
-  height: var(--app-header-h);
-  padding: 0 var(--ds-space-6);
-  background: var(--ds-paper);
-  border-bottom: 1px solid var(--ds-tone-6);
+  justify-content: center;
+  width: var(--ds-space-6);
+  border-right: 1px solid var(--ds-tone-6);
+  color: var(--ds-tone-3);
+  transition: color var(--ds-duration-base) ease, background var(--ds-duration-base) ease;
 }
 
-/* the tablist's own bottom border would double the header's */
-.site-nav { border-bottom: 0; }
+.demo-panel:hover .demo-panel-handle { color: var(--ds-tone-1); background: var(--ds-tone-7); }
+
+/* while dragging, the whole panel shows the grabbing hand (even over tabs and switches) */
+.demo-panel.dragging,
+.demo-panel.dragging * { cursor: grabbing; }
+
+/* the tabs in a column, the switches under them */
+.demo-panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-4) var(--ds-space-3);
+}
+
+/* the panel has its own frame, so no tablist border; one tab per row, left-aligned */
+.site-nav {
+  border-bottom: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
 .site-nav .ds-tab[hidden] { display: none; }
 
-/* right end of the header: Image and Dark theme switches */
+/* Image and Dark theme switches, one per row under the tabs */
 .site-header-end {
   display: flex;
-  align-items: center;
-  gap: var(--ds-space-6);
-  margin-left: auto;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-2) 0;
+  border-top: 1px solid var(--ds-tone-6);
 }
 
 .image-toggle[hidden] { display: none; }
+
+/* the P key hides the whole panel (app.js) */
+.demo-panel[hidden] { display: none; }
 
 /* =========================================================
    Prototype-only: unit progress (DS candidate: stepper)
@@ -203,7 +236,7 @@ p { margin: 0; }
 /* the whole timeline faded out ("fade" variants) */
 .steps.faded {
   opacity: 0;
-  transition: opacity var(--app-dur-1) ease;
+  transition: opacity var(--ds-duration-exit) ease;
 }
 
 .step { display: flex; align-items: center; }
@@ -225,14 +258,55 @@ p { margin: 0; }
   height: var(--line);
   margin: 0 var(--ds-space-2);
   border-radius: var(--line);
-  background: linear-gradient(to right, var(--ds-primary) var(--fill), var(--ds-tone-6) var(--fill));
-  transition: --fill var(--app-dur-4) ease, opacity var(--app-dur-1) ease;
+  /* accessibility: the empty part is tone-3 (3.59:1 on white), not tone-6 (1.19:1), so the track
+     passes the WCAG 3:1 minimum for graphics */
+  background: linear-gradient(to right, var(--ds-primary) var(--fill), var(--ds-tone-3) var(--fill));
+  transition: --fill var(--app-dur-4) ease, opacity var(--ds-duration-exit) ease;
 }
 
 .step.done + .step::before { --fill: 100%; }
 
 /* connectors fade away while the timeline relocates, then fade back in */
 .steps.lines-hidden .step + .step::before { opacity: 0; }
+
+/* ===== Prototype-only: step segments (DS candidate: segmented stepper) =====
+   The line after the current milestone is split into one segment per step (app.js). Same
+   thickness and colors as the whole line: tone-3 empty (3.59:1), primary when done, a hollow
+   tone-3 outline when skipped; the step showing now is marked by the "Current step" option below. */
+.step.has-screens::before { display: none; }
+.step-screens { display: none; }
+
+.step.has-screens .step-screens {
+  flex: 1 1 0;
+  display: flex;
+  gap: var(--ds-space-1);
+  margin: 0 var(--ds-space-2);
+  transition: opacity var(--ds-duration-exit) ease;
+}
+
+.steps.lines-hidden .step-screens { opacity: 0; }
+
+.step-screen {
+  position: relative;
+  flex: 1 1 0;
+  height: var(--line);
+  border-radius: var(--line);
+  background: var(--ds-tone-3);
+  transition: height var(--ds-duration-enter) var(--ds-ease-out), background var(--ds-duration-exit) ease;
+}
+
+.step-screen.done { background: var(--ds-primary); }
+
+.step-screen.skipped { background: transparent; box-shadow: inset 0 0 0 1px var(--ds-tone-3); }
+
+/* ===== Prototype-only: current step cue (DS candidate: segmented stepper) =====
+   The segment of the step showing now is empty with a primary outline, like the current
+   milestone's blue ring. No motion. A step that is already done stays filled. */
+.step-screen.current:not(.done) {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--ds-primary);
+}
+
 
 .step-dot {
   display: flex;
@@ -242,13 +316,22 @@ p { margin: 0; }
   width: var(--dot);
   height: var(--dot);
   border-radius: 50%;
-  background: var(--ds-tone-6);
+  /* milestone not started: a hollow grey ring. Accessibility: the ring is tone-3 (3.59:1 on white,
+     WCAG 3:1 for graphics) and the number tone-2 on white (4.95:1, WCAG 4.5:1 for text). Each
+     state also has its own shape, not just its own color: done = filled, current = blue ring
+     not started = grey ring. All three draw the same 2px border, so every dot has exactly the
+     same outer edge (an inset shadow renders a hair smaller than a fill). */
+  background: var(--ds-tone-8);
+  border: 2px solid var(--ds-tone-3);
   font-size: var(--ds-font-size-5);
   font-weight: var(--ds-font-weight-bold);
-  line-height: normal;
+  line-height: var(--ds-line-height-solid);
   color: var(--ds-tone-2);
-  transition: background var(--app-dur-1) ease, color var(--app-dur-1) ease, box-shadow var(--app-dur-1) ease;
+  transition: background var(--ds-duration-exit) ease, color var(--ds-duration-exit) ease, border-color var(--ds-duration-exit) ease, box-shadow var(--ds-duration-exit) ease;
 }
+
+/* the check of a completed milestone: only shown on the pause screen (see the pause section) */
+.step-check { display: none; }
 
 /* numbers are hidden in the top bar and fade in once the dots arrive in the milestone slate */
 .step-dot > span {
@@ -259,17 +342,18 @@ p { margin: 0; }
 
 .steps.numbered .step-dot > span { opacity: 1; }
 
-/* current milestone: blue inset ring, white number */
+/* current milestone: blue inset ring and the number in primary, in both themes (on the tone-8 dot:
+   4.6:1 on white in light, 4.6:1 on black in dark) */
 .step.current .step-dot {
   background: var(--ds-tone-8);
-  box-shadow: inset 0 0 0 2px var(--ds-primary);
+  border-color: var(--ds-primary);
   color: var(--ds-primary);
 }
 
 /* completed milestone: blue */
 .step.done .step-dot {
   background: var(--ds-primary);
-  box-shadow: none;
+  border-color: var(--ds-primary);
   color: var(--ds-primary-text-contrast);
 }
 
@@ -280,7 +364,7 @@ p { margin: 0; }
 }
 
 .step.current.celebrate .step-dot {
-  box-shadow: inset 0 0 0 2px var(--ds-primary), 0 0 var(--ds-space-5) var(--ds-space-0-5) var(--app-primary-glow);
+  box-shadow: 0 0 var(--ds-space-5) var(--ds-space-0-5) var(--app-primary-glow);
 }
 
 /* lesson completed: the last milestone gets a much bigger pop and glow */
@@ -403,81 +487,6 @@ p { margin: 0; }
   color: var(--ds-tone-1);
 }
 
-/* ===== Prototype-only: ambient mesh gradient (DS candidate). On by default; B toggles it. ===== */
-.mesh {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  overflow: hidden;
-  pointer-events: none;
-  background: var(--ds-background);
-  opacity: 0;
-  transition: opacity var(--app-dur-5) ease;
-}
-
-/* on the light canvas the blobs are a pastel wash */
-.mesh-blob { opacity: 0.5; }
-
-.avatar-view.mesh-on .mesh { opacity: 1; }
-
-.mesh-blob {
-  position: absolute;
-  left: calc(var(--x) - 35vmax);
-  top: calc(var(--y) - 35vmax);
-  width: 70vmax;
-  height: 70vmax;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, var(--c) 0%, transparent 100%);
-  will-change: transform;
-  transition: opacity var(--app-dur-3) ease;
-  animation: mesh-drift calc(var(--app-mesh-unit) * var(--t)) ease-in-out calc(var(--app-mesh-unit) * var(--d)) infinite alternate;
-}
-
-@keyframes mesh-drift {
-  from { transform: translate(0, 0) scale(1); }
-  to   { transform: translate(var(--dx), var(--dy)) scale(var(--s)); }
-}
-
-/* Eleven blobs spread over the screen; the ones behind the text (left, center) stay dim.
-   --t / --d are loop length / delay in --app-mesh-unit (2s) steps. */
-.mesh-blob:nth-child(1)  { --x: 10%;  --y: 92%;  --c: color-mix(in srgb, var(--app-mesh-blue) 55%, transparent);    --t: 17; --d: -3;    --dx: 12vw;  --dy: -10vh; --s: 1.2; }
-.mesh-blob:nth-child(2)  { --x: 90%;  --y: 85%;  --c: color-mix(in srgb, var(--app-mesh-violet) 45%, transparent);  --t: 22; --d: -9.5;  --dx: -14vw; --dy: -8vh;  --s: 1.15; }
-.mesh-blob:nth-child(3)  { --x: 50%;  --y: 112%; --c: color-mix(in srgb, var(--app-mesh-cyan) 28%, transparent);    --t: 26; --d: -15.5; --dx: 10vw;  --dy: -12vh; --s: 1.25; }
-.mesh-blob:nth-child(4)  { --x: 100%; --y: 42%;  --c: color-mix(in srgb, var(--app-mesh-magenta) 24%, transparent); --t: 20; --d: -6;    --dx: -10vw; --dy: 12vh;  --s: 1.1; }
-.mesh-blob:nth-child(5)  { --x: -4%;  --y: 58%;  --c: color-mix(in srgb, var(--app-mesh-indigo) 24%, transparent);  --t: 24; --d: -12.5; --dx: 7vw;   --dy: -6vh;  --s: 1.15; }
-.mesh-blob:nth-child(6)  { --x: 6%;   --y: 4%;   --c: color-mix(in srgb, var(--app-mesh-azure) 34%, transparent);   --t: 23; --d: -7;    --dx: 9vw;   --dy: 10vh;  --s: 1.2; }
-.mesh-blob:nth-child(7)  { --x: 94%;  --y: 6%;   --c: color-mix(in srgb, var(--app-mesh-violet) 32%, transparent);  --t: 19; --d: -11;   --dx: -9vw;  --dy: 11vh;  --s: 1.15; }
-.mesh-blob:nth-child(8)  { --x: 46%;  --y: 52%;  --c: color-mix(in srgb, var(--app-mesh-indigo) 13%, transparent);  --t: 28; --d: -17.5; --dx: 8vw;   --dy: -7vh;  --s: 1.2; }
-.mesh-blob:nth-child(9)  { --x: 80%;  --y: 52%;  --c: color-mix(in srgb, var(--app-mesh-teal) 16%, transparent);    --t: 21; --d: -4.5;  --dx: -7vw;  --dy: 9vh;   --s: 1.15; }
-.mesh-blob:nth-child(10) { --x: 50%;  --y: -4%;  --c: color-mix(in srgb, var(--app-mesh-indigo) 17%, transparent);  --t: 25; --d: -14;   --dx: 6vw;   --dy: 6vh;   --s: 1.15; }
-.mesh-blob:nth-child(11) { --x: 32%;  --y: 116%; --c: color-mix(in srgb, var(--app-mesh-teal) 14%, transparent);    --t: 29; --d: -8.5;  --dx: 8vw;   --dy: -9vh;  --s: 1.2; }
-
-/* a light vignette settles the edges */
-.mesh::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: none;
-}
-
-/* fine static grain (procedural noise texture, not an icon): hides banding on dark gradients */
-.mesh::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  opacity: 0.05;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .mesh-blob { animation: none; }
-}
-
-/* (the dark theme's background lift is not needed on the light canvas) */
-.bg-lift { display: none; }
-
-
 /* =========================================================
    Activity canvas
    ========================================================= */
@@ -510,9 +519,9 @@ p { margin: 0; }
   padding: var(--ds-space-8);
   overflow: clip;
   border: var(--app-card-border);
-  border-radius: var(--app-radius-xl);
-  background: var(--app-card-bg);
-  box-shadow: var(--app-card-shadow);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-card-shine, none), var(--app-card-bg);
+  box-shadow: var(--app-card-shadow), var(--app-card-edge, 0 0 transparent);
 }
 
 .reading-text,
@@ -525,20 +534,22 @@ p { margin: 0; }
   align-items: flex-start;
   gap: var(--ds-space-4);
   padding: var(--ds-space-8);
-  border-radius: var(--ds-roundness-3);
-  background: var(--ds-tone-7);
   color: var(--ds-tone-1);
   word-break: break-word;
 }
 
-.reading-text { overflow: hidden; }
+.reading-text {
+  overflow: hidden;
+  border-radius: var(--ds-roundness-3);
+  background: var(--ds-tone-7);
+}
 
 .reading-text .reading-title {
   width: 100%;
   flex-shrink: 0;
-  font-size: var(--app-font-reading-title);
+  font-size: var(--app-font-body);
   font-weight: var(--ds-font-weight-bold);
-  line-height: normal;
+  line-height: 1.2;
 }
 
 .reading-text .reading-body {
@@ -546,7 +557,7 @@ p { margin: 0; }
   flex: 1 1 0;
   min-height: 0;
   overflow-y: auto;
-  font-size: var(--app-font-reading);
+  font-size: var(--app-font-body);
   font-weight: var(--ds-font-weight-regular);
   line-height: 1.5;
   scrollbar-width: thin;
@@ -555,24 +566,21 @@ p { margin: 0; }
   mask-image: linear-gradient(to bottom, var(--ds-b-100) calc(100% - var(--ds-space-8) - var(--ds-space-4)), transparent 100%);
 }
 
-/* Input activity: a text field that wears the reading box's surface */
+/* ===== Prototype-only: large reading field (DS candidate) =====
+   The input activities use the DS field (ds-textarea / ds-input-xl), with its border, radius,
+   colors, hover and focus. The DS field has no reading size, so only the size is extended here,
+   to match the reading box: the reading font, line height and padding. The fill is transparent, so
+   the field takes the card's color in both themes and the tone-3 border marks it; the placeholder is
+   tone-2 (the DS tone-3 placeholder is 3.59:1, under 4.5:1 for text). */
 .input-box {
-  border: 0;
+  height: auto;
   resize: none;
-  outline: none;
-  font: inherit;
-  font-size: var(--app-font-reading);
-  font-weight: var(--ds-font-weight-regular);
+  background: transparent; /* the field takes the surface under it (the DS tone-8 fill is a black hole in dark) */
+  font-size: var(--app-font-body);
   line-height: 1.5;
-  /* a white field with a hairline border (LXP demo's "write your own" field) */
-  background: var(--ds-tone-8);
-  box-shadow: inset 0 0 0 1px var(--ds-tone-5);
-  transition: box-shadow var(--ds-duration-base) ease;
 }
 
-.input-box::placeholder { color: var(--ds-tone-3); opacity: 1; }
-
-.input-box:focus-visible { box-shadow: inset 0 0 0 1px var(--ds-primary), 0 0 0 var(--ds-space-1) var(--app-tint-6); }
+.input-box::placeholder { color: var(--ds-tone-2); }
 
 /* Short variant: a single-line field sized for one sentence */
 .reading-card.short { justify-content: space-between; }
@@ -621,19 +629,6 @@ p { margin: 0; }
   border-radius: var(--ds-roundness-2);
 }
 
-/* ===== Prototype-only: reading button states (DS candidate: success and overlay button variants) ===== */
-/* "Done reading": green */
-.ds-btn.read-button.finish {
-  background: var(--ds-success);
-  color: var(--ds-success-text-contrast);
-}
-
-/* "Read again": the DS secondary look */
-.ds-btn.read-button.again {
-  background: var(--ds-tone-6);
-  color: var(--ds-tone-1);
-}
-
 /* ----- Quiz card ----- */
 .flashcard {
   position: relative;
@@ -649,9 +644,9 @@ p { margin: 0; }
   padding: calc(var(--ds-space-8) + var(--ds-space-4));
   overflow: clip;
   border: var(--app-card-border);
-  border-radius: var(--app-radius-xl);
-  background: var(--app-card-bg);
-  box-shadow: var(--app-card-shadow);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-card-shine, none), var(--app-card-bg);
+  box-shadow: var(--app-card-shadow), var(--app-card-edge, 0 0 transparent);
 }
 
 .text {
@@ -674,17 +669,19 @@ p { margin: 0; }
 
 .title .eyebrow {
   font-size: var(--ds-font-size-5);
-  line-height: normal;
+  line-height: var(--ds-line-height-24);
   letter-spacing: var(--app-tracking-eyebrow);
   text-transform: uppercase;
   white-space: nowrap;
-  color: var(--ds-primary);
+  /* trial: the light primary in both themes (same token, one value). Contrast is under 4.5:1 on
+     both cards: 2.9:1 on white, 4.3:1 on the dark #333 card (DS question 1) */
+  color: var(--ds-primary-brighter);
 }
 
 .title h1 {
   margin: 0;
   width: 100%;
-  font-size: var(--app-font-h1);
+  font-size: var(--app-font-title);
   font-weight: var(--ds-font-weight-bold);
   line-height: 1.2;
   letter-spacing: calc(var(--ds-space-0-25) * -0.4);
@@ -706,20 +703,22 @@ p { margin: 0; }
   gap: var(--ds-space-4);
   padding: var(--ds-space-3) var(--ds-space-4);
   border-radius: var(--ds-roundness-3);
-  background: var(--ds-tone-8);
+  background: transparent; /* like the text fields: takes the card's color in both themes */
+  /* light hairline, as in the LXP answers. The text names the option, so the frame is a soft
+     outline (tone-5, ~1.4:1), not the field border */
   box-shadow: inset 0 0 0 1px var(--ds-tone-5);
   text-align: left;
   transition: background var(--ds-duration-slow) ease, box-shadow var(--ds-duration-slow) ease;
 }
 
-.answer:hover { background: var(--app-tint-3); box-shadow: inset 0 0 0 1px var(--ds-primary); }
+.answer:hover { background: var(--ds-primary-tint-6); box-shadow: inset 0 0 0 1px var(--ds-primary); }
 
-.answer[aria-checked="true"] { background: var(--app-tint-6); box-shadow: inset 0 0 0 2px var(--ds-primary); }
+.answer[aria-checked="true"] { background: var(--ds-primary-tint-10); box-shadow: inset 0 0 0 2px var(--ds-primary); }
 
 .answer .label {
   font-size: var(--ds-font-size-6);
   font-weight: var(--ds-font-weight-regular);
-  line-height: normal;
+  line-height: var(--ds-line-height-24);
   white-space: nowrap;
   color: var(--ds-tone-1);
 }
@@ -731,21 +730,26 @@ p { margin: 0; }
   gap: var(--ds-space-1);
   flex-shrink: 0;
   justify-content: center;
-  width: var(--ds-space-8);
-  height: var(--ds-space-8);
+  width: var(--ds-space-6);
+  height: var(--ds-space-6);
   border-radius: 50%;
-  background: var(--ds-tone-6);
-  font-size: var(--ds-font-size-4);
+  /* as in the LXP answers: a small filled circle. The fill is a 5% tone-1 layer over the card, so
+     it follows the surface: in light it comes out as tone-7 (#f5f5f5, like the LXP), in dark a bit
+     lighter than the card (#3d3d3d on #333) instead of a black hole. Same token in both themes
+     (DS candidate: a surface-relative fill token). The tone-2 letter is 4.5:1 in light, 6.8:1 in dark. */
+  background: color-mix(in srgb, var(--ds-tone-1) 5%, transparent);
+  font-size: var(--ds-font-size-2);
   font-weight: var(--ds-font-weight-bold);
-  line-height: normal;
+  line-height: var(--ds-line-height-solid);
   white-space: nowrap;
   color: var(--ds-tone-2);
-  transition: background var(--ds-duration-slow) ease, color var(--ds-duration-slow) ease;
+  transition: background var(--ds-duration-slow) ease, color var(--ds-duration-slow) ease, box-shadow var(--ds-duration-slow) ease;
 }
 
 .pill > span { text-box: trim-both cap alphabetic; }
 
 .answer[aria-checked="true"] .pill {
+  box-shadow: none;
   background: var(--ds-primary);
   color: var(--ds-primary-text-contrast);
 }
@@ -767,7 +771,109 @@ p { margin: 0; }
   justify-content: center;
 }
 
-/* ===== Prototype-only: breathing outline around a primary CTA (DS candidate) ===== */
+/* =========================================================
+   Card footer (from the English Learning Module reference; DS candidate: card footer)
+   Every activity card ends with: "Back" on the left, the actions on the right ("Skip for now" +
+   the step's main button). All buttons are DS buttons; only the layout is ours.
+   ========================================================= */
+.card-foot {
+  flex: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-4);
+}
+
+.card-foot-end {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-4);
+}
+
+/* Reading: "Read again" only exists once the reading is done */
+.card-foot .read-again[hidden],
+.card-foot .read-arrow[hidden],
+.card-foot .read-check[hidden] { display: none; }
+
+/* ===== Answer feedback (from the reference), in DS success / danger ===== */
+/* correct: a green ring that pulses once, then the lesson moves on */
+.answer.just-correct {
+  background: color-mix(in srgb, var(--ds-success) 12%, transparent);
+  box-shadow: inset 0 0 0 2px var(--ds-success);
+  animation: answer-correct var(--app-dur-3) ease-out;
+}
+.answer.just-correct .pill { background: var(--ds-success); color: var(--ds-success-text-contrast); box-shadow: none; }
+
+@keyframes answer-correct {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+/* wrong: a red ring; the student tries another option */
+.answer.wrong,
+.answer.wrong:hover { background: var(--ds-danger-tint-10); box-shadow: inset 0 0 0 2px var(--ds-danger); }
+.answer.wrong .pill { background: var(--ds-danger); color: var(--ds-danger-text-contrast); box-shadow: none; }
+
+/* a written answer was accepted */
+/* ===== Prototype-only: Success field (DS candidate) =====
+   The DS field has an error state (ds-input-error) but no success state: a 2px green frame. */
+.input-box.just-correct,
+.input-box.just-correct:hover,
+.input-box.just-correct:focus { border-color: var(--ds-success); box-shadow: inset 0 0 0 1px var(--ds-success); }
+
+@media (prefers-reduced-motion: reduce) {
+  .answer.just-correct { animation: none; }
+}
+
+/* ===== Review mode (from the reference): a step that was already answered =====
+   The card is locked and framed in green, with a check in its corner. The student's answer stays
+   (the chosen option in green, the others dimmed; a written answer in a locked green field), and
+   the footer has only "Back" and "Continue". */
+.card-foot .foot-continue { display: none; }
+.canvas.reviewing .card-foot .foot-continue { display: inline-flex; }
+.canvas.reviewing .card-foot-end > :not(.foot-continue) { display: none; }
+
+.canvas.reviewing .flashcard,
+.canvas.reviewing .reading-card {
+  border-color: color-mix(in srgb, var(--ds-success) 40%, transparent);
+}
+
+.review-stamp {
+  position: absolute;
+  top: var(--ds-space-8);
+  right: var(--ds-space-8);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--ds-space-8);
+  height: var(--ds-space-8);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ds-success) 12%, transparent);
+  box-shadow: inset 0 0 0 2px var(--ds-success);
+  color: var(--ds-success);
+  pointer-events: none;
+}
+
+.canvas.reviewing .review-stamp { display: flex; }
+
+/* keep the title clear of the check */
+.canvas.reviewing .title { padding-right: calc(var(--ds-space-8) + var(--ds-space-4)); }
+
+/* answers can't be changed */
+.canvas.reviewing .answers { pointer-events: none; }
+.canvas.reviewing .answer:not(.mine) { opacity: var(--ds-opacity-disabled); }
+
+.answer.mine {
+  background: color-mix(in srgb, var(--ds-success) 12%, transparent);
+  box-shadow: inset 0 0 0 2px var(--ds-success);
+}
+.answer.mine .pill { background: var(--ds-success); color: var(--ds-success-text-contrast); box-shadow: none; }
+
+/* ===== Prototype-only: Attention CTA (DS candidate) =====
+   A breathing outline around a DS primary button that is the one action on screen. It adds a
+   ring outside the button and leaves the DS button itself untouched. */
 .ds-btn.outlined { position: relative; }
 
 .ds-btn.outlined::after {
@@ -795,11 +901,12 @@ p { margin: 0; }
   width: var(--app-avatar-w);
   height: var(--app-avatar-h);
   border-radius: var(--app-radius-lg);
-  transition: width var(--app-dur-1) ease, height var(--app-dur-1) ease;
+  transition: width var(--ds-duration-exit) ease, height var(--ds-duration-exit) ease;
 }
 
 /* Soft shadow behind the avatar (LXP demo avatar mode): a still of her, blurred, scaled to 92.7% and
-   moved down 7.7% of her height, so the glow takes her own colors */
+   moved down 7.7% of her height, so the glow takes her own colors. Back to the original
+   (2026-11-18, my request); the primary-colored CSS glow that replaced it is off. */
 .avatar-glow {
   position: absolute;
   z-index: -1;
@@ -811,6 +918,38 @@ p { margin: 0; }
   border-radius: var(--app-avatar-glow-radius);
   filter: blur(var(--app-avatar-glow-blur));
   pointer-events: none;
+  transition: opacity 1.2s var(--ds-ease-out);
+}
+/* hidden where the old CSS glow was hidden: the minimized tile, and while she forms herself
+   (looks 1-5: nothing of her shows, not even her colors, until she is there) */
+.mini-demo .avatar.minimized .avatar-glow { display: none; }
+/* Light only: no blur behind her in dark, for a clean look (to confirm with the developers) */
+:root[data-theme="dark"] .avatar-glow { display: none; }
+:root[data-join-style="becoming"] .avatar.joining .avatar-glow,
+:root[data-join-style="emerge"] .avatar.joining .avatar-glow,
+:root[data-join-style="coalesce"] .avatar.joining .avatar-glow,
+:root[data-join-style="mist"] .avatar.joining .avatar-glow,
+:root[data-join-style="fairy"] .avatar.joining .avatar-glow { opacity: 0; }
+
+/* The empty layer the loading looks draw on (Mist's haze, Aura); no glow of its own any more */
+:root {
+  --app-avatar-glow-color: transparent;
+  --app-avatar-glow-inset: 3.65%; /* 92.7% wide */
+}
+.avatar::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: var(--app-avatar-glow-inset);
+  right: var(--app-avatar-glow-inset);
+  top: 7.67%;
+  bottom: -0.37%;
+  border-radius: var(--app-avatar-glow-radius);
+  background-color: var(--app-avatar-glow-color);
+  filter: blur(var(--app-avatar-glow-blur));
+  pointer-events: none;
+  transition: background-color var(--ds-duration-exit) ease, left var(--ds-duration-exit) ease,
+    right var(--ds-duration-exit) ease, filter var(--ds-duration-exit) ease;
 }
 
 /* Name strip along the bottom of her frame: white text over a backdrop blur and a dark-to-clear
@@ -831,7 +970,7 @@ p { margin: 0; }
   color: var(--ds-w-100);
   line-height: var(--ds-line-height-21);
   pointer-events: none;
-  transition: opacity var(--app-dur-1) ease;
+  transition: opacity var(--ds-duration-exit) ease;
 }
 
 .avatar-tag p { margin: 0; }
@@ -871,12 +1010,12 @@ p { margin: 0; }
   backdrop-filter: blur(var(--app-blur));
   font-size: var(--ds-font-size-5);
   font-weight: var(--ds-font-weight-bold);
-  line-height: normal;
+  line-height: var(--ds-line-height-solid);
   white-space: nowrap;
   color: var(--ds-w-100);
   opacity: 0;
   visibility: hidden;
-  transition: opacity var(--app-dur-1) ease, transform var(--app-dur-1) ease, visibility var(--app-dur-1);
+  transition: opacity var(--ds-duration-exit) ease, transform var(--ds-duration-exit) ease, visibility var(--ds-duration-exit);
 }
 
 .hint-button > span { text-box: trim-both cap alphabetic; }
@@ -924,7 +1063,7 @@ p { margin: 0; }
   justify-content: center;
   height: var(--ds-space-8);
   padding: var(--ds-space-2);
-  transition: opacity var(--app-dur-1) ease, visibility var(--app-dur-1);
+  transition: opacity var(--ds-duration-exit) ease, visibility var(--ds-duration-exit);
 }
 
 .indicators .message.away { opacity: 0; visibility: hidden; }
@@ -933,7 +1072,7 @@ p { margin: 0; }
   font-size: var(--ds-font-size-5);
   font-weight: var(--ds-font-weight-bold);
   font-style: italic;
-  line-height: normal;
+  line-height: var(--ds-line-height-24);
   text-align: center;
   white-space: nowrap;
   color: var(--ds-tone-2);
@@ -966,16 +1105,872 @@ p { margin: 0; }
   height: var(--app-pill-h);
   padding: var(--ds-space-4);
   border-radius: var(--app-pill-h);
-  background: var(--ds-tone-7);
+  background: var(--ds-tone-6); /* the DS secondary-button fill: shows on the page in both themes (tone-7 vanished in dark) */
   color: var(--ds-tone-1);
-  transition: background var(--ds-duration-base) ease, box-shadow var(--app-dur-1) ease, opacity var(--app-dur-1) ease, visibility var(--app-dur-1);
+  transition: background var(--ds-duration-base) ease, box-shadow var(--ds-duration-exit) ease, opacity var(--ds-duration-exit) ease, visibility var(--ds-duration-exit);
 }
 
-.mic-pill:hover { background: var(--ds-tone-6); }
+.mic-pill:hover { background: var(--ds-tone-5); }
 
-/* Muted: red inner border + glow */
-.mic-pill.muted {
-  box-shadow: inset 0 0 0 2px var(--ds-danger), 0 0 var(--app-pill-h) 0 color-mix(in srgb, var(--ds-danger) 30%, transparent);
+/* Mic while it's off ("muted" is the system turning it off while the student answers by clicking or
+   typing): the same pill as when the mic is on (fill, chevron, colors); only the icon changes to
+   the crossed-out mic (app.js swaps it), so muted never looks like a different component. */
+
+/* ===== Prototype-only: speaking while muted (DS candidate) =====
+   The student muted the mic and starts talking: the bar gets .talking-muted for a few seconds.
+   A DS hint over the mic says so, and a faint neutral ripple drifts out from the pill (like sound,
+   or a "press here" dot) so it reads without reading. */
+
+.bottom-bar.talking-muted .mic-pill.muted {
+  color: var(--ds-tone-1);
+  box-shadow: none;
+  animation: mic-ripple 1.8s cubic-bezier(0.25, 0.6, 0.35, 1) 3;
+}
+
+@keyframes mic-ripple {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ds-tone-1) 0%, transparent); }
+  20% { box-shadow: 0 0 0 var(--ds-space-1) color-mix(in srgb, var(--ds-tone-1) 14%, transparent); }
+  100% { box-shadow: 0 0 0 var(--ds-space-3) color-mix(in srgb, var(--ds-tone-1) 0%, transparent); }
+}
+
+/* the hint over the mic, pointing at it */
+.mic-talk-hint {
+  position: absolute;
+  left: 50%;
+  bottom: calc(50% + var(--app-pill-h) / 2 + var(--ds-space-2));
+  translate: -50% 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--ds-duration-exit) ease, visibility var(--ds-duration-exit);
+}
+.bottom-bar.talking-muted .mic-talk-hint {
+  opacity: 1;
+  visibility: visible;
+  transition-duration: var(--ds-duration-slow);
+}
+
+/* without motion the ripple stays as a still, faint ring */
+@media (prefers-reduced-motion: reduce) {
+  .bottom-bar.talking-muted .mic-pill.muted {
+    animation: none;
+    box-shadow: 0 0 0 var(--ds-space-1) color-mix(in srgb, var(--ds-tone-1) 12%, transparent);
+  }
+}
+
+/* ===== Prototype-only: bar message variants (DS candidate: avatar bar message) =====
+   From the Figma "Message" component: the plain italic line ("Talk to interrupt"), a chip for mic
+   access ("⚠ Allow access to your mic", "Enable your mic to talk"), and the loader messages while
+   Julia gets the answer (Messages 1-5). The chip is tone-6 (visible on the page in both themes,
+   unlike tone-7 in dark) with tone-1 text. */
+.message-icon { display: none; }
+
+.indicators .message.chip {
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-1) var(--ds-space-3);
+  border-radius: var(--ds-roundness-2);
+  background: var(--ds-tone-6);
+}
+.indicators .message.chip p {
+  font-size: var(--ds-font-size-4);
+  font-style: normal;
+  color: var(--ds-tone-1);
+}
+.indicators .message.chip.with-icon .message-icon { display: inline-flex; color: var(--ds-tone-1); }
+
+/* loader messages: upright main text that crossfades from one message to the next */
+.indicators .message.thinking p {
+  font-style: normal;
+  color: var(--ds-tone-1);
+  transition: opacity var(--ds-duration-slow) ease;
+}
+.indicators .message.thinking.swap p { opacity: 0; }
+
+/* ===== Prototype-only: avatar loading while Julia joins (DS candidate: avatar joining tile) =====
+   The lesson opens and Julia's video isn't ready yet: her tile shows a loading look for a moment,
+   then fades to her video. Five looks to compare, picked in the demo panel (data-join-style on
+   <html>, app.js): glow (Figma Loading 1, breathing), rings (Figma Loading 2, moving out),
+   blur (her still, blurred, sharpens), shimmer (a band of light), dots ("Julia is joining" + dots). */
+.avatar-joining {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-1);
+  border-radius: inherit;
+  background: var(--ds-tone-7);
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--ds-duration-exit) ease, visibility var(--ds-duration-exit) ease;
+}
+.avatar.joining .avatar-joining { opacity: 1; visibility: visible; }
+.avatar.joining .avatar-tag { opacity: 0; }
+.avatar-joining-text, .avatar-joining-dots { display: none; }
+
+/* glow: a soft primary shape that slowly breathes */
+:root[data-join-style="glow"] .avatar-joining::before {
+  content: "";
+  position: absolute;
+  inset: 18%;
+  border-radius: 30%;
+  background: var(--ds-primary);
+  filter: blur(var(--ds-space-6));
+  animation: join-breathe 2s ease-in-out infinite;
+}
+@keyframes join-breathe {
+  0%, 100% { opacity: 0.35; scale: 0.9; }
+  50%      { opacity: 0.8;  scale: 1; }
+}
+
+/* rings: two primary rings move out from the middle, one after the other */
+:root[data-join-style="rings"] .avatar-joining::before,
+:root[data-join-style="rings"] .avatar-joining::after {
+  content: "";
+  position: absolute;
+  left: 25%;
+  top: 50%;
+  width: 50%;
+  aspect-ratio: 1;
+  translate: 0 -50%;
+  border-radius: 50%;
+  border: 2px solid var(--ds-primary);
+  animation: join-ring 2s ease-out infinite;
+}
+:root[data-join-style="rings"] .avatar-joining::after { animation-delay: 1s; }
+@keyframes join-ring {
+  0%   { scale: 0.2; opacity: 1; }
+  100% { scale: 1.4; opacity: 0; }
+}
+
+/* blur: no cover at all; her still frame shows blurred and sharpens as she arrives */
+:root[data-join-style="blur"] .avatar-joining { display: none; }
+.avatar video { transition: filter var(--ds-duration-enter) var(--ds-ease-out), scale var(--ds-duration-enter) var(--ds-ease-out); }
+:root[data-join-style="blur"] .avatar.joining video {
+  filter: blur(var(--ds-space-6));
+  scale: 1.06;
+}
+
+/* shimmer: a soft band of light sweeps across the tile (5% tone-1, so it follows the theme) */
+:root[data-join-style="shimmer"] .avatar-joining::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%,
+    color-mix(in srgb, var(--ds-tone-1) 6%, transparent) 50%, transparent 70%);
+  animation: join-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes join-shimmer {
+  from { translate: -100% 0; }
+  to   { translate: 100% 0; }
+}
+
+/* dots: "Julia is joining" with three dots that light up in turn */
+:root[data-join-style="dots"] .avatar-joining-text,
+:root[data-join-style="dots"] .avatar-joining-dots { display: inline-flex; }
+.avatar-joining-text {
+  font-size: var(--ds-font-size-5);
+  color: var(--ds-tone-2);
+}
+.avatar-joining-dots { gap: var(--ds-space-1); padding-top: var(--ds-space-1); }
+.avatar-joining-dots i {
+  width: var(--ds-space-1-5);
+  height: var(--ds-space-1-5);
+  border-radius: 50%;
+  background: var(--ds-tone-2);
+  animation: join-dot 1.2s ease-in-out infinite;
+}
+.avatar-joining-dots i:nth-child(2) { animation-delay: 0.2s; }
+.avatar-joining-dots i:nth-child(3) { animation-delay: 0.4s; }
+@keyframes join-dot {
+  0%, 60%, 100% { opacity: 0.3; }
+  30%           { opacity: 1; }
+}
+
+/* F. voice wave: five primary bars move like a voice warming up, then she speaks */
+.avatar-joining-wave { display: none; align-items: center; gap: var(--ds-space-1-5); height: var(--ds-space-16); }
+:root[data-join-style="wave"] .avatar-joining-wave { display: inline-flex; }
+.avatar-joining-wave i {
+  width: var(--ds-space-1-5);
+  height: 100%;
+  border-radius: var(--ds-space-1);
+  background: var(--ds-primary);
+  scale: 1 0.25;
+  animation: join-wave 1s ease-in-out infinite;
+}
+.avatar-joining-wave i:nth-child(2) { animation-delay: 0.15s; }
+.avatar-joining-wave i:nth-child(3) { animation-delay: 0.3s; }
+.avatar-joining-wave i:nth-child(4) { animation-delay: 0.45s; }
+.avatar-joining-wave i:nth-child(5) { animation-delay: 0.6s; }
+@keyframes join-wave {
+  0%, 100% { scale: 1 0.25; }
+  50%      { scale: 1 1; }
+}
+
+/* G. iris: a small window on her face pulses, then opens up to the whole tile */
+:root[data-join-style="iris"] .avatar-joining { display: none; }
+:root[data-join-style="iris"] .avatar { background: var(--ds-tone-7); }
+:root[data-join-style="iris"] .avatar video {
+  clip-path: circle(100% at 50% 40%);
+  transition: clip-path calc(var(--ds-duration-enter) * 1.6) var(--ds-ease-out);
+}
+:root[data-join-style="iris"] .avatar.joining video {
+  clip-path: circle(12% at 50% 40%);
+  animation: join-iris 1.6s ease-in-out infinite;
+}
+@keyframes join-iris {
+  50% { clip-path: circle(16% at 50% 40%); }
+}
+
+/* H. aurora: soft primary light drifts slowly over the tile, like something gathering */
+:root[data-join-style="aurora"] .avatar-joining::before,
+:root[data-join-style="aurora"] .avatar-joining::after {
+  content: "";
+  position: absolute;
+  width: 70%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  filter: blur(var(--ds-space-8));
+}
+:root[data-join-style="aurora"] .avatar-joining::before {
+  left: -10%;
+  top: 10%;
+  background: var(--ds-primary);
+  opacity: 0.55;
+  animation: join-aurora-a 3s ease-in-out infinite alternate;
+}
+:root[data-join-style="aurora"] .avatar-joining::after {
+  right: -10%;
+  bottom: 5%;
+  background: var(--ds-primary-brighter);
+  opacity: 0.6;
+  animation: join-aurora-b 3.4s ease-in-out infinite alternate;
+}
+@keyframes join-aurora-a { to { translate: 35% 25%; scale: 1.2; } }
+@keyframes join-aurora-b { to { translate: -30% -35%; scale: 0.85; } }
+
+/* I. sunrise: a soft blue light rises from the bottom of the tile, then she rises into view */
+:root[data-join-style="rise"] .avatar-joining::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 60%;
+  background: linear-gradient(to top, color-mix(in srgb, var(--ds-primary) 30%, transparent), transparent);
+  transform-origin: bottom;
+  animation: join-rise 2s ease-in-out infinite;
+}
+@keyframes join-rise {
+  0%, 100% { scale: 1 0.5; opacity: 0.6; }
+  50%      { scale: 1 1;   opacity: 1; }
+}
+:root[data-join-style="rise"] .avatar video {
+  transition: opacity var(--ds-duration-enter) var(--ds-ease-out), translate var(--ds-duration-enter) var(--ds-ease-out);
+}
+:root[data-join-style="rise"] .avatar.joining video { opacity: 0; translate: 0 8%; }
+
+/* J. speech bubble: a bubble with three dots in the middle of the tile, like "she's typing" */
+.avatar-joining-bubble { display: none; }
+:root[data-join-style="bubble"] .avatar-joining-bubble {
+  display: inline-flex;
+  gap: var(--ds-space-1-5);
+  padding: var(--ds-space-4) var(--ds-space-5);
+  border-radius: var(--ds-roundness-3) var(--ds-roundness-3) var(--ds-roundness-3) var(--ds-roundness-1);
+  background: var(--ds-elevated);
+  box-shadow: var(--ds-shadow-floating);
+}
+.avatar-joining-bubble i {
+  width: var(--ds-space-2);
+  height: var(--ds-space-2);
+  border-radius: 50%;
+  background: var(--ds-tone-3);
+  animation: join-bounce 1.2s ease-in-out infinite;
+}
+.avatar-joining-bubble i:nth-child(2) { animation-delay: 0.15s; }
+.avatar-joining-bubble i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes join-bounce {
+  0%, 60%, 100% { translate: 0 0; }
+  30%           { translate: 0 calc(var(--ds-space-1) * -1); }
+}
+
+/* K. orbit: a small blue dot circles a faint ring, like something on its way */
+:root[data-join-style="orbit"] .avatar-joining::before,
+:root[data-join-style="orbit"] .avatar-joining::after {
+  content: "";
+  position: absolute;
+  left: 35%;
+  top: 50%;
+  width: 30%;
+  aspect-ratio: 1;
+  translate: 0 -50%;
+  border-radius: 50%;
+}
+:root[data-join-style="orbit"] .avatar-joining::before { border: 2px solid var(--ds-tone-5); }
+:root[data-join-style="orbit"] .avatar-joining::after {
+  background: radial-gradient(circle at 50% var(--ds-space-0-75), var(--ds-primary) 0 var(--ds-space-1-5), transparent calc(var(--ds-space-1-5) + 1px));
+  animation: join-orbit 1.4s linear infinite;
+}
+@keyframes join-orbit { to { rotate: 1turn; } }
+
+/* L. color in: her still shows faded grey, gently breathing, and warms up to full color */
+:root[data-join-style="color"] .avatar-joining { display: none; }
+:root[data-join-style="color"] .avatar.joining video {
+  filter: grayscale(1) contrast(0.7) brightness(1.15);
+  animation: join-color 2s ease-in-out infinite;
+}
+@keyframes join-color {
+  50% { filter: grayscale(1) contrast(0.6) brightness(1.3); }
+}
+
+/* M. curtain: a thin blue line fills along the bottom while she loads, then the cover lifts */
+:root[data-join-style="curtain"] .avatar-joining {
+  transition: translate calc(var(--ds-duration-enter) * 1.2) cubic-bezier(0.65, 0, 0.35, 1), visibility calc(var(--ds-duration-enter) * 1.2);
+}
+:root[data-join-style="curtain"] .avatar:not(.joining) .avatar-joining { opacity: 1; translate: 0 -100%; }
+:root[data-join-style="curtain"] .avatar-joining::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: var(--ds-space-1);
+  background: var(--ds-primary);
+  transform-origin: left;
+  scale: 0 1;
+}
+:root[data-join-style="curtain"] .avatar.joining .avatar-joining::before { animation: join-fill 2.6s ease-out forwards; }
+@keyframes join-fill { to { scale: 1 1; } }
+
+/* ---- The futuristic direction: breathing gradients (brand blues + a touch of the DS teal) ---- */
+:root {
+  --app-join-gradient: conic-gradient(from 0deg,
+    var(--ds-primary),
+    var(--ds-primary-brighter),
+    color-mix(in srgb, var(--ds-screen-green) 70%, var(--ds-primary-brighter)),
+    color-mix(in srgb, var(--ds-primary) 35%, transparent),
+    var(--ds-primary));
+}
+@keyframes join-spin { to { rotate: 1turn; } }
+@keyframes join-breath {
+  0%, 100% { opacity: 0.45; scale: 0.92; }
+  50%      { opacity: 0.85; scale: 1; }
+}
+
+/* N. liquid gradient: a big soft gradient turns slowly and breathes across the whole tile */
+:root[data-join-style="liquid"] .avatar-joining::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 200%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  background: var(--app-join-gradient);
+  filter: blur(calc(var(--ds-space-16) * 0.75));
+  animation: join-spin 9s linear infinite, join-breath 3.2s ease-in-out infinite;
+}
+/* a soft light in the middle, so it reads as depth, not a flat fill */
+:root[data-join-style="liquid"] .avatar-joining::after {
+  content: "";
+  position: absolute;
+  inset: 20%;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--ds-tone-8) 55%, transparent), transparent 70%);
+  animation: join-breath 3.2s ease-in-out infinite reverse;
+}
+
+/* O. glass orb: a small orb with a turning gradient inside, breathing, with a soft halo */
+:root[data-join-style="orb"] .avatar-joining::before,
+:root[data-join-style="orb"] .avatar-joining::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+}
+:root[data-join-style="orb"] .avatar-joining::after { /* the orb */
+  width: 34%;
+  background: var(--app-join-gradient);
+  filter: blur(var(--ds-space-1-5));
+  box-shadow: inset 0 0 var(--ds-space-4) color-mix(in srgb, var(--ds-tone-8) 60%, transparent);
+  animation: join-spin 6s linear infinite, join-breath 2.8s ease-in-out infinite;
+}
+:root[data-join-style="orb"] .avatar-joining::before { /* the halo */
+  width: 70%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--ds-primary-brighter) 35%, transparent), transparent 65%);
+  filter: blur(var(--ds-space-4));
+  animation: join-breath 2.8s ease-in-out infinite;
+}
+
+/* P. edge glow: a thin gradient light runs around the tile's edge and breathes */
+:root[data-join-style="edge"] .avatar-joining::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 200%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  background: var(--app-join-gradient);
+  animation: join-spin 4s linear infinite;
+}
+:root[data-join-style="edge"] .avatar-joining::after { /* the inner surface, with the light bleeding in softly */
+  content: "";
+  position: absolute;
+  inset: var(--ds-space-0-75);
+  border-radius: calc(var(--app-radius-lg) - var(--ds-space-0-75));
+  background: var(--ds-tone-7);
+  box-shadow: inset 0 0 var(--ds-space-8) color-mix(in srgb, var(--ds-primary-brighter) 30%, transparent);
+  animation: join-edge 2.6s ease-in-out infinite;
+}
+@keyframes join-edge {
+  0%, 100% { box-shadow: inset 0 0 var(--ds-space-6) color-mix(in srgb, var(--ds-primary-brighter) 20%, transparent); }
+  50%      { box-shadow: inset 0 0 var(--ds-space-16) color-mix(in srgb, var(--ds-primary-brighter) 40%, transparent); }
+}
+
+/* Q. hologram: her still in a blue-teal duotone that breathes, then she turns to full color */
+:root[data-join-style="holo"] .avatar-joining { background: transparent; mix-blend-mode: color; } /* the blend is on the layer: it is its own stacking context */
+:root[data-join-style="holo"] .avatar.joining video { filter: grayscale(1) contrast(1.1) brightness(1.05); }
+:root[data-join-style="holo"] .avatar-joining::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, var(--ds-primary), color-mix(in srgb, var(--ds-screen-green) 70%, var(--ds-primary-brighter)), var(--ds-primary-brighter));
+  background-size: 100% 200%;
+  animation: join-holo 3s ease-in-out infinite alternate;
+}
+@keyframes join-holo { to { background-position: 0 100%; } }
+
+/* R. scan: a soft band of light scans down her blurred still, like she's being brought in */
+:root[data-join-style="scan"] .avatar-joining { background: transparent; mix-blend-mode: screen; }
+:root[data-join-style="scan"] .avatar.joining video { filter: blur(var(--ds-space-2-5)) saturate(0.6); }
+:root[data-join-style="scan"] .avatar-joining::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -30%;
+  height: 30%;
+  background: linear-gradient(to bottom, transparent,
+    color-mix(in srgb, var(--ds-primary-brighter) 45%, transparent) 70%,
+    color-mix(in srgb, var(--ds-tone-8) 80%, transparent) 72%, transparent 74%);
+  animation: join-scan 1.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+@keyframes join-scan { to { translate: 0 433%; } }
+
+/* S. stardust: small points of light drift up around a soft breathing glow */
+:root[data-join-style="stardust"] .avatar-joining::before {
+  content: "";
+  position: absolute;
+  inset: -50% 0 0;
+  background-image:
+    radial-gradient(circle, var(--ds-primary-brighter) 0 1.5px, transparent 2px),
+    radial-gradient(circle, color-mix(in srgb, var(--ds-screen-green) 70%, var(--ds-primary-brighter)) 0 1px, transparent 1.5px),
+    radial-gradient(circle, var(--ds-primary) 0 1px, transparent 1.5px);
+  /* uneven tile sizes and offsets, so the three layers never line up into a grid */
+  background-size: 53px 71px, 37px 59px, 83px 47px;
+  background-position: 0 0, 19px 31px, 41px 13px;
+  -webkit-mask-image: radial-gradient(ellipse at 50% 60%, black, transparent 70%);
+  mask-image: radial-gradient(ellipse at 50% 60%, black, transparent 70%);
+  animation: join-stardust 6s linear infinite;
+}
+:root[data-join-style="stardust"] .avatar-joining::after {
+  content: "";
+  position: absolute;
+  inset: 25%;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--ds-primary-brighter) 40%, transparent), transparent 70%);
+  filter: blur(var(--ds-space-4));
+  animation: join-breath 3s ease-in-out infinite;
+}
+@keyframes join-stardust { to { translate: 0 33%; } }
+
+/* T. prism: an iridescent light moves slowly across a frosted tile and breathes */
+:root[data-join-style="prism"] .avatar-joining::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 20%,
+    color-mix(in srgb, var(--ds-primary) 70%, transparent) 38%,
+    color-mix(in srgb, var(--ds-screen-green) 60%, transparent) 48%,
+    color-mix(in srgb, var(--ds-primary-brighter) 70%, transparent) 58%, transparent 76%);
+  background-size: 300% 300%;
+  filter: blur(var(--ds-space-6));
+  animation: join-prism 4s ease-in-out infinite alternate, join-breath 3s ease-in-out infinite;
+}
+@keyframes join-prism {
+  from { background-position: 0% 50%; }
+  to   { background-position: 100% 50%; }
+}
+
+/* ---- Avatar-style looks: they work with Julia herself (her face, her presence) ---- */
+@property --app-dot { syntax: "<length>"; inherits: false; initial-value: 1px; }
+@property --app-focus { syntax: "<percentage>"; inherits: false; initial-value: 24%; }
+
+/* U. halftone: she is built from a grid of dots that grow until she is whole */
+:root[data-join-style="halftone"] .avatar-joining { display: none; }
+:root[data-join-style="halftone"] .avatar { background: var(--ds-tone-7); }
+:root[data-join-style="halftone"] .avatar.joining video {
+  -webkit-mask-image: radial-gradient(circle, black var(--app-dot), transparent calc(var(--app-dot) + 0.5px));
+  mask-image: radial-gradient(circle, black var(--app-dot), transparent calc(var(--app-dot) + 0.5px));
+  -webkit-mask-size: var(--ds-space-2-5) var(--ds-space-2-5);
+  mask-size: var(--ds-space-2-5) var(--ds-space-2-5);
+  animation: join-halftone 1.6s ease-in-out infinite alternate;
+}
+@keyframes join-halftone {
+  from { --app-dot: 1px; }
+  to   { --app-dot: 4.5px; }
+}
+
+/* V. aura: a breathing gradient aura behind her tile glows and shifts, while she comes into focus */
+:root[data-join-style="aura"] .avatar-joining { display: none; }
+:root[data-join-style="aura"] .avatar.joining video { filter: blur(var(--ds-space-1-5)) saturate(0.85); }
+:root[data-join-style="aura"] .avatar.joining::before {
+  inset: -10%; /* bigger than her tile, so the aura shows all around it */
+  background-color: transparent;
+  background-image: var(--app-join-gradient);
+  animation: join-aura 2.4s ease-in-out infinite;
+}
+@keyframes join-aura {
+  0%, 100% { opacity: 0.6; scale: 0.96; filter: blur(var(--app-avatar-glow-blur)) hue-rotate(0deg); }
+  50%      { opacity: 1;   scale: 1.06; filter: blur(var(--app-avatar-glow-blur)) hue-rotate(25deg); }
+}
+
+/* W. signal: she is half there, with fine scan lines and a faint flicker, like a hologram tuning in */
+:root[data-join-style="signal"] .avatar-joining { background: transparent; mix-blend-mode: screen; }
+:root[data-join-style="signal"] .avatar video { transition: opacity var(--ds-duration-enter) var(--ds-ease-out), filter var(--ds-duration-enter) var(--ds-ease-out); }
+:root[data-join-style="signal"] .avatar.joining video {
+  opacity: 0.55;
+  filter: saturate(0.5);
+  animation: join-flicker 2.2s steps(1) infinite;
+}
+:root[data-join-style="signal"] .avatar-joining::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(to bottom,
+    color-mix(in srgb, var(--ds-primary-brighter) 30%, transparent) 0 1px, transparent 1px var(--ds-space-1));
+}
+:root[data-join-style="signal"] .avatar-joining::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 12%;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--ds-primary-brighter) 35%, transparent), transparent);
+  animation: join-scan 2.6s linear infinite;
+}
+@keyframes join-flicker {
+  0%, 100% { opacity: 0.55; }
+  47%      { opacity: 0.4; }
+  50%      { opacity: 0.62; }
+  53%      { opacity: 0.5; }
+}
+
+/* X. focus: only her face is sharp, and the sharp area breathes, like a camera finding focus */
+:root[data-join-style="focus"] .avatar-joining {
+  background: color-mix(in srgb, var(--ds-tone-7) 25%, transparent);
+  -webkit-backdrop-filter: blur(var(--ds-space-4)) saturate(0.8);
+  backdrop-filter: blur(var(--ds-space-4)) saturate(0.8);
+  -webkit-mask-image: radial-gradient(ellipse var(--app-focus) calc(var(--app-focus) * 0.8) at 50% 36%, transparent 35%, black 100%);
+  mask-image: radial-gradient(ellipse var(--app-focus) calc(var(--app-focus) * 0.8) at 50% 36%, transparent 35%, black 100%);
+  animation: join-focus 2.4s ease-in-out infinite alternate;
+}
+@keyframes join-focus {
+  from { --app-focus: 20%; }
+  to   { --app-focus: 34%; }
+}
+
+/* Y. halo: a ring of light turns in perspective above her head while she is still blurred */
+:root[data-join-style="halo"] .avatar-joining { background: transparent; }
+:root[data-join-style="halo"] .avatar.joining video { filter: blur(var(--ds-space-2)); }
+:root[data-join-style="halo"] .avatar-joining::before,
+:root[data-join-style="halo"] .avatar-joining::after {
+  content: "";
+  position: absolute;
+  left: 30%;
+  top: 6%;
+  width: 40%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+}
+:root[data-join-style="halo"] .avatar-joining::before {
+  border: 2px dashed var(--ds-primary-brighter);
+  transform: perspective(calc(var(--ds-space-16) * 6)) rotateX(72deg);
+  animation: join-halo 3s linear infinite;
+}
+:root[data-join-style="halo"] .avatar-joining::after {
+  background: radial-gradient(circle, color-mix(in srgb, var(--ds-primary-brighter) 45%, transparent), transparent 60%);
+  transform: perspective(calc(var(--ds-space-16) * 6)) rotateX(72deg);
+  filter: blur(var(--ds-space-2));
+  animation: join-breath 2.4s ease-in-out infinite;
+}
+@keyframes join-halo { to { rotate: 1turn; } }
+
+/* ---- The tile forms itself: there is no frame while she loads. Her presence fades in soft,
+   blurred and edgeless (a feathered mask on her video), takes form, and becomes the tile. The
+   mask, blur, fade and scale are on her video only, so her glow and buttons are never clipped. ---- */
+@property --app-feather { syntax: "<percentage>"; inherits: false; initial-value: 100%; }
+
+:root[data-join-style="becoming"] .avatar-joining,
+:root[data-join-style="emerge"] .avatar-joining,
+:root[data-join-style="coalesce"] .avatar-joining,
+:root[data-join-style="mist"] .avatar-joining { display: none; }
+
+/* at rest the mask is fully open (no visible effect); arriving, everything eases to it */
+:root[data-join-style="becoming"] .avatar video,
+:root[data-join-style="emerge"] .avatar video,
+:root[data-join-style="coalesce"] .avatar video,
+:root[data-join-style="mist"] .avatar video {
+  -webkit-mask-image: radial-gradient(farthest-corner at 50% 45%, black var(--app-feather), transparent calc(var(--app-feather) + 35%));
+  mask-image: radial-gradient(farthest-corner at 50% 45%, black var(--app-feather), transparent calc(var(--app-feather) + 35%));
+  transition: --app-feather 1.4s var(--ds-ease-out), filter 1.4s var(--ds-ease-out),
+    opacity 1.2s var(--ds-ease-out), scale 1.4s var(--ds-ease-out);
+}
+/* while she forms, her glow is held back (it comes in with her) */
+:root[data-join-style="becoming"] .avatar.joining::before,
+:root[data-join-style="emerge"] .avatar.joining::before,
+:root[data-join-style="coalesce"] .avatar.joining::before { opacity: 0; }
+.avatar::before { transition: opacity 1.2s var(--ds-ease-out), background-color var(--ds-duration-exit) ease, left var(--ds-duration-exit) ease, right var(--ds-duration-exit) ease, filter var(--ds-duration-exit) ease; }
+
+/* 1. Becoming: she breathes into being; each breath is a little sharper than the last
+   (the base values are the last frame, so arriving continues from where the breaths end) */
+:root[data-join-style="becoming"] .avatar.joining video {
+  --app-feather: 55%;
+  filter: blur(var(--ds-space-2)) saturate(0.85);
+  opacity: 0.85;
+  animation: join-becoming 2.6s ease-in-out forwards;
+}
+@keyframes join-becoming {
+  0%   { --app-feather: 0%;  filter: blur(calc(var(--ds-space-8) + var(--ds-space-2))) saturate(0.5); opacity: 0;    scale: 0.96; }
+  22%  { --app-feather: 18%; filter: blur(calc(var(--ds-space-8) * 0.9)) saturate(0.55); opacity: 0.4; scale: 0.97; }
+  36%  { --app-feather: 12%; filter: blur(var(--ds-space-8)) saturate(0.55); opacity: 0.28; scale: 0.965; }
+  60%  { --app-feather: 38%; filter: blur(var(--ds-space-5)) saturate(0.7); opacity: 0.68; scale: 0.985; }
+  74%  { --app-feather: 32%; filter: blur(var(--ds-space-6)) saturate(0.7); opacity: 0.56; scale: 0.98; }
+  100% { --app-feather: 55%; filter: blur(var(--ds-space-2)) saturate(0.85); opacity: 0.85; scale: 1; }
+}
+
+/* 2. Emerge: a soft edgeless presence breathes in place, then opens up and gains its edges */
+:root[data-join-style="emerge"] .avatar.joining video {
+  --app-feather: 15%;
+  filter: blur(var(--ds-space-6)) saturate(0.6);
+  opacity: 0.5;
+  scale: 0.94;
+  animation: join-emerge 2.2s ease-in-out infinite;
+}
+@keyframes join-emerge {
+  0%, 100% { --app-feather: 8%;  opacity: 0.32; }
+  50%      { --app-feather: 22%; opacity: 0.6; }
+}
+
+/* 3. Coalesce: she gathers from a wider, very blurred area and slowly condenses into her shape */
+:root[data-join-style="coalesce"] .avatar.joining video {
+  --app-feather: 50%;
+  filter: blur(var(--ds-space-2-5)) saturate(0.8);
+  opacity: 0.85;
+  scale: 1;
+  animation: join-coalesce 2.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes join-coalesce {
+  from { --app-feather: 0%; filter: blur(calc(var(--ds-space-16) * 0.75)) saturate(0.4); opacity: 0; scale: 1.18; }
+}
+
+/* 4. Mist: a small, faint haze of light gathers where she will be; nothing of her shows (not even
+   her colors) until she is fully there, then she fades in out of it */
+:root[data-join-style="mist"] .avatar.joining video {
+  --app-feather: 0%;
+  filter: blur(var(--ds-space-6));
+  opacity: 0;
+  scale: 0.98;
+}
+:root[data-join-style="mist"] .avatar.joining::before {
+  left: 4%;
+  right: 4%;
+  top: 4%;
+  bottom: 8%;
+  border-radius: 0;
+  background-color: transparent;
+  /* The Mist gradient, made only of DS brand colors (no mixing; the DS has no gradient tokens,
+     DS question 19). One color family, from deep to light, with teal as a small accent:
+       primary-darker (depth, low) → primary (the body) → primary-brighter (the light, high)
+       → screen-green (a small accent patch, so it reads alive, not flat blue)
+     No clear shape: each patch drifts on its own path, so the haze keeps changing form and the
+     colors move through it. Later layers sit below: teal is on top but the smallest. */
+  /* The colors come from the image about to load (--app-image-*, set per avatar by app.js, computed
+     by the developers in the product), so the haze leads into her. Without them: the DS blues. */
+  background-image:
+    radial-gradient(22% 20% at var(--app-mist-d), var(--app-image-accent, var(--ds-screen-green)), transparent),
+    radial-gradient(36% 28% at var(--app-mist-a), var(--app-image-light, var(--ds-primary-brighter)), transparent),
+    radial-gradient(44% 34% at var(--app-mist-c), var(--app-image-mid, var(--ds-primary)), transparent),
+    radial-gradient(40% 30% at var(--app-mist-b), var(--app-image-dark, var(--ds-primary-darker)), transparent);
+  /* very faded edges: the fade starts right at the middle and runs all the way out */
+  -webkit-mask-image: radial-gradient(closest-side, black, rgb(0 0 0 / 0.5) 45%, transparent 100%);
+  mask-image: radial-gradient(closest-side, black, rgb(0 0 0 / 0.5) 45%, transparent 100%);
+  animation: join-mist 2.6s ease-in-out infinite, join-mist-drift 5.2s ease-in-out infinite alternate;
+}
+@property --app-mist-a { syntax: "<length-percentage>+"; inherits: false; initial-value: 40% 40%; }
+@property --app-mist-b { syntax: "<length-percentage>+"; inherits: false; initial-value: 62% 52%; }
+@property --app-mist-c { syntax: "<length-percentage>+"; inherits: false; initial-value: 48% 62%; }
+@property --app-mist-d { syntax: "<length-percentage>+"; inherits: false; initial-value: 58% 44%; }
+/* each patch takes its own path; they never line up into a round blob */
+@keyframes join-mist-drift {
+  /* a (light) stays high, b (depth) stays low, c (body) in the middle, d (teal) wanders */
+  0%   { --app-mist-a: 40% 32%; --app-mist-b: 60% 68%; --app-mist-c: 46% 52%; --app-mist-d: 62% 40%; }
+  33%  { --app-mist-a: 58% 30%; --app-mist-b: 40% 66%; --app-mist-c: 60% 50%; --app-mist-d: 38% 54%; }
+  66%  { --app-mist-a: 46% 42%; --app-mist-b: 56% 72%; --app-mist-c: 38% 46%; --app-mist-d: 56% 62%; }
+  100% { --app-mist-a: 62% 38%; --app-mist-b: 44% 62%; --app-mist-c: 52% 56%; --app-mist-d: 44% 36%; }
+}
+/* breathing: brighter and dimmer, a slow blur; no scale, so it never reads as a circle growing */
+@keyframes join-mist {
+  0%, 100% { opacity: 0.45; filter: blur(calc(var(--ds-space-8) + var(--ds-space-2))); }
+  50%      { opacity: 0.75; filter: blur(calc(var(--ds-space-8) + var(--ds-space-4))); }
+}
+
+/* 5. Fairy dust: a few tiny glints sparkle and drift where she will be, gather in, and she
+   appears in their place. Nothing of her shows until then. Small and sparse on purpose. */
+:root[data-join-style="fairy"] .avatar video {
+  transition: opacity 1.2s var(--ds-ease-out), filter 1.2s var(--ds-ease-out), scale 1.2s var(--ds-ease-out);
+}
+:root[data-join-style="fairy"] .avatar.joining video { opacity: 0; filter: blur(var(--ds-space-2)); scale: 0.98; }
+:root[data-join-style="fairy"] .avatar.joining::before { opacity: 0; }
+:root[data-join-style="fairy"] .avatar-joining { background: transparent; transition: opacity 0.9s ease, visibility 0.9s; }
+:root[data-join-style="fairy"] .avatar-joining::before,
+:root[data-join-style="fairy"] .avatar-joining::after {
+  content: "";
+  position: absolute;
+  inset: 18% 20%;
+  background-repeat: no-repeat;
+  -webkit-mask-image: radial-gradient(ellipse at 50% 50%, black 30%, transparent 72%);
+  mask-image: radial-gradient(ellipse at 50% 50%, black 30%, transparent 72%);
+}
+/* two sets of glints that twinkle out of step, so it never blinks all at once */
+:root[data-join-style="fairy"] .avatar-joining::before {
+  background-image:
+    radial-gradient(circle, var(--ds-primary-brighter) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle, var(--ds-screen-green) 0 1px, transparent 2px),
+    radial-gradient(circle, var(--ds-primary) 0 1px, transparent 2px),
+    radial-gradient(circle, var(--ds-primary-brighter) 0 1px, transparent 2px),
+    radial-gradient(circle, var(--ds-screen-green) 0 1.5px, transparent 2.5px);
+  background-size: var(--ds-space-4) var(--ds-space-4);
+  background-position: 22% 30%, 70% 18%, 40% 62%, 82% 55%, 55% 82%;
+  animation: join-twinkle 1.6s ease-in-out infinite, join-gather 2.6s ease-in forwards;
+}
+:root[data-join-style="fairy"] .avatar-joining::after {
+  background-image:
+    radial-gradient(circle, var(--ds-primary) 0 1px, transparent 2px),
+    radial-gradient(circle, var(--ds-primary-brighter) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle, var(--ds-screen-green) 0 1px, transparent 2px),
+    radial-gradient(circle, var(--ds-primary-brighter) 0 1px, transparent 2px);
+  background-size: var(--ds-space-4) var(--ds-space-4);
+  background-position: 30% 75%, 62% 40%, 15% 50%, 76% 28%;
+  animation: join-twinkle 1.6s ease-in-out 0.8s infinite, join-gather 2.6s ease-in forwards;
+}
+/* the live version draws on a canvas (app.js); the CSS glints stay only for reduced motion */
+.avatar.fairy-live .avatar-joining::before,
+.avatar.fairy-live .avatar-joining::after { display: none; }
+.fairy-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  pointer-events: none;
+  filter: blur(var(--ds-space-2)); /* the same soft haze as 4. Mist */
+}
+@keyframes join-twinkle {
+  0%, 100% { opacity: 0.15; }
+  50%      { opacity: 0.9; }
+}
+@keyframes join-gather {
+  from { scale: 1.25; rotate: -8deg; }
+  to   { scale: 0.85; rotate: 6deg; }
+}
+
+
+/* reduced motion: each look holds still (the glow and rings as their Figma frames) */
+@media (prefers-reduced-motion: reduce) {
+  .avatar-joining::before, .avatar-joining::after, .avatar-joining-dots i,
+  .avatar-joining-wave i, .avatar-joining-bubble i,
+  :root[data-join-style="iris"] .avatar.joining video,
+  :root[data-join-style="color"] .avatar.joining video { animation: none; }
+  :root[data-join-style="curtain"] .avatar.joining .avatar-joining::before { scale: 1 1; }
+  :root[data-join-style="becoming"] .avatar.joining video,
+  :root[data-join-style="emerge"] .avatar.joining video,
+  :root[data-join-style="coalesce"] .avatar.joining video,
+  :root[data-join-style="mist"] .avatar.joining::before,
+  :root[data-join-style="fairy"] .avatar-joining::before,
+  :root[data-join-style="fairy"] .avatar-joining::after,
+  :root[data-join-style="halftone"] .avatar.joining video,
+  :root[data-join-style="aura"] .avatar.joining::before,
+  :root[data-join-style="signal"] .avatar.joining video,
+  :root[data-join-style="focus"] .avatar-joining { animation: none; }
+  :root[data-join-style="rings"] .avatar-joining::after { display: none; }
+}
+
+/* ===== Prototype-only: avatar loading panel (demo controls) =====
+   A second floating panel, top, left of the chat panel: ‹ › move between the looks, Replay plays it again. */
+.join-panel {
+  left: auto;
+  right: calc(var(--ds-space-16) * 6 + var(--ds-space-4)); /* 400px: left of where the chat panel opens */
+  top: var(--ds-space-4);
+  bottom: auto;
+}
+.join-panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  width: calc(var(--ds-space-16) * 3.5); /* 224px */
+  padding: var(--ds-space-3);
+}
+.join-panel .demo-panel-legend { margin: 0; }
+.join-nav { display: flex; align-items: center; justify-content: space-between; }
+.join-count {
+  font-size: var(--ds-font-size-2);
+  font-weight: var(--ds-font-weight-bold);
+  color: var(--ds-tone-2);
+}
+.join-name {
+  margin: 0;
+  font-size: var(--ds-font-size-4);
+  font-weight: var(--ds-font-weight-bold);
+  color: var(--ds-tone-1);
+}
+.join-desc {
+  margin: 0;
+  font-size: var(--ds-font-size-2);
+  line-height: var(--ds-line-height-16);
+  color: var(--ds-tone-2);
+}
+.join-replay { align-self: flex-start; }
+
+/* the options in the demo panel */
+
+.demo-panel-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  margin: 0;
+  padding: var(--ds-space-3) var(--ds-space-2) 0;
+  border: 0;
+  border-top: 1px solid var(--ds-tone-6);
+}
+
+.demo-panel-legend {
+  float: left; /* lets the legend sit inside the fieldset's padding like a normal heading */
+  width: 100%;
+  margin-bottom: var(--ds-space-1);
+  padding: 0;
+  font-size: var(--ds-font-size-2);
+  font-weight: var(--ds-font-weight-bold);
+  color: var(--ds-tone-2);
 }
 
 /* Listening: blue inner border + soft blue glow */
@@ -995,15 +1990,15 @@ p { margin: 0; }
   height: var(--app-pill-h);
   padding: 0 var(--ds-space-4);
   border-radius: var(--app-pill-h);
-  background: var(--ds-tone-7);
+  background: var(--ds-tone-6); /* same fill as the mic pill it replaces */
   font-size: var(--ds-font-size-5);
   font-weight: var(--ds-font-weight-bold);
-  line-height: normal;
+  line-height: var(--ds-line-height-solid);
   white-space: nowrap;
   color: var(--ds-tone-1);
   opacity: 0;
   visibility: hidden;
-  transition: background var(--app-dur-1) ease, color var(--app-dur-1) ease, opacity var(--app-dur-1) ease, visibility var(--app-dur-1);
+  transition: background var(--ds-duration-exit) ease, color var(--ds-duration-exit) ease, opacity var(--ds-duration-exit) ease, visibility var(--ds-duration-exit);
 }
 
 .resume-pill > span { text-box: trim-both cap alphabetic; }
@@ -1032,7 +2027,7 @@ p { margin: 0; }
   overflow: hidden;
   border-radius: var(--app-radius-lg);
   background: var(--ds-b-100);
-  transition: width var(--app-dur-1) ease, margin-right var(--app-dur-1) ease, opacity var(--app-dur-1) ease, visibility var(--app-dur-1);
+  transition: width var(--ds-duration-exit) ease, margin-right var(--ds-duration-exit) ease, opacity var(--ds-duration-exit) ease, visibility var(--ds-duration-exit);
 }
 
 /* fixed width so the player is clipped, not reflowed, while the card collapses */
@@ -1047,13 +2042,15 @@ p { margin: 0; }
   display: flex;
   align-items: center;
   gap: var(--ds-space-1);
-  height: calc(var(--ds-space-8) + var(--ds-space-4));
+  height: var(--app-hint-h); /* 40px, same as "Ask for a hint" / "Need help?" */
   padding: 0 var(--ds-space-4);
   border-radius: var(--ds-roundness-2);
   background: var(--ds-b-60);
+  -webkit-backdrop-filter: blur(var(--app-blur));
+  backdrop-filter: blur(var(--app-blur));
   font-size: var(--ds-font-size-5);
   font-weight: var(--ds-font-weight-bold);
-  line-height: normal;
+  line-height: var(--ds-line-height-solid);
   white-space: nowrap;
   color: var(--ds-w-100);
   pointer-events: none;
@@ -1071,7 +2068,7 @@ p { margin: 0; }
 
 /* While watching: the avatar fades out and the video re-centers */
 .canvas.watch .avatar {
-  transition: width var(--app-dur-1) ease, margin-left var(--app-dur-1) ease, opacity var(--app-dur-1) ease;
+  transition: width var(--ds-duration-exit) ease, margin-left var(--ds-duration-exit) ease, opacity var(--ds-duration-exit) ease;
 }
 
 .canvas.watch.watching .avatar {
@@ -1094,9 +2091,9 @@ p { margin: 0; }
   height: 100%;
   margin-right: calc(var(--ds-space-4) * -1);
   overflow: clip;
-  border-radius: var(--app-radius-xl);
-  background: var(--app-card-bg);
-  box-shadow: var(--app-card-shadow);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-card-shine, none), var(--app-card-bg);
+  box-shadow: var(--app-card-shadow), var(--app-card-edge, 0 0 transparent);
   opacity: 0;
   visibility: hidden;
   transition: width var(--app-dur-3) ease, margin-right var(--app-dur-3) ease, opacity var(--app-dur-3) ease, visibility var(--app-dur-3);
@@ -1158,7 +2155,7 @@ p { margin: 0; }
   opacity: 0;
   visibility: hidden;
   transform: translateY(var(--ds-space-3));
-  transition: opacity var(--app-dur-2) ease, transform var(--app-dur-2) ease, visibility var(--app-dur-2);
+  transition: opacity var(--ds-duration-enter) ease, transform var(--ds-duration-enter) ease, visibility var(--ds-duration-enter);
 }
 
 .canvas.milestone.ready .milestone-cta {
@@ -1166,6 +2163,34 @@ p { margin: 0; }
   visibility: visible;
   transform: none;
 }
+
+/* End of milestone: the footer sits along the bottom of the slate (Back left, actions right),
+   while the title and the progress stay centered */
+.milestone-card-inner { position: relative; }
+
+.canvas.milestone:not(.lesson) .milestone-cta {
+  position: absolute;
+  left: calc(var(--ds-space-8) + var(--ds-space-4));
+  right: calc(var(--ds-space-8) + var(--ds-space-4));
+  bottom: calc(var(--ds-space-8) + var(--ds-space-4));
+  width: auto;
+}
+
+/* Steps were skipped: no celebration. "You skipped N questions", a short line, and
+   "Continue anyway" + "Return to questions" instead of "Continue to ..." */
+.milestone-skip-desc,
+.milestone-skipped-actions { display: none; }
+
+.canvas.milestone.skipped-mode .milestone-skip-desc {
+  display: block;
+  font-size: var(--ds-font-size-6);
+  font-weight: var(--ds-font-weight-regular);
+  line-height: var(--ds-line-height-24);
+  color: var(--ds-tone-2);
+}
+
+.canvas.milestone.skipped-mode .milestone-done-actions { display: none; }
+.canvas.milestone.skipped-mode .milestone-skipped-actions { display: flex; }
 
 /* Lesson completed: the "Next lesson" button takes the timeline's place */
 .milestone-stage {
@@ -1187,6 +2212,259 @@ p { margin: 0; }
 }
 
 /* =========================================================
+   Prototype-only: paused session layer (DS candidate: pause scrim)
+   The session ended midway. Like a paused player: the activity and the bottom bar are blurred under
+   a strong wash (80% of the page color) and locked; only the progress bar (lifted above the layer)
+   and "Continue lesson" stay live.
+   ========================================================= */
+.pause-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 4; /* above the canvas and the bottom bar */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 80% of the page color: the progress bar has no card around it, so it needs a near-solid
+     surface behind it to keep its contrast whatever the activity shows */
+  background: color-mix(in srgb, var(--ds-background) 80%, transparent);
+  -webkit-backdrop-filter: blur(var(--ds-space-1));
+  backdrop-filter: blur(var(--ds-space-1));
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--ds-duration-exit) ease, visibility var(--ds-duration-exit);
+}
+
+.avatar-view.paused .pause-layer { opacity: 1; visibility: visible; }
+
+/* "Continue lesson" sits 56px below the screen's middle, under the progress bar (see below) */
+.pause-layer #continue-lesson { translate: 0 calc(var(--ds-space-8) + var(--ds-space-6)); }
+
+/* the progress bar stays sharp and in color above the layer */
+.avatar-view.paused .product-header { z-index: 5; }
+
+/* ...and takes the stage: bigger dots with their numbers, a thicker line, a wider bar, and a soft
+   glow on the current milestone. It grows as the session pauses and shrinks back on "Continue
+   lesson". (The size transitions only apply in the top bar, so the milestone glide is unaffected:
+   moving the list between parents never animates.) */
+.product-header {
+  transition: top var(--ds-duration-enter) var(--ds-ease-out), height var(--ds-duration-enter) var(--ds-ease-out);
+}
+
+.product-header .steps {
+  transition: width var(--ds-duration-enter) var(--ds-ease-out), min-width var(--ds-duration-enter) var(--ds-ease-out),
+    padding var(--ds-duration-enter) var(--ds-ease-out), background-color var(--ds-duration-enter) ease,
+    box-shadow var(--ds-duration-enter) ease, opacity var(--ds-duration-enter) ease;
+}
+
+/* keeps the quick fade-out of the "fade" milestone variants */
+.product-header .steps.faded { transition: opacity var(--ds-duration-exit) ease; }
+
+.product-header .step-dot {
+  transition: width var(--ds-duration-enter) var(--ds-ease-out), height var(--ds-duration-enter) var(--ds-ease-out),
+    background var(--ds-duration-exit) ease, color var(--ds-duration-exit) ease, box-shadow var(--ds-duration-exit) ease;
+}
+
+.product-header .step + .step::before {
+  transition: height var(--ds-duration-enter) var(--ds-ease-out), --fill var(--app-dur-4) ease, opacity var(--ds-duration-exit) ease;
+}
+
+/* it also comes down from the top and sits above "Continue lesson"; the two are one group,
+   centered on the screen's height: the dots' center is 64px above the middle and the button's
+   56px below it, leaving 76px of air between the dots and the button */
+.avatar-view.paused .product-header {
+  top: calc(50% - var(--ds-space-16) - var(--ds-space-8) - var(--ds-space-4)); /* 50% - 112px: dots at 50% - 64px */
+  height: calc(var(--app-product-header-h) + var(--ds-space-8)); /* 96px: room to breathe */
+}
+
+/* The bar sits straight on the pause layer, with no card around it */
+.avatar-view.paused .product-header .steps {
+  --dot: calc(var(--ds-space-8) + var(--ds-space-2));            /* 40px, as in the milestone slate */
+  --line: var(--ds-space-2);                                     /* 8px */
+  width: calc(var(--app-steps-w) * 1.25);                        /* 775px */
+  min-width: calc(var(--app-steps-w) * 1.25);
+}
+
+.avatar-view.paused .product-header .step-dot > span { opacity: 1; }
+
+.avatar-view.paused .product-header .step.current .step-dot {
+  box-shadow: 0 0 var(--ds-space-5) var(--ds-space-0-5) var(--app-primary-glow);
+}
+
+/* completed milestones show a check instead of their number, so "done" is said by a symbol too */
+.avatar-view.paused .product-header .step.done .step-dot > span { display: none; }
+.avatar-view.paused .product-header .step.done .step-check { display: block; }
+
+/* Accessibility: with "reduce motion" on, the bar doesn't slide or grow; it just switches to the
+   pause look (colors and the fill still fade) */
+@media (prefers-reduced-motion: reduce) {
+  .product-header { transition: none; }
+  .product-header .steps { transition: background-color var(--ds-duration-enter) ease, box-shadow var(--ds-duration-enter) ease, opacity var(--ds-duration-enter) ease; }
+  .product-header .step-dot { transition: background var(--ds-duration-exit) ease, color var(--ds-duration-exit) ease, box-shadow var(--ds-duration-exit) ease; }
+  .product-header .step + .step::before { transition: --fill var(--app-dur-4) ease, opacity var(--ds-duration-exit) ease; }
+}
+
+/* =========================================================
+   Prototype-only: card layout (layout trial; DS candidates: prompt card, answer option, speech
+   bubble, "write your own" field, tool bar)
+   The lesson's steps in one big card: prompt on the left, answers on the right, ‹ "Go deeper" ›
+   under the card. This layout has no avatar tile, mic bar or top progress, so those hide.
+   ========================================================= */
+.avatar-view.card-layout-on .bottom-bar,
+.avatar-view.card-layout-on .product-header { display: none; }
+
+.canvas.card-layout {
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-4) var(--ds-space-16) var(--ds-space-6);
+}
+
+.cl-lesson-title {
+  flex: none;
+  font-size: var(--ds-font-size-5);
+  font-weight: var(--ds-font-weight-bold);
+  line-height: var(--ds-line-height-24);
+  color: var(--ds-tone-1);
+}
+
+.cl-card {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: var(--ds-space-16);
+  overflow: auto;
+  border: var(--app-card-border);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-card-shine, none), var(--app-card-bg);
+  box-shadow: var(--app-card-shadow), var(--app-card-edge, 0 0 transparent);
+}
+
+.cl-step {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--ds-space-16);
+}
+
+.cl-step[hidden] { display: none; }
+
+.cl-prompt {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-8);
+}
+
+.cl-step .title h1 {
+  font-size: var(--ds-font-size-7);
+  line-height: 1.2;
+}
+
+/* the speaker: round picture, name, and what they say in a bubble */
+.cl-speaker {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-4);
+}
+
+/* the still of Julia is a wide shot: zoom on her face */
+.cl-speaker .ds-user-picture img { object-fit: cover; object-position: 50% 30%; transform: scale(2.4); transform-origin: 50% 32%; }
+
+.cl-speech {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+.cl-speaker-name {
+  font-size: var(--ds-font-size-4);
+  font-weight: var(--ds-font-weight-bold);
+  color: var(--ds-tone-2);
+}
+
+.cl-bubble {
+  padding: var(--ds-space-5) var(--ds-space-6);
+  border-radius: var(--ds-roundness-1) var(--ds-roundness-3) var(--ds-roundness-3) var(--ds-roundness-3);
+  background: var(--ds-tone-8);
+  box-shadow: inset 0 0 0 1px var(--ds-tone-5); /* DS card/surface border */
+  font-size: var(--app-font-body);
+  line-height: 1.5;
+  color: var(--ds-tone-1);
+}
+
+.cl-response,
+.cl-answers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+/* the answers are the quiz answer option (.answer), left-aligned and wrapping, since these
+   answers are sentences */
+.cl-answers .answer {
+  width: 100%;
+  justify-content: flex-start;
+  align-items: flex-start; /* the letter sits on the first line of a wrapped sentence */
+  padding: var(--ds-space-3) var(--ds-space-5); /* 48px for one line: the DS xl height */
+}
+.cl-answers .answer .label { white-space: normal; }
+
+/* "Or write your own answer…": a DS field (ds-input-xl, or ds-textarea for the open question)
+   with the send button inside it, at its right end */
+.cl-own { position: relative; }
+.cl-own-input {
+  padding-left: var(--ds-space-5); /* height: the DS xl field (48px), as tall as a one-line answer card */
+  padding-right: calc(var(--ds-space-8) + var(--ds-space-4)); /* room for the send button */
+  background: transparent; /* like the input activities: the field takes the card's color */
+  /* as in the LXP: the same soft frame and corners as the answer cards above it */
+  border-color: var(--ds-tone-5);
+  border-radius: var(--ds-roundness-3);
+}
+.cl-own .cl-send {
+  position: absolute;
+  right: var(--ds-space-2);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Accessibility: placeholder in tone-2 (4.95:1) instead of the DS tone-3 (3.59:1), since it is
+   the only hint that the field is there (DS question) */
+.cl-own-input::placeholder { color: var(--ds-tone-2); }
+
+/* open question: a tall field (DS textarea at the field font size), the send button at its
+   bottom right */
+.cl-own.long .cl-own-input {
+  min-height: calc(var(--ds-space-16) * 3);
+  resize: none;
+  font-size: var(--ds-font-size-5);
+  line-height: var(--ds-line-height-24);
+}
+.cl-own.long .cl-send { top: auto; bottom: var(--ds-space-2); transform: none; }
+
+/* sent: the answer stays, framed in primary; the button turns into a check */
+.cl-own.sent .cl-own-input,
+.cl-own.sent .cl-own-input:hover,
+.cl-own.sent .cl-own-input:focus { border-color: var(--ds-primary); box-shadow: inset 0 0 0 1px var(--ds-primary); }
+
+/* the footer sits inside the card, at the bottom, like the other screens; the step fills the
+   space above it, centered */
+.cl-card { flex-direction: column; align-items: stretch; gap: var(--ds-space-8); }
+.cl-card > .cl-step:not([hidden]) { flex: 1 0 auto; }
+
+@media (max-height: 900px) {
+  .cl-card { padding: var(--ds-space-8) var(--ds-space-16); }
+  .cl-step .title h1 { font-size: var(--app-font-title); }
+  .cl-bubble { font-size: var(--ds-font-size-6); line-height: var(--ds-line-height-24); }
+  .cl-answers .answer .label { font-size: var(--ds-font-size-5); }
+}
+
+/* =========================================================
    Splash: the "Start demo" click unlocks sound / autoplay
    ========================================================= */
 .splash {
@@ -1199,7 +2477,7 @@ p { margin: 0; }
   justify-content: center;
   gap: calc(var(--ds-space-8) + var(--ds-space-2));
   background: var(--app-card-bg);
-  transition: opacity var(--app-dur-2) ease, visibility var(--app-dur-2);
+  transition: opacity var(--ds-duration-enter) ease, visibility var(--ds-duration-enter);
 }
 
 .splash.hidden {
@@ -1223,12 +2501,13 @@ p { margin: 0; }
 @media (max-height: 900px) {
   .canvas { padding-block: calc(var(--app-product-header-h) + var(--ds-space-4)) calc(var(--app-bar-h) + var(--ds-space-4)); }
 
-  .title h1 { font-size: var(--app-font-h1-compact); }
-  .milestone-card .title h1 { font-size: var(--app-font-milestone-compact); }
+  .title h1 { font-size: var(--app-font-body); }
+  .milestone-card .title h1 { font-size: var(--app-font-title); }
 
   .flashcard { gap: var(--ds-space-8); padding: var(--ds-space-8); }
   .reading-card { gap: var(--ds-space-6); padding: var(--ds-space-6); }
   .milestone-card-inner { gap: var(--ds-space-8); padding: var(--ds-space-8); }
+  .canvas.milestone:not(.lesson) .milestone-cta { left: var(--ds-space-8); right: var(--ds-space-8); bottom: var(--ds-space-8); }
   .text { gap: var(--ds-space-6); }
 
   .answers { gap: var(--ds-space-3); }
@@ -1237,8 +2516,8 @@ p { margin: 0; }
 
   .reading-text, .input-box { padding: var(--ds-space-6); }
   .reading-text { gap: var(--ds-space-3); }
-  .reading-text .reading-title { font-size: var(--app-font-reading); }
-  .reading-text .reading-body { font-size: var(--ds-font-size-5); line-height: 1.4; }
+  .reading-text .reading-title { font-size: var(--ds-font-size-6); line-height: var(--ds-line-height-21); }
+  .reading-text .reading-body { font-size: var(--ds-font-size-5); line-height: var(--ds-line-height-24); }
   .input-box { font-size: var(--ds-font-size-6); }
   .input-box.short { padding: var(--ds-space-4) var(--ds-space-6); }
   .input-image-wrap { min-height: 0; }
@@ -1247,3 +2526,628 @@ p { margin: 0; }
 @container (max-height: 79px) {
   .input-image { display: none; }
 }
+
+
+/* =========================================================
+   Prototype-only: same-token theme fixes, BEFORE view (demo panel "Same-token fixes" off)
+   The styles above use one token per style, so light and dark only change the token values.
+   This block brings back the earlier per-theme token swaps, only to compare. Delete it, the
+   switch in index.html and its handler in app.js once the comparison is no longer needed.
+   ========================================================= */
+/* 1. (Julia's glow: back to the original blurred still, so there is nothing to compare here) */
+/* 2. (Lesson tools pill: removed, see parked/tools-pill.md) */
+/* 3. Background lift: dark only, a 10% white wash */
+/* 4. Sparks: white sparks in dark only */
+:root.before-token-fixes[data-theme="dark"] { --app-spark-white: var(--ds-w-100); }
+/* Before: the DS floating shadow on the cards (switch "LXP card shadow" off) */
+:root.card-shadow-before { --app-card-shadow: var(--ds-shadow-floating); }
+/* 5. Card fill: tone-8 in light, paper in dark */
+:root.before-token-fixes { --app-card-fill: var(--ds-tone-8); }
+:root.before-token-fixes[data-theme="dark"] { --app-card-fill: var(--ds-paper); }
+
+/* =========================================================
+   Prototype-only: "Current step" options (DS candidate: segmented stepper). Panel "Progress", S.
+   data-step-cue on <html> picks one; app.js adds the marks and text to the bar. Only in the top
+   bar of the lesson (not on the pause screen). Option 1 (the outlined segment) is the base look.
+   ========================================================= */
+.step-screen-num, .step-screen-hint, .step-screen-label, .step-screen-caret,
+.step-count, .step-milestone-label, .step-crumb { display: none; }
+.step { position: relative; }
+.step-screens { position: relative; isolation: isolate; }
+.avatar-view.paused .product-header :is(.step-screen-label, .step-screen-caret, .step-count, .step-milestone-label, .step-crumb) { display: none !important; }
+
+/* shared small text under the bar: 12px bold, centered, one line */
+.step-screen-label, .step-count, .step-milestone-label {
+  position: absolute;
+  top: calc(100% + var(--ds-space-2));
+  left: 50%;
+  translate: -50% 0;
+  white-space: nowrap;
+  font-size: var(--ds-font-size-2);
+  font-weight: var(--ds-font-weight-bold);
+  line-height: var(--ds-line-height-solid);
+  color: var(--ds-tone-2);
+  pointer-events: none;
+}
+
+/* 2. Half-filled */
+:root[data-step-cue="half"] .step-screen.current:not(.done) {
+  box-shadow: none;
+  background: linear-gradient(to right, var(--ds-primary) 50%, var(--ds-tone-3) 50%);
+}
+
+/* 3. Pointer under the step: a small blue triangle (CSS shape, not an icon) */
+:root[data-step-cue="caret"] .product-header .step-screen-caret {
+  display: block;
+  position: absolute;
+  top: calc(100% + var(--ds-space-1));
+  left: 50%;
+  translate: -50% 0;
+  width: var(--ds-space-2-5);
+  height: var(--ds-space-1-5);
+  background: var(--ds-primary);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+/* 4. Step name under it: the name in primary, under the outlined segment */
+:root[data-step-cue="name"] .product-header .step-screen-label { display: block; color: var(--ds-primary); }
+
+/* 5. "Step 3 of 5" under the milestone's segments */
+:root[data-step-cue="count"] .product-header .step-count:not([hidden]) { display: block; }
+
+/* 6. Milestone + step under the current milestone's ring */
+:root[data-step-cue="milestone"] .product-header .step-milestone-label:not([hidden]) { display: block; color: var(--ds-primary); }
+
+/* 7. Breadcrumb, left of the bar */
+:root[data-step-cue="crumb"] .product-header .step-crumb:not([hidden]) {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  position: absolute;
+  right: calc(50% + var(--app-steps-w) / 2 + var(--ds-space-6));
+  top: 50%;
+  translate: 0 -50%;
+  white-space: nowrap;
+  font-size: var(--ds-font-size-4);
+  line-height: var(--ds-line-height-solid);
+  color: var(--ds-tone-2);
+}
+.step-crumb ds-icon { color: var(--ds-tone-3); }
+.step-crumb-here { font-weight: var(--ds-font-weight-bold); color: var(--ds-tone-1); }
+
+/* 8. Highlighted milestone: a soft blue band behind its segments (and the outlined step) */
+:root[data-step-cue="section"] .product-header .step.has-screens .step-screens::before {
+  content: "";
+  position: absolute;
+  inset: calc(var(--ds-space-1-5) * -1) calc(var(--ds-space-2) * -1);
+  z-index: -1;
+  border-radius: var(--ds-space-4);
+  background: var(--ds-primary-tint-10);
+}
+
+/* 9. Numbered steps: the segments become 16px pills with their number */
+:root[data-step-cue="numbered"] .product-header .step-screen {
+  height: var(--ds-space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--ds-tone-3);
+  color: var(--ds-tone-2);
+}
+:root[data-step-cue="numbered"] .product-header .step-screen-num {
+  display: block;
+  font-size: var(--ds-font-size-1);
+  font-weight: var(--ds-font-weight-bold);
+  line-height: var(--ds-line-height-solid);
+}
+:root[data-step-cue="numbered"] .product-header .step-screen.done { background: var(--ds-primary); box-shadow: none; color: var(--ds-primary-text-contrast); }
+:root[data-step-cue="numbered"] .product-header .step-screen.current:not(.done) { box-shadow: inset 0 0 0 2px var(--ds-primary); color: var(--ds-primary); }
+:root[data-step-cue="numbered"] .product-header .step-screen.skipped { box-shadow: inset 0 0 0 1px var(--ds-tone-3); }
+:root[data-step-cue="numbered"] .product-header .step.has-screens .step-screens { align-items: center; }
+
+/* 10. Labels on hover: a DS hint under any segment the student points at (taller hit area) */
+:root[data-step-cue="hover"] .product-header .step-screen::after {
+  content: "";
+  position: absolute;
+  inset: calc(var(--ds-space-2) * -1) 0;
+}
+:root[data-step-cue="hover"] .product-header .step-screens { pointer-events: auto; }
+:root[data-step-cue="hover"] .product-header .step-screen:hover .step-screen-hint {
+  display: flex;
+  position: absolute;
+  top: calc(100% + var(--ds-space-2));
+  left: 50%;
+  translate: -50% 0;
+  z-index: var(--ds-z-tooltip);
+  white-space: nowrap;
+}
+
+/* the panel: on the left, below the bar, scrolls when the window is short */
+.demo-panel.step-cues-panel { left: var(--ds-space-4); top: calc(var(--app-product-header-h) + var(--ds-space-2)); translate: none; max-height: calc(100vh - var(--app-product-header-h) - var(--ds-space-6)); }
+.demo-panel.step-cues-panel .mic-states-body { overflow-y: auto; min-height: 0; }
+
+/* the option number in the panel */
+.step-cue-num {
+  font-size: var(--ds-font-size-4);
+  font-weight: var(--ds-font-weight-bold);
+  color: var(--ds-tone-1);
+}
+
+/* =========================================================
+   Prototype-only: shine (DS candidate). Panel switches "Card shine" and "Screen shine".
+   Dark-surface practice (Material elevation overlays, Apple, Linear, Vercel): light comes softly
+   from above, never as a streak. A 1px lit top edge at 5% white, and a 2.5% white wash from the
+   top that is gone by the middle. The surface color stays the DS token. White on white, so it only
+   shows in dark; one rule for both themes.
+   ========================================================= */
+:root {
+  --app-shine-wash: color-mix(in srgb, var(--ds-w-100) 2.5%, transparent);
+  --app-shine-edge: color-mix(in srgb, var(--ds-w-100) 5%, transparent);
+}
+:root.card-shine {
+  --app-card-shine: radial-gradient(120% 55% at 50% 0%, var(--app-shine-wash), transparent 75%);
+  --app-card-edge: inset 0 1px 0 var(--app-shine-edge);
+}
+/* the screen: the same soft light from above, wider and fainter (2%) */
+.avatar-view::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--ds-duration-exit) ease;
+  background: radial-gradient(70% 45% at 50% 0%, color-mix(in srgb, var(--ds-w-100) 2%, transparent), transparent 80%);
+}
+:root.screen-shine .avatar-view::before { opacity: 1; }
+
+/* =========================================================
+   Prototype-only: chat with Julia (DS candidate: chat icon + chat panel)
+   The chat icon sits in the bar, next to the mic (decided). It opens the chat side panel.
+   */
+
+/* in the bar: a round pill like the mic (tone-6 fill, tone-5 hover), 16px right of the mic */
+.chat-pill {
+  position: absolute;
+  left: calc(50% + var(--ds-space-8) + var(--ds-space-1-5) + var(--ds-space-4)); /* half the 76px mic + a 16px gap */
+  top: 50%;
+  translate: 0 -50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--app-pill-h);
+  height: var(--app-pill-h);
+  border: 0;
+  border-radius: 50%;
+  background: var(--ds-tone-6);
+  color: var(--ds-tone-1);
+  cursor: pointer;
+  transition: background var(--ds-duration-base) ease, box-shadow var(--ds-duration-exit) ease,
+    opacity var(--ds-duration-exit) ease, visibility var(--ds-duration-exit);
+}
+.chat-pill:hover { background: var(--ds-tone-5); }
+.chat-pill[aria-expanded="true"] { box-shadow: inset 0 0 0 2px var(--ds-primary); color: var(--ds-primary); }
+.bottom-bar.watching .chat-pill { opacity: 0; visibility: hidden; }
+
+
+/* The chat is a side panel, not a floating card: it takes the right edge, top to bottom, and the
+   whole layout moves left to make room (.chat-docked on .frame). Built the DS way: a --ds-paper
+   panel (the DS surface for panels), one tone-5 divider on its edge (the DS border), no corners,
+   no shadow. */
+:root { --app-chat-w: calc(var(--ds-space-16) * 5 + var(--ds-space-8)); /* 352px */ }
+
+.frame { transition: padding-right var(--ds-duration-exit) var(--ds-ease-out); }
+.frame.chat-docked { padding-right: var(--app-chat-w); }
+.bottom-bar { transition: right var(--ds-duration-exit) var(--ds-ease-out); }
+.frame.chat-docked .bottom-bar { right: var(--app-chat-w); width: auto; }
+
+/* with less room, the card gives way and Julia takes her smaller size (the full-size pair is wider
+   than what's left) */
+.frame.chat-docked .flashcard,
+.frame.chat-docked .reading-card { flex: 0 1 auto; min-width: 0; }
+.frame.chat-docked .avatar:not(.minimized) { width: var(--app-avatar-shrunk-w); height: var(--app-avatar-shrunk-h); }
+.frame.chat-docked .avatar:not(.minimized) .avatar-tag { opacity: 0; }
+
+.chat-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: calc(var(--ds-z-dropdown) - 1); /* under the demo panels */
+  display: flex;
+  flex-direction: column;
+  width: var(--app-chat-w);
+  border-left: 1px solid var(--ds-tone-5);
+  background: var(--ds-paper);
+  animation: chat-in var(--ds-duration-exit) var(--ds-ease-out);
+}
+.chat-panel[hidden] { display: none; }
+@keyframes chat-in {
+  from { translate: 100% 0; }
+}
+
+/* header: like the DS modal header (18px bold title, divider under it, the X on the right) */
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4) var(--ds-space-4) var(--ds-space-4) var(--ds-space-6);
+  border-bottom: 1px solid var(--ds-tone-5);
+}
+.chat-header-text { flex: 1; min-width: 0; }
+.chat-title {
+  margin: 0;
+  font-size: var(--ds-font-size-6);
+  font-weight: var(--ds-font-weight-bold);
+  line-height: var(--ds-line-height-24);
+  color: var(--ds-tone-1);
+}
+.chat-subtitle {
+  margin: 0;
+  font-size: var(--ds-font-size-4);
+  line-height: var(--ds-line-height-20);
+  color: var(--ds-tone-2);
+}
+
+/* holds the messages and the "View new messages" button over them */
+.chat-body {
+  position: relative;
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+.chat-messages {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-6);
+  overflow-y: auto;
+}
+/* bubbles: DS corners (12px, 4px at the tail), the body size of the lesson (16px) */
+.chat-bubble {
+  max-width: 85%;
+  margin: 0;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border: 1px solid transparent;
+  border-radius: var(--ds-roundness-3);
+  font-size: var(--ds-font-size-5);
+  line-height: var(--ds-line-height-24);
+  unicode-bidi: plaintext; /* Hebrew or Arabic reads right to left on its own (with dir="auto") */
+}
+.chat-bubble.from-julia { align-self: flex-start; border-bottom-left-radius: var(--ds-roundness-1); }
+.chat-bubble.from-me { align-self: flex-end; border-bottom-right-radius: var(--ds-roundness-1); }
+
+/* Bubble colors (option B, decided 2026-11-18): Julia light blue, me neutral grey. DS tokens only. */
+.chat-bubble.from-julia { background: var(--ds-primary-tint-10); color: var(--ds-tone-1); }
+.chat-bubble.from-me { background: var(--ds-tone-6); color: var(--ds-tone-1); }
+
+/* ===== Prototype-only: "View new messages" (DS candidate) =====
+   The DS has no such button. Built as a DS floating layer: the elevated surface with the floating
+   shadow, tone-1 text (dark #333 with white text in dark, white with dark text in light), 14px
+   bold like the DS hint, 8px corners, 32px high like a DS md button. Centered just above the field. */
+.chat-new-messages {
+  position: absolute;
+  left: 50%;
+  bottom: var(--ds-space-4);
+  translate: -50% 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  height: var(--ds-space-8);
+  padding: 0 var(--ds-space-3);
+  border: 0;
+  border-radius: var(--ds-roundness-2);
+  background: var(--ds-elevated);
+  box-shadow: var(--ds-shadow-floating);
+  color: var(--ds-tone-1);
+  font-family: inherit;
+  font-size: var(--ds-font-size-4);
+  font-weight: var(--ds-font-weight-bold);
+  line-height: var(--ds-line-height-18);
+  white-space: nowrap;
+  cursor: pointer;
+  animation: chat-new-in var(--ds-duration-base) var(--ds-ease-out);
+  transition: background var(--ds-duration-base) ease;
+}
+.chat-new-messages[hidden] { display: none; }
+.chat-new-messages:hover { background: var(--ds-tone-6); }
+.chat-new-messages:focus-visible { outline: 2px solid var(--ds-primary); outline-offset: 2px; }
+@keyframes chat-new-in {
+  from { opacity: 0; translate: -50% var(--ds-space-2); }
+}
+
+/* ===== Prototype-only: "Julia is typing" bubble (DS candidate) =====
+   Julia's bubble with three tone-2 dots that light up in turn. */
+.chat-bubble.chat-typing { display: inline-flex; align-items: center; gap: var(--ds-space-1); min-height: calc(var(--ds-space-6) * 2); } /* 48px: a one-line bubble */
+.chat-typing i {
+  width: var(--ds-space-1-5);
+  height: var(--ds-space-1-5);
+  border-radius: 50%;
+  background: var(--ds-tone-2);
+  animation: chat-typing-dot 1.2s ease-in-out infinite;
+}
+.chat-typing i:nth-child(2) { animation-delay: 0.15s; }
+.chat-typing i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes chat-typing-dot {
+  0%, 60%, 100% { opacity: 0.35; translate: 0 0; }
+  30%           { opacity: 1;    translate: 0 calc(var(--ds-space-0-5) * -1); }
+}
+
+.chat-compose {
+  margin: 0;
+  padding: var(--ds-space-4);
+  border-top: 1px solid var(--ds-tone-5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-panel, .frame, .bottom-bar, .chat-new-messages, .chat-typing i { animation: none; transition: none; }
+  .chat-typing i { opacity: 0.6; }
+}
+
+/* =========================================================
+   Prototype-only: minimize Julia (DS candidate: minimized avatar tile)
+   The "Minimize Julia" tab (.mini-demo on .avatar-view): the Julia states panel shrinks her
+   into a 64px circle in place of the mic and the card moves to the middle; a click floats her up
+   as a 200px circle to talk (app.js animates every move). As in the LXP (lxp-teams demo1).
+   ========================================================= */
+.mini-restore { display: none; }
+
+.mini-demo .avatar { transition: none; } /* app.js animates the move; no size transition under it */
+
+
+/* Minimized, as in the LXP (lxp-teams demo1, Figma 67:10784): a 64px circle centered in the bar,
+   in place of the mic, zoomed onto her face. A tone-8 ring (white in light, black in dark) and the
+   DS floating shadow lift it off the page; on hover or keyboard focus the ring turns primary. */
+.mini-demo .avatar.minimized {
+  position: fixed;
+  z-index: 3;
+  left: calc(50% - var(--ds-space-8));
+  bottom: calc(var(--app-controls-h) / 2 - var(--ds-space-8));
+  width: var(--ds-space-16);   /* 64px */
+  height: var(--ds-space-16);
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 0 0 var(--ds-space-0-5) var(--ds-tone-8), var(--ds-shadow-floating);
+  transition: box-shadow var(--ds-duration-base) ease;
+}
+.mini-demo .avatar.minimized:has(.mini-restore:hover, .mini-restore:focus-visible) {
+  box-shadow: 0 0 0 var(--ds-space-0-5) var(--ds-primary), var(--ds-shadow-floating);
+}
+.mini-demo .avatar.minimized video {
+  border-radius: 0;
+  transform-origin: 50% 16%;
+  scale: 1.8; /* her face fills the circle */
+}
+.mini-demo .avatar.minimized::before { display: none; } /* no glow under the small tile */
+.mini-demo .avatar.minimized .avatar-tag,
+.mini-demo .avatar.minimized .hint-button,
+.mini-demo .avatar.minimized .avatar-joining { display: none; }
+
+/* the whole circle is the button that floats her up to talk */
+.mini-demo .avatar.minimized .mini-restore {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+.mini-demo .avatar.minimized .mini-restore:focus-visible { outline: none; } /* the ring shows focus */
+
+/* Talking, as in the LXP: she grows into a 200px circle floating at the bottom right, above the
+   bar; the mic comes back so the student can talk; the X takes her back to the circle. */
+.mini-demo .avatar.minimized.talking {
+  left: auto;
+  right: var(--ds-space-8);
+  bottom: calc(var(--app-controls-h) + var(--ds-space-4));
+  width: calc(var(--ds-space-16) * 3 + var(--ds-space-2)); /* 200px */
+  height: calc(var(--ds-space-16) * 3 + var(--ds-space-2));
+  box-shadow: 0 0 0 var(--ds-space-0-75) var(--ds-tone-8), var(--ds-shadow-floating);
+}
+.mini-demo .avatar.minimized.talking video { scale: 1.3; }
+.mini-demo .avatar.minimized.talking .mini-restore { display: none; }
+
+/* The X, as in the LXP: a 32px badge on the circle's upper right edge (155px in, 13px down from
+   the circle's corner), outside the circle so it is never clipped. tone-8 with a tone-1 icon,
+   tone-7 on hover. It pops in once she has arrived. */
+.mini-talk-close {
+  position: fixed;
+  z-index: 4;
+  right: calc(var(--ds-space-8) + var(--ds-space-3) + var(--ds-space-0-25));                       /* 45px */
+  bottom: calc(var(--app-controls-h) + var(--ds-space-4) + var(--ds-space-16) * 2 + var(--ds-space-6) + var(--ds-space-0-75)); /* circle bottom + 155px */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ds-space-8);
+  height: var(--ds-space-8);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--ds-tone-8);
+  color: var(--ds-tone-1);
+  box-shadow: var(--ds-shadow-menu);
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  scale: 0.6;
+  transition: opacity var(--ds-duration-base) ease, scale var(--ds-duration-base) ease, visibility var(--ds-duration-base), background var(--ds-duration-base) ease;
+}
+.mini-talk-close:hover { background: var(--ds-tone-7); }
+.mini-talk-close:focus-visible { outline: 2px solid var(--ds-primary); outline-offset: 2px; }
+.avatar-view.julia-talking .mini-talk-close {
+  opacity: 1;
+  visibility: visible;
+  scale: 1;
+  transition-delay: 0.5s; /* after she has floated up */
+}
+.frame.chat-docked .mini-talk-close { right: calc(var(--app-chat-w) + var(--ds-space-8) + var(--ds-space-3) + var(--ds-space-0-25)); }
+/* her face zooms with the same move */
+.mini-demo .avatar video { transition: scale 0.7s cubic-bezier(0.2, 0.8, 0.2, 1), filter var(--ds-duration-enter) var(--ds-ease-out); }
+
+/* the mic leaves the bar while she sits in its place, and comes back when she floats up to talk */
+.avatar-view.julia-minimized .mic-pill {
+  opacity: 0;
+  visibility: hidden;
+  translate: 0 var(--ds-space-8);
+}
+.mic-pill { transition: background var(--ds-duration-base) ease, box-shadow var(--ds-duration-exit) ease, opacity var(--ds-duration-exit) ease, visibility var(--ds-duration-exit), translate var(--ds-duration-exit) var(--ds-ease-out); }
+
+/* with the chat open the bar is narrower: she stays in the middle of it, or left of the chat */
+.frame.chat-docked .mini-demo .avatar.minimized { left: calc((100% - var(--app-chat-w)) / 2 - var(--ds-space-8)); }
+.frame.chat-docked .mini-demo .avatar.minimized.talking { left: auto; right: calc(var(--app-chat-w) + var(--ds-space-8)); }
+
+/* =========================================================
+   Prototype-only: mic states panel (demo controls; T opens it)
+   Every state of the mic with the use case it's for. A click shows it in the real bar.
+   ========================================================= */
+.mic-states-panel {
+  left: 50%;
+  top: var(--ds-space-16);
+  bottom: auto;
+  translate: -50% 0;
+}
+.mic-states-panel[hidden] { display: none; }
+/* the Julia states panel opens on the right, the chat states panel on the left */
+.julia-states-panel { left: auto; right: var(--ds-space-4); translate: none; }
+/* the chat states panel opens on the left, so it doesn't cover the mic states panel or the chat */
+.chat-states-panel { left: var(--ds-space-4); translate: none; }
+.mic-states-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  width: calc(var(--ds-space-16) * 6); /* 384px */
+  padding: var(--ds-space-3);
+}
+.mic-states-panel .demo-panel-legend { margin: 0; }
+.mic-states-hint { font-weight: var(--ds-font-weight-regular); }
+.mic-states { display: flex; flex-direction: column; gap: var(--ds-space-1); margin: 0; padding: 0; list-style: none; }
+.mic-state {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  width: 100%;
+  padding: var(--ds-space-2);
+  border: 0;
+  border-radius: var(--ds-roundness-2);
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.mic-state:hover { background: var(--ds-tone-7); }
+.mic-state[aria-pressed="true"] { background: var(--ds-primary-tint-10); }
+/* a small copy of the mic pill: tone-6 fill, blue ring while listening */
+.mic-state-pill {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--ds-space-8) + var(--ds-space-2));
+  height: calc(var(--ds-space-8) + var(--ds-space-2));
+  border-radius: 50%;
+  background: var(--ds-tone-6);
+  color: var(--ds-tone-1);
+}
+.mic-state-pill.listening { box-shadow: inset 0 0 0 2px var(--ds-primary); }
+.mic-state-text { display: flex; flex-direction: column; gap: var(--ds-space-0-5); min-width: 0; }
+.mic-state-name { font-size: var(--ds-font-size-4); font-weight: var(--ds-font-weight-bold); line-height: var(--ds-line-height-20); color: var(--ds-tone-1); }
+.mic-state-use { font-size: var(--ds-font-size-2); line-height: var(--ds-line-height-16); color: var(--ds-tone-2); }
+
+/* =========================================================
+   Prototype-only: End button at the top right (option in the demo panel, data-end-spot)
+   Then the minimized Julia takes the bottom right corner (above the bar), away from End.
+   ========================================================= */
+:root[data-end-spot="top"] .end-pill {
+  position: fixed;
+  top: var(--ds-space-4);
+  right: var(--ds-space-4);
+  transform: none;
+  z-index: 3;
+}
+.frame.chat-docked .end-pill { transition: right var(--ds-duration-exit) var(--ds-ease-out); }
+:root[data-end-spot="top"] .frame.chat-docked .end-pill { right: calc(var(--app-chat-w) + var(--ds-space-4)); }
+/* bottom edge lines up with the bottom of the mic and chat pills (both centered in the 96px row) */
+:root[data-end-spot="top"] .mini-demo .avatar.minimized {
+  top: auto;
+  bottom: calc((var(--app-controls-h) - var(--app-pill-h)) / 2);
+}
+
+/* =========================================================
+   Prototype-only: splash screen ("Splash screen" tab; DS candidate with the avatar joining tile)
+   Before the lesson starts: Julia loads in the middle of the screen with the loading look picked
+   in the "Avatar loading" panel (4. Mist so far), and "Joining..." under her. Nothing else of the
+   lesson shows: no card, no progress, and the bar keeps only the mic and End (as in the Figma
+   "Joining..." frame, 10070:5974). Then she appears, moves to her place and the lesson starts (app.js).
+   ========================================================= */
+.splash-loading { display: none; }
+.avatar-view.splash-demo .product-header,
+.avatar-view.splash-demo .canvas.active > :not(.avatar):not(.splash-loading),
+.avatar-view.splash-demo .indicators,
+.avatar-view.splash-demo .hint-button { display: none; }
+.avatar-view.splash-demo .canvas.active {
+  flex-direction: column;
+  gap: var(--ds-space-6);
+}
+/* Intro size, as in production (kino.kaltura.com, measured 2026-11-18 on a 2560x1440 screen):
+   600px wide at 3:4 (up to 800px tall), centered; it does not grow with the screen. On a short
+   screen it scales down as a whole to fit (still 3:4, nothing cropped). Bigger than in the lesson
+   (406x541): when the lesson starts she shrinks into her place (app.js). */
+:root { --app-avatar-intro-w: calc(var(--ds-space-16) * 9 + var(--ds-space-6)); } /* 600px */
+.avatar-view.splash-demo .canvas.active { container-type: size; } /* so she can size to its height */
+.avatar-view.splash-demo .canvas.active {
+  /* her intro width: 600, or as wide as 3:4 allows in the height left over after "Joining..." */
+  --app-intro-live: min(var(--app-avatar-intro-w), 100cqw,
+    (100cqh - var(--ds-space-6) - var(--ds-font-size-h3) * var(--ds-line-height-h3)) * 3 / 4);
+}
+.avatar-view.splash-demo .avatar {
+  width: var(--app-intro-live);
+  height: auto;
+  aspect-ratio: 3 / 4;
+  flex-shrink: 0;
+}
+/* "Joining..." sits right under the loading look (the haze fills about the middle 60% of her
+   tile), not under the whole 600x800 tile, so the two read as one group in the middle of the screen */
+.avatar-view.splash-demo .splash-loading {
+  position: relative;
+  z-index: 4;
+  margin-top: calc(var(--app-intro-live) * 4 / 3 * -0.2);
+}
+.avatar-view.splash-demo .splash-loading {
+  display: block;
+  margin: 0;
+  font-size: var(--ds-font-size-h3);           /* 24px, new in DS v1.1 */
+  font-weight: var(--ds-font-weight-bold);
+  line-height: var(--ds-line-height-h3);
+  color: var(--ds-tone-1);
+  text-align: center;
+  transition: opacity var(--ds-duration-exit) ease;
+}
+/* she has arrived: "Joining..." fades out (it keeps its space, so she doesn't jump) */
+.avatar-view.splash-arrived .splash-loading { opacity: 0; }
+
+/* =========================================================
+   Prototype-only: mic and chat locked while Julia is joining (DS candidate)
+   The DS v1.1 disabled button: no fill, a tone-4 outline and tone-4 icon, not clickable. Both
+   stay in their place so the bar looks the same before and after she arrives; only what can be
+   clicked changes. app.js sets `disabled` on both while the loading look plays.
+   ========================================================= */
+.mic-pill:disabled,
+.chat-pill:disabled {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--ds-tone-4); /* an outline that doesn't change the size */
+  color: var(--ds-tone-4);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.mic-state-pill.disabled { background: transparent; box-shadow: inset 0 0 0 1px var(--ds-tone-4); color: var(--ds-tone-4); }
+
+/* Splash: the mic and the chat are centered as a pair (in the lesson the mic is centered and the
+   chat sits 16px to its right); when the lesson starts they slide back */
+.avatar-view.splash-demo .mic-pill { translate: calc((var(--app-pill-h) + var(--ds-space-4)) / -2) 0; }
+.avatar-view.splash-demo .chat-pill { translate: calc((var(--app-pill-h) + var(--ds-space-4)) / -2) -50%; }
+.chat-pill { transition: background var(--ds-duration-base) ease, box-shadow var(--ds-duration-exit) ease, opacity var(--ds-duration-exit) ease, visibility var(--ds-duration-exit), translate var(--ds-duration-exit) var(--ds-ease-out); }

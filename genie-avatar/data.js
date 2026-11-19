@@ -104,6 +104,27 @@ window.APP_DATA = {
     }
   ],
 
+  // Main colors of each avatar image, used when the page can't read the pixels (file://).
+  // Computed from the image the same way app.js does (dark / middle / light groups + most saturated).
+  avatarPalettes: {
+    'assets/avatar.png': { dark: '#5b5c3f', mid: '#9a9279', light: '#cbc7b5', accent: '#b9895f' }
+  },
+
+  // Audio devices in the avatar call mic menu (one checked per group)
+  devices: [
+    { group: 'mic', title: 'Choose microphone', items: [
+      { label: 'MacBook Pro Microphone (Built-in)', checked: true },
+      { label: 'USB audio CODEC (08bb:2912)' },
+      { label: 'Logitech Webcam C930e (046d:085b)' },
+      { label: 'Default - MacBook Pro Microphone (Built-in)' }
+    ] },
+    { group: 'speaker', title: 'Choose speaker', items: [
+      { label: 'Default - MacBook Pro Speakers (Built-in)' },
+      { label: 'USB audio CODEC (08bb:2912)' },
+      { label: 'MacBook Pro Speakers (Built-in)', checked: true }
+    ] }
+  ],
+
   // Viewers shown on every channel card
   viewers: ['assets/user-1.png', 'assets/user-2.png', 'assets/user-3.png']
 };

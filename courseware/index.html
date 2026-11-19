@@ -17,9 +17,14 @@
   </div>
 
   <div class="frame">
-    <header class="site-header">
-      <!-- Demo navigation between activities (not part of the product): DS tabs -->
-      <div class="ds-tabs site-nav" role="tablist" aria-label="Activities">
+    <!-- Demo controls (not part of the product): a floating panel, dragged from anywhere on it -->
+    <div class="demo-panel" id="demo-panel" role="region" aria-label="Demo controls" title="Drag to move">
+      <div class="demo-panel-handle" aria-hidden="true">
+        <ds-icon name="grip" size="16"></ds-icon>
+      </div>
+      <div class="demo-panel-body">
+      <!-- Demo navigation between activities: DS tabs -->
+      <div class="ds-tabs site-nav" role="tablist" aria-label="Activities" aria-orientation="vertical">
         <button class="ds-tab" role="tab" aria-selected="true" data-value="0">Quiz</button>
         <button class="ds-tab" role="tab" aria-selected="false" data-value="1" tabindex="-1">Reading activity</button>
         <button class="ds-tab" role="tab" aria-selected="false" data-value="7" tabindex="-1">Input activity</button>
@@ -27,6 +32,15 @@
         <button class="ds-tab" role="tab" aria-selected="false" data-value="2" tabindex="-1">Watch a video</button>
         <button class="ds-tab" role="tab" aria-selected="false" data-value="5" tabindex="-1">End of milestone</button>
         <button class="ds-tab" role="tab" aria-selected="false" data-value="6" tabindex="-1">Lesson completed</button>
+        <!-- the session ended midway: the lesson is paused (also what the End button does) -->
+        <button class="ds-tab" role="tab" aria-selected="false" data-value="pause" tabindex="-1">Session paused</button>
+        <!-- layout trial: the lesson's steps in one big card, stepped with ‹ › (hidden from the panel for now, 2026-11-18) -->
+        <button class="ds-tab" role="tab" aria-selected="false" data-value="9" tabindex="-1" hidden>Card layout</button>
+        <!-- simplest flow: Julia minimizes to a small tile in the corner and comes back on a click
+             (hidden from the panel, 2026-11-18: the Julia states panel already shows it; code kept, Julia states uses it) -->
+        <button class="ds-tab" role="tab" aria-selected="false" data-value="mini" tabindex="-1" hidden>Minimize Julia</button>
+        <!-- before the lesson: Julia loads in the middle of the screen with "Joining..." (Figma 10070:5974), then the lesson starts -->
+        <button class="ds-tab" role="tab" aria-selected="false" data-value="splash" tabindex="-1">Splash screen</button>
         <!-- the glide variants are kept out of the tab bar (nothing reveals them for now) -->
         <button class="ds-tab" role="tab" aria-selected="false" data-value="3" tabindex="-1" hidden>End of milestone (glide)</button>
         <button class="ds-tab" role="tab" aria-selected="false" data-value="4" tabindex="-1" hidden>Lesson completed (glide)</button>
@@ -46,36 +60,204 @@
             <span class="ds-switch-label">Dark theme</span>
           </div>
         </div>
+        <!-- Compare: on = one token per style (after), off = the earlier per-theme token swaps (before) -->
+        <div class="ds-switch" id="token-fixes-toggle">
+          <button class="ds-switch-track ds-switch-sm ds-switch-on" role="switch" aria-checked="true" aria-label="Same-token fixes"><span class="ds-switch-handle"></span></button>
+          <div class="ds-switch-content">
+            <span class="ds-switch-label">Same-token fixes</span>
+          </div>
+        </div>
+        <!-- Compare the card shadow: on = the LXP shadow (after), off = the DS floating shadow (before) -->
+        <div class="ds-switch" id="card-shadow-toggle">
+          <button class="ds-switch-track ds-switch-sm ds-switch-on" role="switch" aria-checked="true" aria-label="LXP card shadow"><span class="ds-switch-handle"></span></button>
+          <div class="ds-switch-content">
+            <span class="ds-switch-label">LXP card shadow</span>
+          </div>
+        </div>
+        <!-- Shine trials: a soft white see-through reflection on the cards / on the screen (shows in dark) -->
+        <div class="ds-switch" id="card-shine-toggle">
+          <button class="ds-switch-track ds-switch-sm ds-switch-off" role="switch" aria-checked="false" aria-label="Card shine"><span class="ds-switch-handle"></span></button>
+          <div class="ds-switch-content">
+            <span class="ds-switch-label">Card shine</span>
+          </div>
+        </div>
+        <div class="ds-switch" id="screen-shine-toggle">
+          <button class="ds-switch-track ds-switch-sm ds-switch-off" role="switch" aria-checked="false" aria-label="Screen shine"><span class="ds-switch-handle"></span></button>
+          <div class="ds-switch-content">
+            <span class="ds-switch-label">Screen shine</span>
+          </div>
+        </div>
+        <!-- Plays "the student talks while muted" (hint + ripple) on the screen showing now; T does the same -->
+        <button class="ds-btn ds-btn-sm ds-btn-secondary talk-muted-demo" id="mic-states-toggle" type="button">Mic states (T)</button>
+        <button class="ds-btn ds-btn-sm ds-btn-secondary talk-muted-demo" id="julia-states-toggle" type="button">Julia states (J)</button>
+        <button class="ds-btn ds-btn-sm ds-btn-secondary talk-muted-demo" id="step-cues-toggle" type="button">Progress: current step (S)</button>
       </div>
-    </header>
+      </div>
+    </div>
+
+    <!-- Demo controls (not part of the product): every mic state with its use case. T opens and
+         closes it; a click on a state shows it in the real bar. -->
+    <div class="demo-panel mic-states-panel" id="mic-states-panel" role="region" aria-label="Mic states" title="Drag to move" hidden>
+      <div class="demo-panel-handle" aria-hidden="true">
+        <ds-icon name="grip" size="16"></ds-icon>
+      </div>
+      <div class="demo-panel-body mic-states-body">
+        <p class="demo-panel-legend">Mic states <span class="mic-states-hint">· click one to show it · T closes</span></p>
+        <ul class="mic-states">
+          <li><button class="mic-state" type="button" data-state="joining">
+            <span class="mic-state-pill disabled" aria-hidden="true"><ds-icon name="microphone" size="24"></ds-icon></span>
+            <span class="mic-state-text"><span class="mic-state-name">Joining</span><span class="mic-state-use">Julia is still loading (the splash screen, or the start of the lesson): the mic and the chat are disabled until she arrives.</span></span>
+          </button></li>
+          <li><button class="mic-state" type="button" data-state="idle">
+            <span class="mic-state-pill " aria-hidden="true"><ds-icon name="microphone" size="24"></ds-icon></span>
+            <span class="mic-state-text"><span class="mic-state-name">Mic on</span><span class="mic-state-use">Julia talks or waits. The student can speak at any moment, just by talking.</span></span>
+          </button></li>
+          <li><button class="mic-state" type="button" data-state="listening">
+            <span class="mic-state-pill listening" aria-hidden="true"><ds-icon name="microphone" size="24"></ds-icon></span>
+            <span class="mic-state-text"><span class="mic-state-name">Listening</span><span class="mic-state-use">The student is talking: blue ring and “Listening...” over the mic.</span></span>
+          </button></li>
+          <li><button class="mic-state" type="button" data-state="thinking">
+            <span class="mic-state-pill " aria-hidden="true"><ds-icon name="microphone" size="24"></ds-icon></span>
+            <span class="mic-state-text"><span class="mic-state-name">Julia is getting the answer</span><span class="mic-state-use">The student stopped talking: the line over the mic cycles the 5 loader messages.</span></span>
+          </button></li>
+          <li><button class="mic-state" type="button" data-state="feedback">
+            <span class="mic-state-pill " aria-hidden="true"><ds-icon name="microphone" size="24"></ds-icon></span>
+            <span class="mic-state-text"><span class="mic-state-name">Answer feedback</span><span class="mic-state-use">After an answer: “Correct! Excellent job!” / “Great answer!” over the mic.</span></span>
+          </button></li>
+          <li><button class="mic-state" type="button" data-state="muted">
+            <span class="mic-state-pill muted" aria-hidden="true"><ds-icon name="microphone-muted" size="24"></ds-icon></span>
+            <span class="mic-state-text"><span class="mic-state-name">Muted by the student</span><span class="mic-state-use">The student clicked the mic to mute it: same pill, crossed-out mic, no line.</span></span>
+          </button></li>
+          <li><button class="mic-state" type="button" data-state="system-off">
+            <span class="mic-state-pill muted" aria-hidden="true"><ds-icon name="microphone-muted" size="24"></ds-icon></span>
+            <span class="mic-state-text"><span class="mic-state-name">Off while answering</span><span class="mic-state-use">The system turns the mic off while the student clicks or types an answer (quiz, writing). Same look as muted.</span></span>
+          </button></li>
+          <li><button class="mic-state" type="button" data-state="talk-muted">
+            <span class="mic-state-pill muted" aria-hidden="true"><ds-icon name="microphone-muted" size="24"></ds-icon></span>
+            <span class="mic-state-text"><span class="mic-state-name">Talking while muted</span><span class="mic-state-use">The student talks while muted: a hint (“You’re muted. Click the mic to talk”) and a soft ripple, ~3.5s.</span></span>
+          </button></li>
+          <li><button class="mic-state" type="button" data-state="permission">
+            <span class="mic-state-pill " aria-hidden="true"><ds-icon name="microphone" size="24"></ds-icon></span>
+            <span class="mic-state-text"><span class="mic-state-name">Asking for the mic</span><span class="mic-state-use">First time in the lesson: the browser asks for the mic. Chip: “⚠ Allow access to your mic”.</span></span>
+          </button></li>
+          <li><button class="mic-state" type="button" data-state="blocked">
+            <span class="mic-state-pill muted" aria-hidden="true"><ds-icon name="microphone-muted" size="24"></ds-icon></span>
+            <span class="mic-state-text"><span class="mic-state-name">Mic blocked</span><span class="mic-state-use">The student blocked the mic in the browser. Crossed-out mic + chip: “Enable your mic to talk”.</span></span>
+          </button></li>
+          <li><button class="mic-state" type="button" data-state="video">
+            <span class="mic-state-pill " aria-hidden="true"><ds-icon name="check" size="24"></ds-icon></span>
+            <span class="mic-state-text"><span class="mic-state-name">Watching a video</span><span class="mic-state-use">Watch a video: the mic leaves the bar and “I’m done watching” takes its place.</span></span>
+          </button></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Demo controls (not part of the product): 10 ways to show the current step in the progress bar.
+         S opens and closes it; a click shows that option on the real bar. Filled by app.js (STEP_CUES). -->
+    <div class="demo-panel mic-states-panel step-cues-panel" id="step-cues-panel" role="region" aria-label="Progress: current step" title="Drag to move" hidden>
+      <div class="demo-panel-handle" aria-hidden="true">
+        <ds-icon name="grip" size="16"></ds-icon>
+      </div>
+      <div class="demo-panel-body mic-states-body">
+        <p class="demo-panel-legend">Progress: current step <span class="mic-states-hint">· click one to show it · S closes</span></p>
+        <ul class="mic-states"></ul>
+      </div>
+    </div>
+
+    <!-- Demo controls (not part of the product): every state of Julia's tile, use cases not assigned yet. J opens
+         and closes it; a click shows that state on the quiz. -->
+    <div class="demo-panel mic-states-panel julia-states-panel" id="julia-states-panel" role="region" aria-label="Julia states" title="Drag to move" hidden>
+      <div class="demo-panel-handle" aria-hidden="true">
+        <ds-icon name="grip" size="16"></ds-icon>
+      </div>
+      <div class="demo-panel-body mic-states-body">
+        <p class="demo-panel-legend">Julia states <span class="mic-states-hint">· click one to show it · J closes</span></p>
+        <ul class="mic-states">
+          <li><button class="mic-state" type="button" data-julia-state="joining">
+            <span class="mic-state-pill" aria-hidden="true"><ds-icon name="time" size="24"></ds-icon></span>
+            <span class="mic-state-text"><span class="mic-state-name">Joining</span><span class="mic-state-use">The loading look in the middle of the screen, at the intro size, “Joining...” under it, mic and chat disabled.</span></span>
+          </button></li>
+          <li><button class="mic-state" type="button" data-julia-state="intro">
+            <span class="mic-state-pill" aria-hidden="true"><ds-icon name="user" size="24"></ds-icon></span>
+            <span class="mic-state-text"><span class="mic-state-name">Introduction</span><span class="mic-state-use">Alone in the middle of the screen, 600 wide (3:4), nothing else of the lesson.</span></span>
+          </button></li>
+          <li><button class="mic-state" type="button" data-julia-state="lesson">
+            <span class="mic-state-pill" aria-hidden="true"><ds-icon name="presenter" size="24"></ds-icon></span>
+            <span class="mic-state-text"><span class="mic-state-name">In the lesson</span><span class="mic-state-use">Her tile beside the card, the mic in the bar.</span></span>
+          </button></li>
+          <li><button class="mic-state" type="button" data-julia-state="minimized">
+            <span class="mic-state-pill" aria-hidden="true"><ds-icon name="minimize" size="24"></ds-icon></span>
+            <span class="mic-state-text"><span class="mic-state-name">Minimized</span><span class="mic-state-use">A 64px circle in the middle of the bar, in place of the mic; the card in the middle. Hover or focus: blue ring.</span></span>
+          </button></li>
+          <li><button class="mic-state" type="button" data-julia-state="talking">
+            <span class="mic-state-pill" aria-hidden="true"><ds-icon name="microphone" size="24"></ds-icon></span>
+            <span class="mic-state-text"><span class="mic-state-name">Talking</span><span class="mic-state-use">A 200px circle at the bottom right, above the bar; the mic is back; the X takes her back to the circle.</span></span>
+          </button></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Demo controls (not part of the product): every chat state with its use case. C opens and
+         closes it; a click on a state opens the chat in that state. -->
+    <div class="demo-panel mic-states-panel chat-states-panel" id="chat-states-panel" role="region" aria-label="Chat states" title="Drag to move" hidden>
+      <div class="demo-panel-handle" aria-hidden="true">
+        <ds-icon name="grip" size="16"></ds-icon>
+      </div>
+      <div class="demo-panel-body mic-states-body">
+        <p class="demo-panel-legend">Chat states <span class="mic-states-hint">· click one to show it · C closes</span></p>
+        <ul class="mic-states">
+          <li><button class="mic-state" type="button" data-chat-state="open">
+            <span class="mic-state-pill" aria-hidden="true"><ds-icon name="chat" size="24"></ds-icon></span>
+            <span class="mic-state-text"><span class="mic-state-name">Just opened</span><span class="mic-state-use">The student opens the chat for the first time in the lesson: only Julia’s greeting, the field is empty and Send is off.</span></span>
+          </button></li>
+          <li><button class="mic-state" type="button" data-chat-state="writing">
+            <span class="mic-state-pill" aria-hidden="true"><ds-icon name="edit" size="24"></ds-icon></span>
+            <span class="mic-state-text"><span class="mic-state-name">Writing</span><span class="mic-state-use">The student types a message: Send turns blue. Enter or Send posts it.</span></span>
+          </button></li>
+          <li><button class="mic-state" type="button" data-chat-state="typing">
+            <span class="mic-state-pill" aria-hidden="true"><ds-icon name="more-horizontal" size="24"></ds-icon></span>
+            <span class="mic-state-text"><span class="mic-state-name">Julia is typing</span><span class="mic-state-use">Right after the student sends: three dots in Julia’s bubble until her answer arrives (about a second).</span></span>
+          </button></li>
+          <li><button class="mic-state" type="button" data-chat-state="conversation">
+            <span class="mic-state-pill" aria-hidden="true"><ds-icon name="chat" size="24"></ds-icon></span>
+            <span class="mic-state-text"><span class="mic-state-name">Conversation</span><span class="mic-state-use">A few messages back and forth. New messages scroll into view at the bottom.</span></span>
+          </button></li>
+          <li><button class="mic-state" type="button" data-chat-state="new-messages">
+            <span class="mic-state-pill" aria-hidden="true"><ds-icon name="chevron-down" size="24"></ds-icon></span>
+            <span class="mic-state-text"><span class="mic-state-name">View new messages</span><span class="mic-state-use">The student scrolled up to read earlier messages and Julia wrote something new: the chat stays where it is, and a “View new messages” button shows over the field. A click scrolls down to it.</span></span>
+          </button></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Demo controls (not part of the product): Julia's loading look when the lesson opens.
+         ‹ › move between the looks (each plays right away); Replay plays it again. -->
+    <div class="demo-panel join-panel" id="join-panel" role="region" aria-label="Avatar loading options" title="Drag to move" hidden>
+      <div class="demo-panel-handle" aria-hidden="true">
+        <ds-icon name="grip" size="16"></ds-icon>
+      </div>
+      <div class="demo-panel-body join-panel-body">
+        <p class="demo-panel-legend">Avatar loading</p>
+        <div class="join-nav">
+          <button class="ds-btn ds-btn-sm ds-btn-secondary ds-btn-icon" id="join-prev" type="button" aria-label="Previous look"><ds-icon name="chevron-left" size="16"></ds-icon></button>
+          <span class="join-count" id="join-count" aria-live="polite">1 of 30</span>
+          <button class="ds-btn ds-btn-sm ds-btn-secondary ds-btn-icon" id="join-next" type="button" aria-label="Next look"><ds-icon name="chevron-right" size="16"></ds-icon></button>
+        </div>
+        <p class="join-name" id="join-name"></p>
+        <p class="join-desc" id="join-desc"></p>
+        <button class="ds-btn ds-btn-sm ds-btn-secondary join-replay" id="join-replay" type="button"><ds-icon name="refresh" size="16"></ds-icon> Replay</button>
+      </div>
+    </div>
 
     <div class="avatar-view">
-
-      <!-- Ambient mesh gradient background (off by default; the B key toggles it) -->
-      <div class="mesh" aria-hidden="true">
-        <span class="mesh-blob"></span>
-        <span class="mesh-blob"></span>
-        <span class="mesh-blob"></span>
-        <span class="mesh-blob"></span>
-        <span class="mesh-blob"></span>
-        <span class="mesh-blob"></span>
-        <span class="mesh-blob"></span>
-        <span class="mesh-blob"></span>
-        <span class="mesh-blob"></span>
-        <span class="mesh-blob"></span>
-        <span class="mesh-blob"></span>
-      </div>
-
-      <!-- Background lift: 10% lighter while the avatar is shrunk (works with or without the mesh) -->
-      <div class="bg-lift" aria-hidden="true"></div>
 
       <!-- Product header: student progress through the unit's components -->
       <header class="product-header">
         <ol class="steps" aria-label="Unit progress">
-          <li class="step"><span class="step-dot"><span>1</span></span><span class="sr-only"></span></li>
-          <li class="step"><span class="step-dot"><span>2</span></span><span class="sr-only"></span></li>
-          <li class="step"><span class="step-dot"><span>3</span></span><span class="sr-only"></span></li>
-          <li class="step"><span class="step-dot"><span>4</span></span><span class="sr-only"></span></li>
+          <li class="step"><span class="step-dot"><span>1</span><ds-icon class="step-check" name="check" size="16" aria-hidden="true"></ds-icon></span><span class="sr-only"></span></li>
+          <li class="step"><span class="step-dot"><span>2</span><ds-icon class="step-check" name="check" size="16" aria-hidden="true"></ds-icon></span><span class="sr-only"></span></li>
+          <li class="step"><span class="step-dot"><span>3</span><ds-icon class="step-check" name="check" size="16" aria-hidden="true"></ds-icon></span><span class="sr-only"></span></li>
+          <li class="step"><span class="step-dot"><span>4</span><ds-icon class="step-check" name="check" size="16" aria-hidden="true"></ds-icon></span><span class="sr-only"></span></li>
         </ol>
       </header>
 
@@ -111,11 +293,18 @@
             </div>
           </div>
 
-          <div class="cta">
-            <button class="ds-btn ds-btn-xl ds-btn-primary cta-button" type="button" disabled>
+          <!-- Card footer (English Learning Module): Back on the left, the actions on the right. All DS buttons. -->
+          <div class="card-foot">
+            <button class="ds-btn ds-btn-xl ds-btn-secondary ds-btn-borderless foot-back" type="button"><ds-icon name="arrow-left"></ds-icon><span>Back</span></button>
+            <div class="card-foot-end">
+              <button class="ds-btn ds-btn-xl ds-btn-secondary ds-btn-borderless foot-skip" type="button"><span>Skip for now</span></button>
+              <button class="ds-btn ds-btn-xl ds-btn-primary cta-button" type="button" disabled>
               <span>Confirm answer</span>
               <ds-icon name="arrow-right"></ds-icon>
             </button>
+              <!-- review mode: the only action -->
+              <button class="ds-btn ds-btn-xl ds-btn-primary foot-continue" type="button"><span>Continue</span><ds-icon name="arrow-right"></ds-icon></button>
+            </div>
           </div>
         </section>
 
@@ -125,6 +314,8 @@
           <div class="avatar-tag"><p class="avatar-tag-name">Julia</p><p class="avatar-tag-title">Your English tutor</p></div>
           <button class="hint-button" type="button" tabindex="-1"><span>Ask for a hint</span></button>
         </div>
+        <!-- Splash screen only: under Julia while she loads -->
+        <p class="splash-loading" aria-live="polite">Joining...</p>
       </div>
 
       <!-- Activity 2: read aloud -->
@@ -155,7 +346,17 @@
             </div>
           </div>
 
-          <button class="ds-btn ds-btn-xl ds-btn-primary read-button outlined" type="button"><span>Start reading</span></button>
+          <!-- Card footer (English Learning Module): Back on the left, the actions on the right. All DS buttons. -->
+          <div class="card-foot">
+            <button class="ds-btn ds-btn-xl ds-btn-secondary ds-btn-borderless foot-back" type="button"><ds-icon name="arrow-left"></ds-icon><span>Back</span></button>
+            <div class="card-foot-end">
+              <button class="ds-btn ds-btn-xl ds-btn-secondary ds-btn-borderless foot-skip" type="button"><span>Skip for now</span></button>
+              <button class="ds-btn ds-btn-xl ds-btn-secondary read-again" type="button" hidden><span>Read again</span></button>
+              <button class="ds-btn ds-btn-xl ds-btn-primary read-button outlined" type="button"><ds-icon class="read-check" name="check" hidden></ds-icon><span>Start reading</span><ds-icon class="read-arrow" name="arrow-right" hidden></ds-icon></button>
+              <!-- review mode: the only action -->
+              <button class="ds-btn ds-btn-xl ds-btn-primary foot-continue" type="button"><span>Continue</span><ds-icon name="arrow-right"></ds-icon></button>
+            </div>
+          </div>
         </section>
 
         <div class="avatar">
@@ -187,13 +388,23 @@
             <div class="title milestone-title" aria-live="polite">
               <p class="eyebrow">Congratulations</p>
               <h1>Milestone 2 reached!</h1>
+              <p class="milestone-skip-desc">Please complete all questions to finish this milestone.</p>
             </div>
             <div class="milestone-timeline"></div>
-            <div class="milestone-cta">
-              <button class="ds-btn ds-btn-xl ds-btn-primary cta-button outlined" id="continue-learning" type="button">
-                <span>Continue learning</span>
-                <ds-icon name="arrow-right"></ds-icon>
-              </button>
+            <!-- Card footer: Back + "Continue to <next milestone>"; when steps were skipped,
+                 "Continue anyway" + "Return to questions" instead. All DS buttons. -->
+            <div class="milestone-cta card-foot">
+              <button class="ds-btn ds-btn-xl ds-btn-secondary ds-btn-borderless foot-back" type="button"><ds-icon name="arrow-left"></ds-icon><span>Back</span></button>
+              <div class="card-foot-end milestone-done-actions">
+                <button class="ds-btn ds-btn-xl ds-btn-primary cta-button outlined" id="continue-learning" type="button">
+                  <span>Continue to Tell the story</span>
+                  <ds-icon name="arrow-right"></ds-icon>
+                </button>
+              </div>
+              <div class="card-foot-end milestone-skipped-actions">
+                <button class="ds-btn ds-btn-xl ds-btn-secondary milestone-continue-anyway" type="button"><span>Continue anyway</span></button>
+                <button class="ds-btn ds-btn-xl ds-btn-primary milestone-return" type="button"><span>Return to questions</span><ds-icon name="arrow-right"></ds-icon></button>
+              </div>
             </div>
           </div>
         </section>
@@ -241,13 +452,23 @@
             <div class="title milestone-title" aria-live="polite">
               <p class="eyebrow">Congratulations</p>
               <h1>Milestone 3 reached!</h1>
+              <p class="milestone-skip-desc">Please complete all questions to finish this milestone.</p>
             </div>
             <div class="milestone-timeline"></div>
-            <div class="milestone-cta">
-              <button class="ds-btn ds-btn-xl ds-btn-primary cta-button outlined" type="button">
-                <span>Continue learning</span>
-                <ds-icon name="arrow-right"></ds-icon>
-              </button>
+            <!-- Card footer: Back + "Continue to <next milestone>"; when steps were skipped,
+                 "Continue anyway" + "Return to questions" instead. All DS buttons. -->
+            <div class="milestone-cta card-foot">
+              <button class="ds-btn ds-btn-xl ds-btn-secondary ds-btn-borderless foot-back" type="button"><ds-icon name="arrow-left"></ds-icon><span>Back</span></button>
+              <div class="card-foot-end milestone-done-actions">
+                <button class="ds-btn ds-btn-xl ds-btn-primary cta-button outlined" type="button">
+                  <span>Continue to Tell the story</span>
+                  <ds-icon name="arrow-right"></ds-icon>
+                </button>
+              </div>
+              <div class="card-foot-end milestone-skipped-actions">
+                <button class="ds-btn ds-btn-xl ds-btn-secondary milestone-continue-anyway" type="button"><span>Continue anyway</span></button>
+                <button class="ds-btn ds-btn-xl ds-btn-primary milestone-return" type="button"><span>Return to questions</span><ds-icon name="arrow-right"></ds-icon></button>
+              </div>
             </div>
           </div>
         </section>
@@ -296,17 +517,26 @@
           </div>
 
           <div class="input-row">
-            <textarea class="input-box" aria-labelledby="input-question" placeholder="Type your answer here..." spellcheck="true"></textarea>
+            <textarea class="ds-textarea input-box" aria-labelledby="input-question" placeholder="Type your answer here..." spellcheck="true"></textarea>
 
             <div class="input-image-wrap">
               <img class="input-image" src="assets/mia-lunchbox.png" style="--ratio: 1448 / 1086" alt="" />
             </div>
           </div>
 
-          <button class="ds-btn ds-btn-xl ds-btn-primary cta-button" type="button" disabled>
-            <span>Confirm answer</span>
-            <ds-icon name="arrow-right"></ds-icon>
-          </button>
+          <!-- Card footer (English Learning Module): Back on the left, the actions on the right. All DS buttons. -->
+          <div class="card-foot">
+            <button class="ds-btn ds-btn-xl ds-btn-secondary ds-btn-borderless foot-back" type="button"><ds-icon name="arrow-left"></ds-icon><span>Back</span></button>
+            <div class="card-foot-end">
+              <button class="ds-btn ds-btn-xl ds-btn-secondary ds-btn-borderless foot-skip" type="button"><span>Skip for now</span></button>
+              <button class="ds-btn ds-btn-xl ds-btn-primary cta-button" type="button" disabled>
+              <span>Confirm answer</span>
+              <ds-icon name="arrow-right"></ds-icon>
+            </button>
+              <!-- review mode: the only action -->
+              <button class="ds-btn ds-btn-xl ds-btn-primary foot-continue" type="button"><span>Continue</span><ds-icon name="arrow-right"></ds-icon></button>
+            </div>
+          </div>
         </section>
 
         <div class="avatar">
@@ -330,13 +560,22 @@
               <img class="input-image" src="assets/mia-lunchbox.png" style="--ratio: 1448 / 1086" alt="" />
             </div>
 
-            <input class="input-box short" type="text" aria-labelledby="input-short-question" placeholder="Type a short sentence..." autocomplete="off" spellcheck="true" />
+            <input class="ds-input ds-input-xl input-box short" type="text" aria-labelledby="input-short-question" placeholder="Type a short sentence..." autocomplete="off" spellcheck="true" />
           </div>
 
-          <button class="ds-btn ds-btn-xl ds-btn-primary cta-button" type="button" disabled>
-            <span>Confirm answer</span>
-            <ds-icon name="arrow-right"></ds-icon>
-          </button>
+          <!-- Card footer (English Learning Module): Back on the left, the actions on the right. All DS buttons. -->
+          <div class="card-foot">
+            <button class="ds-btn ds-btn-xl ds-btn-secondary ds-btn-borderless foot-back" type="button"><ds-icon name="arrow-left"></ds-icon><span>Back</span></button>
+            <div class="card-foot-end">
+              <button class="ds-btn ds-btn-xl ds-btn-secondary ds-btn-borderless foot-skip" type="button"><span>Skip for now</span></button>
+              <button class="ds-btn ds-btn-xl ds-btn-primary cta-button" type="button" disabled>
+              <span>Confirm answer</span>
+              <ds-icon name="arrow-right"></ds-icon>
+            </button>
+              <!-- review mode: the only action -->
+              <button class="ds-btn ds-btn-xl ds-btn-primary foot-continue" type="button"><span>Continue</span><ds-icon name="arrow-right"></ds-icon></button>
+            </div>
+          </div>
         </section>
 
         <div class="avatar">
@@ -347,31 +586,182 @@
         </div>
       </div>
 
+      <!-- Activity 10: card layout (layout trial). The lesson's steps in one big card: the prompt
+           on the left (eyebrow, question, Julia's line in a speech bubble), the answers on the
+           right (options + "write your own"), and ‹ "Go deeper" › under the card to move between
+           steps. No avatar tile, mic bar or top progress in this layout. -->
+      <div class="canvas card-layout" data-activity="card-layout">
+        <p class="cl-lesson-title">This, that, these and those</p>
+
+        <section class="cl-card" aria-label="Lesson step">
+          <!-- Step 1: quiz -->
+          <div class="cl-step">
+            <div class="cl-prompt">
+              <div class="title">
+                <p class="eyebrow">Quiz</p>
+                <h1 id="cl-q1">Which sentence is correct?</h1>
+              </div>
+              <div class="cl-speaker">
+                <span class="ds-user-picture ds-user-picture-lg ds-user-picture-round"><img src="assets/julia-glow-cream.png" alt=""></span>
+                <div class="cl-speech">
+                  <p class="cl-speaker-name">Julia, your English tutor</p>
+                  <p class="cl-bubble">“Look at the book I’m holding. Which sentence describes it?”</p>
+                </div>
+              </div>
+            </div>
+            <div class="cl-response">
+              <div class="cl-answers" role="radiogroup" aria-labelledby="cl-q1">
+                <button class="answer" type="button" role="radio" aria-checked="false"><span class="pill"><span>A</span></span><span class="label">This is a book.</span></button>
+                <button class="answer" type="button" role="radio" aria-checked="false"><span class="pill"><span>B</span></span><span class="label">That is a book.</span></button>
+                <button class="answer" type="button" role="radio" aria-checked="false"><span class="pill"><span>C</span></span><span class="label">These is a book.</span></button>
+                <button class="answer" type="button" role="radio" aria-checked="false"><span class="pill"><span>D</span></span><span class="label">Those is a book.</span></button>
+              </div>
+              <div class="cl-own">
+                <input class="ds-input ds-input-xl cl-own-input" type="text" placeholder="Or write your own answer…" aria-label="Or write your own answer" autocomplete="off" spellcheck="true" />
+                <button class="ds-btn ds-btn-md ds-btn-primary ds-btn-icon cl-send" type="button" aria-label="Send answer" disabled><ds-icon name="arrow-right"></ds-icon></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: check your understanding -->
+          <div class="cl-step" hidden>
+            <div class="cl-prompt">
+              <div class="title">
+                <p class="eyebrow">Check your understanding</p>
+                <h1 id="cl-q2">Where did Mia find her lunchbox?</h1>
+              </div>
+              <div class="cl-speaker">
+                <span class="ds-user-picture ds-user-picture-lg ds-user-picture-round"><img src="assets/julia-glow-cream.png" alt=""></span>
+                <div class="cl-speech">
+                  <p class="cl-speaker-name">Julia, your English tutor</p>
+                  <p class="cl-bubble">“Think back to the story. Where did the mystery end?”</p>
+                </div>
+              </div>
+            </div>
+            <div class="cl-response">
+              <div class="cl-answers" role="radiogroup" aria-labelledby="cl-q2">
+                <button class="answer" type="button" role="radio" aria-checked="false"><span class="pill"><span>A</span></span><span class="label">“It was on a table in her brother’s classroom.”</span></button>
+                <button class="answer" type="button" role="radio" aria-checked="false"><span class="pill"><span>B</span></span><span class="label">“Noah found it in the library.”</span></button>
+                <button class="answer" type="button" role="radio" aria-checked="false"><span class="pill"><span>C</span></span><span class="label">“It was in her backpack all along.”</span></button>
+              </div>
+              <div class="cl-own">
+                <input class="ds-input ds-input-xl cl-own-input" type="text" placeholder="Or write your own answer…" aria-label="Or write your own answer" autocomplete="off" spellcheck="true" />
+                <button class="ds-btn ds-btn-md ds-btn-primary ds-btn-icon cl-send" type="button" aria-label="Send answer" disabled><ds-icon name="arrow-right"></ds-icon></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: open question -->
+          <div class="cl-step" hidden>
+            <div class="cl-prompt">
+              <div class="title">
+                <p class="eyebrow">Try it</p>
+                <h1 id="cl-q3">Why do you think the lunchbox ended up there?</h1>
+              </div>
+              <div class="cl-speaker">
+                <span class="ds-user-picture ds-user-picture-lg ds-user-picture-round"><img src="assets/julia-glow-cream.png" alt=""></span>
+                <div class="cl-speech">
+                  <p class="cl-speaker-name">Julia, your English tutor</p>
+                  <p class="cl-bubble">“There’s no wrong answer. Tell me what you think happened.”</p>
+                </div>
+              </div>
+            </div>
+            <div class="cl-response">
+              <div class="cl-own long">
+                <textarea class="ds-textarea cl-own-input" placeholder="Write your answer…" aria-labelledby="cl-q3" spellcheck="true"></textarea>
+                <button class="ds-btn ds-btn-md ds-btn-primary ds-btn-icon cl-send" type="button" aria-label="Send answer" disabled><ds-icon name="arrow-right"></ds-icon></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card footer: the same base as the other screens (Back · Skip for now · main button). DS buttons. -->
+          <div class="card-foot cl-foot">
+            <button class="ds-btn ds-btn-xl ds-btn-secondary ds-btn-borderless cl-back" type="button"><ds-icon name="arrow-left"></ds-icon><span>Back</span></button>
+            <div class="card-foot-end">
+              <button class="ds-btn ds-btn-xl ds-btn-secondary ds-btn-borderless cl-skip" type="button"><span>Skip for now</span></button>
+              <button class="ds-btn ds-btn-xl ds-btn-primary cl-confirm" type="button" disabled><span>Confirm answer</span><ds-icon name="arrow-right"></ds-icon></button>
+            </div>
+          </div>
+        </section>
+      </div>
+
       <div class="bottom-bar">
         <div class="indicators">
-          <div class="message"><p id="mic-message">Talk to interrupt</p></div>
+          <div class="message away"><ds-icon class="message-icon" name="warning-triangle" size="16"></ds-icon><p id="mic-message"></p></div>
         </div>
 
         <div class="controls">
           <button class="mic-pill" type="button" aria-label="Microphone" aria-pressed="false">
             <ds-icon class="mic-icon" name="microphone"></ds-icon>
-            <ds-icon name="chevron-down" size="16"></ds-icon>
+            <ds-icon class="mic-chevron" name="chevron-down" size="16"></ds-icon>
           </button>
+
+          <!-- Chat icon: in the bar, 16px right of the mic (opens the chat with Julia) -->
+          <button class="chat-pill chat-open" type="button" aria-label="Chat with Julia" aria-expanded="false" aria-controls="chat-panel">
+            <ds-icon name="chat"></ds-icon>
+          </button>
+
+          <!-- speaking while muted: a DS hint over the mic (shown with a ripple around it) -->
+          <div class="ds-hint ds-hint-top mic-talk-hint" aria-hidden="true">
+            <div class="ds-hint-body">You’re muted. Click the mic to talk</div>
+            <div class="ds-hint-arrow"><svg width="14" height="9" viewBox="0 0 14 9" fill="none"><path d="M0 0L5.4 7Q7 9 8.6 7L14 0Z" fill="currentColor"/></svg></div>
+          </div>
+          <!-- announces the reminder to screen readers -->
+          <p class="sr-only" id="talk-muted-live" aria-live="polite"></p>
 
           <button class="resume-pill" type="button">
             <ds-icon name="check"></ds-icon>
             <span>I’m done watching</span>
           </button>
 
-          <button class="ds-btn ds-btn-md ds-btn-danger end-pill" type="button">
+          <button class="ds-btn ds-btn-xl ds-btn-danger end-pill" type="button">
             <span>End</span>
-            <ds-icon name="clear"></ds-icon>
+            <ds-icon name="exit"></ds-icon>
           </button>
         </div>
       </div>
 
+      <!-- Chat with Julia (text): opens from the chat icon, beside the lesson -->
+      <aside class="chat-panel" id="chat-panel" aria-labelledby="chat-title" hidden>
+        <header class="chat-header">
+          <span class="ds-user-picture ds-user-picture-md ds-user-picture-round"><img src="assets/julia-glow-cream.png" alt=""></span>
+          <div class="chat-header-text">
+            <h2 class="chat-title" id="chat-title">Chat with Julia</h2>
+            <p class="chat-subtitle">Your English tutor</p>
+          </div>
+          <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless ds-btn-icon chat-close" type="button" aria-label="Close chat"><ds-icon name="clear"></ds-icon></button>
+        </header>
+        <div class="chat-body">
+          <div class="chat-messages" id="chat-messages" aria-live="polite">
+            <p class="chat-bubble from-julia" dir="auto">Hi! You can write to me here any time during the lesson. What would you like to ask?</p>
+          </div>
+          <!-- shows when the student scrolled up and Julia wrote something new; a click scrolls down -->
+          <button class="chat-new-messages" id="chat-new-messages" type="button" hidden>
+            View new messages <ds-icon name="chevron-down" size="16"></ds-icon>
+          </button>
+        </div>
+        <!-- the same field as "Or write your own answer…" (Card layout): DS xl field, send button inside -->
+        <form class="chat-compose" id="chat-compose">
+          <div class="cl-own">
+            <input class="ds-input ds-input-xl cl-own-input" id="chat-input" placeholder="Write a message…" aria-label="Message" autocomplete="off" spellcheck="true">
+            <button class="ds-btn ds-btn-md ds-btn-primary ds-btn-icon cl-send" id="chat-send" type="submit" aria-label="Send" disabled><ds-icon name="arrow-right"></ds-icon></button>
+          </div>
+        </form>
+      </aside>
+
       <!-- Sparks burst around the milestone that just became active -->
       <div class="sparks" id="sparks" aria-hidden="true"></div>
+
+      <!-- Paused session: like a paused player, everything is disabled except the progress bar
+           and "Continue lesson" -->
+      <div class="pause-layer" id="pause-layer" inert>
+        <button class="ds-btn ds-btn-xl ds-btn-primary cta-button outlined" id="continue-lesson" type="button">
+          <ds-icon name="play"></ds-icon>
+          <span>Continue lesson</span>
+        </button>
+      </div>
+      <!-- Accessibility: tells screen readers when the lesson pauses and resumes -->
+      <p class="sr-only" id="pause-status" role="status"></p>
 
     </div>
   </div>
@@ -380,6 +770,7 @@
   <script src="https://cdnapisec.kaltura.com/p/1912501/embedPlaykitJs/uiconf_id/57496443"></script>
   <script src="../ds/ds-icons.js"></script>
   <script src="../ds/ds.js"></script>
+  <script src="data.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

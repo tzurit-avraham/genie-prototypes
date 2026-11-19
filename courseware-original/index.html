@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Courseware | Avatar mode</title>
+  <link rel="stylesheet" href="../ds/styles.css" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <div class="splash" id="splash">
+    <h1>Courseware</h1>
+    <button class="ds-btn ds-btn-xl ds-btn-primary cta-button" id="start-demo" type="button">
+      <span>Start demo</span>
+      <ds-icon name="arrow-right"></ds-icon>
+    </button>
+  </div>
+
+  <div class="frame">
+    <header class="site-header">
+      <!-- Demo navigation between activities (not part of the product): DS tabs -->
+      <div class="ds-tabs site-nav" role="tablist" aria-label="Activities">
+        <button class="ds-tab" role="tab" aria-selected="true" data-value="0">Quiz</button>
+        <button class="ds-tab" role="tab" aria-selected="false" data-value="1" tabindex="-1">Reading activity</button>
+        <button class="ds-tab" role="tab" aria-selected="false" data-value="7" tabindex="-1">Input activity</button>
+        <button class="ds-tab" role="tab" aria-selected="false" data-value="8" tabindex="-1">Short input activity</button>
+        <button class="ds-tab" role="tab" aria-selected="false" data-value="2" tabindex="-1">Watch a video</button>
+        <button class="ds-tab" role="tab" aria-selected="false" data-value="5" tabindex="-1">End of milestone</button>
+        <button class="ds-tab" role="tab" aria-selected="false" data-value="6" tabindex="-1">Lesson completed</button>
+        <!-- the glide variants are kept out of the tab bar (nothing reveals them for now) -->
+        <button class="ds-tab" role="tab" aria-selected="false" data-value="3" tabindex="-1" hidden>End of milestone (glide)</button>
+        <button class="ds-tab" role="tab" aria-selected="false" data-value="4" tabindex="-1" hidden>Lesson completed (glide)</button>
+      </div>
+      <div class="site-header-end">
+        <!-- Image toggle: only shown on activities that have an image (DS switch) -->
+        <div class="ds-switch image-toggle" id="image-toggle" hidden>
+          <button class="ds-switch-track ds-switch-sm ds-switch-on" role="switch" aria-checked="true" aria-label="Image"><span class="ds-switch-handle"></span></button>
+          <div class="ds-switch-content">
+            <span class="ds-switch-label">Image</span>
+          </div>
+        </div>
+        <!-- Light / dark theme (DS switch, drives DS.setTheme) -->
+        <div class="ds-switch" id="theme-toggle">
+          <button class="ds-switch-track ds-switch-sm ds-switch-off" role="switch" aria-checked="false" aria-label="Dark theme"><span class="ds-switch-handle"></span></button>
+          <div class="ds-switch-content">
+            <span class="ds-switch-label">Dark theme</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="avatar-view">
+
+      <!-- Ambient mesh gradient background (off by default; the B key toggles it) -->
+      <div class="mesh" aria-hidden="true">
+        <span class="mesh-blob"></span>
+        <span class="mesh-blob"></span>
+        <span class="mesh-blob"></span>
+        <span class="mesh-blob"></span>
+        <span class="mesh-blob"></span>
+        <span class="mesh-blob"></span>
+        <span class="mesh-blob"></span>
+        <span class="mesh-blob"></span>
+        <span class="mesh-blob"></span>
+        <span class="mesh-blob"></span>
+        <span class="mesh-blob"></span>
+      </div>
+
+      <!-- Background lift: 10% lighter while the avatar is shrunk (works with or without the mesh) -->
+      <div class="bg-lift" aria-hidden="true"></div>
+
+      <!-- Product header: student progress through the unit's components -->
+      <header class="product-header">
+        <ol class="steps" aria-label="Unit progress">
+          <li class="step"><span class="step-dot"><span>1</span></span><span class="sr-only"></span></li>
+          <li class="step"><span class="step-dot"><span>2</span></span><span class="sr-only"></span></li>
+          <li class="step"><span class="step-dot"><span>3</span></span><span class="sr-only"></span></li>
+          <li class="step"><span class="step-dot"><span>4</span></span><span class="sr-only"></span></li>
+        </ol>
+      </header>
+
+      <!-- Activity 1: quiz -->
+      <div class="canvas active" data-activity="quiz">
+        <section class="flashcard with-image">
+          <div class="text">
+            <div class="title">
+              <h1 id="question">Look at the book I’m holding. Which sentence is correct?</h1>
+            </div>
+
+            <div class="input-image-wrap">
+              <img class="input-image" src="assets/mia-lunchbox.png" style="--ratio: 1448 / 1086" alt="" />
+            </div>
+
+            <div class="answers" role="radiogroup" aria-labelledby="question">
+              <button class="answer" type="button" role="radio" aria-checked="false" data-correct="true">
+                <span class="pill"><span>A</span></span>
+                <span class="label">This is a book.</span>
+              </button>
+              <button class="answer" type="button" role="radio" aria-checked="false">
+                <span class="pill"><span>B</span></span>
+                <span class="label">That is a book.</span>
+              </button>
+              <button class="answer" type="button" role="radio" aria-checked="false">
+                <span class="pill"><span>C</span></span>
+                <span class="label">These is a book.</span>
+              </button>
+              <button class="answer" type="button" role="radio" aria-checked="false">
+                <span class="pill wide"><span>D</span></span>
+                <span class="label">Those is a book.</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="cta">
+            <button class="ds-btn ds-btn-xl ds-btn-primary cta-button" type="button" disabled>
+              <span>Confirm answer</span>
+              <ds-icon name="arrow-right"></ds-icon>
+            </button>
+          </div>
+        </section>
+
+        <div class="avatar">
+          <img class="avatar-glow" src="assets/julia-glow-pink.png" alt="" aria-hidden="true">
+          <video src="assets/Julia-pause-Look-at-2026-10-06.mp4" playsinline preload="auto"></video>
+          <div class="avatar-tag"><p class="avatar-tag-name">Julia</p><p class="avatar-tag-title">Your English tutor</p></div>
+          <button class="hint-button" type="button" tabindex="-1"><span>Ask for a hint</span></button>
+        </div>
+      </div>
+
+      <!-- Activity 2: read aloud -->
+      <div class="canvas read-aloud" data-activity="read-aloud">
+        <section class="reading-card">
+          <div class="title">
+            <h1>Read aloud the following text</h1>
+          </div>
+
+          <div class="input-row">
+            <div class="reading-text">
+              <p class="reading-title">The Mystery of the Missing Lunch</p>
+              <div class="reading-body">
+                <p>Mia opened her backpack and noticed something strange.</p>
+                <p>"My lunch is missing!" she said.</p>
+                <p>Her friend Noah asked, "Did you check everywhere?"</p>
+                <p>They looked in the classroom, the library, and the playground.</p>
+                <p>Suddenly, Mia remembered something.</p>
+                <p>"I visited my brother's classroom this morning!"</p>
+                <p>They went there and found her lunchbox on a table.</p>
+                <p>Mia smiled and said, "The mystery is solved!"</p>
+                <p>Noah laughed. "Sometimes the answer is closer than you think."</p>
+              </div>
+            </div>
+
+            <div class="input-image-wrap">
+              <img class="input-image" src="assets/mia-lunchbox.png" style="--ratio: 1448 / 1086" alt="" />
+            </div>
+          </div>
+
+          <button class="ds-btn ds-btn-xl ds-btn-primary read-button outlined" type="button"><span>Start reading</span></button>
+        </section>
+
+        <div class="avatar">
+          <img class="avatar-glow" src="assets/julia-glow-cream.png" alt="" aria-hidden="true">
+          <video src="assets/read out loud.mp4" playsinline preload="auto"></video>
+          <div class="avatar-tag"><p class="avatar-tag-name">Julia</p><p class="avatar-tag-title">Your English tutor</p></div>
+          <button class="hint-button" type="button" tabindex="-1"><span>Need help?</span></button>
+        </div>
+      </div>
+
+      <!-- Activity 3: watch a video -->
+      <div class="canvas watch" data-activity="watch">
+        <section class="video-card">
+          <div class="player" id="kaltura_player_83516016"></div>
+          <p class="video-label"><span>Watch clip</span></p>
+        </section>
+
+        <div class="avatar">
+          <img class="avatar-glow" src="assets/julia-glow-cream.png" alt="" aria-hidden="true">
+          <video src="assets/Video presentation.mp4" playsinline preload="auto"></video>
+          <div class="avatar-tag"><p class="avatar-tag-name">Julia</p><p class="avatar-tag-title">Your English tutor</p></div>
+        </div>
+      </div>
+
+      <!-- Activity 4: end of milestone -->
+      <div class="canvas milestone" data-activity="milestone">
+        <section class="milestone-card">
+          <div class="milestone-card-inner">
+            <div class="title milestone-title" aria-live="polite">
+              <p class="eyebrow">Congratulations</p>
+              <h1>Milestone 2 reached!</h1>
+            </div>
+            <div class="milestone-timeline"></div>
+            <div class="milestone-cta">
+              <button class="ds-btn ds-btn-xl ds-btn-primary cta-button outlined" id="continue-learning" type="button">
+                <span>Continue learning</span>
+                <ds-icon name="arrow-right"></ds-icon>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <div class="avatar">
+          <img class="avatar-glow" src="assets/julia-glow-cream.png" alt="" aria-hidden="true">
+          <video src="assets/milestone.mp4" playsinline preload="auto"></video>
+          <div class="avatar-tag"><p class="avatar-tag-name">Julia</p><p class="avatar-tag-title">Your English tutor</p></div>
+        </div>
+      </div>
+
+      <!-- Activity 5: lesson completed (same flow as the milestone, with a bigger celebration; the
+           progress turns into the "Next lesson" button; placeholder clip until the real one arrives) -->
+      <div class="canvas milestone lesson" data-activity="lesson">
+        <section class="milestone-card">
+          <div class="milestone-card-inner">
+            <div class="title milestone-title" aria-live="polite">
+              <p class="eyebrow">Congratulations</p>
+              <h1>Lesson completed!</h1>
+            </div>
+            <div class="milestone-stage">
+              <div class="milestone-timeline"></div>
+              <div class="milestone-cta">
+                <button class="ds-btn ds-btn-xl ds-btn-primary cta-button outlined" type="button">
+                  <span>Next lesson</span>
+                  <ds-icon name="arrow-right"></ds-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="avatar">
+          <img class="avatar-glow" src="assets/julia-glow-cream.png" alt="" aria-hidden="true">
+          <video src="assets/milestone.mp4" playsinline preload="auto"></video>
+          <div class="avatar-tag"><p class="avatar-tag-name">Julia</p><p class="avatar-tag-title">Your English tutor</p></div>
+        </div>
+      </div>
+
+      <!-- Activity 6: end of milestone, "fade" variant. Same as activity 4, but the progress fades out
+           at the top and fades in inside the slate instead of gliding there. -->
+      <div class="canvas milestone crossfade" data-activity="milestone-fade">
+        <section class="milestone-card">
+          <div class="milestone-card-inner">
+            <div class="title milestone-title" aria-live="polite">
+              <p class="eyebrow">Congratulations</p>
+              <h1>Milestone 3 reached!</h1>
+            </div>
+            <div class="milestone-timeline"></div>
+            <div class="milestone-cta">
+              <button class="ds-btn ds-btn-xl ds-btn-primary cta-button outlined" type="button">
+                <span>Continue learning</span>
+                <ds-icon name="arrow-right"></ds-icon>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <div class="avatar">
+          <img class="avatar-glow" src="assets/julia-glow-cream.png" alt="" aria-hidden="true">
+          <video src="assets/milestone.mp4" playsinline preload="auto"></video>
+          <div class="avatar-tag"><p class="avatar-tag-name">Julia</p><p class="avatar-tag-title">Your English tutor</p></div>
+        </div>
+      </div>
+
+      <!-- Activity 7: lesson completed, "fade" variant. Same as activity 5, with the fade transition. -->
+      <div class="canvas milestone lesson crossfade" data-activity="lesson-fade">
+        <section class="milestone-card">
+          <div class="milestone-card-inner">
+            <div class="title milestone-title" aria-live="polite">
+              <p class="eyebrow">Congratulations</p>
+              <h1>Lesson completed!</h1>
+            </div>
+            <div class="milestone-stage">
+              <div class="milestone-timeline"></div>
+              <div class="milestone-cta">
+                <button class="ds-btn ds-btn-xl ds-btn-primary cta-button outlined" type="button">
+                  <span>Next lesson</span>
+                  <ds-icon name="arrow-right"></ds-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="avatar">
+          <img class="avatar-glow" src="assets/julia-glow-cream.png" alt="" aria-hidden="true">
+          <video src="assets/milestone.mp4" playsinline preload="auto"></video>
+          <div class="avatar-tag"><p class="avatar-tag-name">Julia</p><p class="avatar-tag-title">Your English tutor</p></div>
+        </div>
+      </div>
+
+      <!-- Activity 8: input. The avatar asks an open question; it is also written in the left pane,
+           above a text field that wears the reading box's look. It sits right after the reading
+           activity in the tab bar (its index is last only so the other tabs keep their numbers). -->
+      <div class="canvas input-activity" data-activity="input">
+        <section class="reading-card">
+          <div class="title">
+            <h1 id="input-question">Why do you think Mia’s lunchbox ended up in her brother’s classroom?</h1>
+          </div>
+
+          <div class="input-row">
+            <textarea class="input-box" aria-labelledby="input-question" placeholder="Type your answer here..." spellcheck="true"></textarea>
+
+            <div class="input-image-wrap">
+              <img class="input-image" src="assets/mia-lunchbox.png" style="--ratio: 1448 / 1086" alt="" />
+            </div>
+          </div>
+
+          <button class="ds-btn ds-btn-xl ds-btn-primary cta-button" type="button" disabled>
+            <span>Confirm answer</span>
+            <ds-icon name="arrow-right"></ds-icon>
+          </button>
+        </section>
+
+        <div class="avatar">
+          <img class="avatar-glow" src="assets/julia-glow-cream.png" alt="" aria-hidden="true">
+          <video src="assets/long-input.mp4" playsinline preload="auto"></video>
+          <div class="avatar-tag"><p class="avatar-tag-name">Julia</p><p class="avatar-tag-title">Your English tutor</p></div>
+          <button class="hint-button" type="button" tabindex="-1"><span>Need help?</span></button>
+        </div>
+      </div>
+
+      <!-- Activity 9: short input. Same as activity 8, but the answer is one short sentence, so the
+           field is a single line. -->
+      <div class="canvas input-activity" data-activity="input-short">
+        <section class="reading-card short">
+          <div class="text">
+            <div class="title">
+              <h1 id="input-short-question">Where did Mia find her lunchbox? Answer in one short sentence.</h1>
+            </div>
+
+            <div class="input-image-wrap">
+              <img class="input-image" src="assets/mia-lunchbox.png" style="--ratio: 1448 / 1086" alt="" />
+            </div>
+
+            <input class="input-box short" type="text" aria-labelledby="input-short-question" placeholder="Type a short sentence..." autocomplete="off" spellcheck="true" />
+          </div>
+
+          <button class="ds-btn ds-btn-xl ds-btn-primary cta-button" type="button" disabled>
+            <span>Confirm answer</span>
+            <ds-icon name="arrow-right"></ds-icon>
+          </button>
+        </section>
+
+        <div class="avatar">
+          <img class="avatar-glow" src="assets/julia-glow-cream.png" alt="" aria-hidden="true">
+          <video src="assets/short-input.mp4" playsinline preload="auto"></video>
+          <div class="avatar-tag"><p class="avatar-tag-name">Julia</p><p class="avatar-tag-title">Your English tutor</p></div>
+          <button class="hint-button" type="button" tabindex="-1"><span>Need help?</span></button>
+        </div>
+      </div>
+
+      <div class="bottom-bar">
+        <div class="indicators">
+          <div class="message"><p id="mic-message">Talk to interrupt</p></div>
+        </div>
+
+        <div class="controls">
+          <button class="mic-pill" type="button" aria-label="Microphone" aria-pressed="false">
+            <ds-icon class="mic-icon" name="microphone"></ds-icon>
+            <ds-icon name="chevron-down" size="16"></ds-icon>
+          </button>
+
+          <button class="resume-pill" type="button">
+            <ds-icon name="check"></ds-icon>
+            <span>I’m done watching</span>
+          </button>
+
+          <button class="ds-btn ds-btn-md ds-btn-danger end-pill" type="button">
+            <span>End</span>
+            <ds-icon name="clear"></ds-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Sparks burst around the milestone that just became active -->
+      <div class="sparks" id="sparks" aria-hidden="true"></div>
+
+    </div>
+  </div>
+
+
+  <script src="https://cdnapisec.kaltura.com/p/1912501/embedPlaykitJs/uiconf_id/57496443"></script>
+  <script src="../ds/ds-icons.js"></script>
+  <script src="../ds/ds.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -12,18 +12,79 @@ const micPill = document.querySelector('.mic-pill');
 const micIcon = micPill.querySelector('.mic-icon');
 const micMessage = document.getElementById('mic-message');
 
+// Bar message variants (Figma "Message" + "Messages" loader): a chip for mic access and the loader
+// messages. Nothing on screen calls them since the Flows were removed from the demo panel; kept as
+// DS candidates. Kept here, by setMic, so any setMic() call clears them.
+const barMessageEl = micMessage.parentElement;
+const THINKING_MESSAGES = [
+  'Looking up the info for you',
+  'Checking the knowledge base',
+  'Getting the details now',
+  'Searching for the right info',
+  'Finding the answer for you',
+];
+const barExtras = { thinkingTimer: null, swapTimer: null };
+
+function clearBarExtras() {
+  clearInterval(barExtras.thinkingTimer);
+  clearTimeout(barExtras.swapTimer);
+  barExtras.thinkingTimer = null;
+  barMessageEl.classList.remove('chip', 'with-icon', 'thinking', 'swap');
+}
+
+// A chip over the mic ("Allow access to your mic" with a warning icon, "Enable your mic to talk")
+function showBarChip(text, { icon = false } = {}) {
+  clearBarExtras();
+  micMessage.textContent = text;
+  barMessageEl.classList.remove('away');
+  barMessageEl.classList.add('chip');
+  barMessageEl.classList.toggle('with-icon', icon);
+}
+
+// Julia is getting the answer: the line cycles through the 5 loader messages
+function startThinking() {
+  setMic('idle');
+  barMessageEl.classList.remove('away');
+  barMessageEl.classList.add('thinking');
+  let i = 0;
+  micMessage.textContent = THINKING_MESSAGES[0];
+  barExtras.thinkingTimer = setInterval(() => {
+    i = (i + 1) % THINKING_MESSAGES.length;
+    barMessageEl.classList.add('swap');
+    barExtras.swapTimer = setTimeout(() => {
+      micMessage.textContent = THINKING_MESSAGES[i];
+      barMessageEl.classList.remove('swap');
+    }, 200);
+  }, 1800);
+}
+
 function setMic(state) {
+  clearBarExtras();
   const muted = state === 'muted';
+  if (!muted) micPill.closest('.bottom-bar').classList.remove('talking-muted');
   micPill.classList.toggle('muted', muted);
   micPill.classList.toggle('listening', state === 'listening');
   micPill.setAttribute('aria-pressed', String(muted));
   micIcon.setAttribute('name', muted ? 'microphone-muted' : 'microphone');
-  // 'muted' is the system turning the mic off while the student answers by typing or clicking, not
-  // something the student did, so there is nothing to ask of them: the message is hidden (it keeps
-  // its space, so the bar does not change height). The same 'away' class is used by the video activity.
-  micMessage.parentElement.classList.toggle('away', muted);
-  if (!muted) micMessage.textContent = state === 'listening' ? 'Listening...' : 'Talk to interrupt';
+  // The line over the mic only shows "Listening..." while the student talks. Otherwise it is hidden
+  // (no "Talk to interrupt" in this lesson, for a cleaner bar); it keeps its space, so the bar does
+  // not change height. The same 'away' class is used by the video activity.
+  const listening = state === 'listening';
+  micMessage.parentElement.classList.toggle('away', !listening);
+  if (listening) micMessage.textContent = 'Listening...';
 }
+
+// Feedback line over the mic (from the reference: "Correct! Excellent job!", "Great answer!", ...).
+// Shown even while the mic is off; the next setMic() call puts the usual line back.
+function showBarMessage(text) {
+  clearBarExtras();
+  micMessage.textContent = text;
+  micMessage.parentElement.classList.remove('away');
+}
+
+// How long the correct-answer feedback shows before the lesson moves on (from the reference)
+const CORRECT_ADVANCE = 650; // quiz
+const ANSWER_ADVANCE = 500;  // written answers
 
 // Sounds are synthesized so no audio file is needed
 let audioCtx;
@@ -87,12 +148,36 @@ function playDoneSound() {
 function quizActivity(root) {
   const answers = root.querySelectorAll('.answer');
   const confirmButton = root.querySelector('.cta-button');
+  let advanceTimer = null;
   answers.forEach((answer) => {
     answer.addEventListener('click', () => {
-      answers.forEach((a) => a.setAttribute('aria-checked', String(a === answer)));
+      if (advanceTimer) return; // already answered correctly, moving on
+      answers.forEach((a) => {
+        a.setAttribute('aria-checked', String(a === answer));
+        a.classList.remove('wrong');
+      });
       confirmButton.disabled = false;
     });
   });
+
+  // "Confirm answer" (reference behavior): correct = green pulse, "Correct! Excellent job!", and
+  // the lesson moves on; wrong = red, "Not quite...", and the student tries again
+  confirmButton.addEventListener('click', () => {
+    const chosen = root.querySelector('.answer[aria-checked="true"]');
+    if (!chosen || advanceTimer) return;
+    if (chosen.dataset.correct === 'true') {
+      chosen.classList.add('just-correct');
+      confirmButton.disabled = true;
+      showBarMessage('Correct! Excellent job!');
+      const answerIndex = [...answers].indexOf(chosen);
+      advanceTimer = setTimeout(() => { advanceTimer = null; advanceLesson({ answer: answerIndex }); }, CORRECT_ADVANCE);
+    } else {
+      chosen.classList.add('wrong');
+      confirmButton.disabled = true; // until another option is picked
+      showBarMessage('Not quite. Try another option or ask Julia for a hint!');
+    }
+  });
+  const stopAdvance = () => { clearTimeout(advanceTimer); advanceTimer = null; };
 
   // When the avatar video ends, shrink the avatar and reveal the "Ask for a hint" button
   const avatar = root.querySelector('.avatar');
@@ -128,11 +213,34 @@ function quizActivity(root) {
   return {
     enter() { setMic('idle'); },
     start() { if (!started) { started = true; video.play(); } },
-    leave() { video.pause(); },
+    leave() { video.pause(); stopAdvance(); },
+    // Review mode (the step was answered): the student's answer in green, the rest dimmed, locked
+    review({ answer }) {
+      started = true;
+      answers.forEach((a, i) => {
+        a.setAttribute('aria-checked', String(i === answer));
+        a.classList.toggle('mine', i === answer);
+      });
+      confirmButton.disabled = true;
+      showBarMessage('Ask Julia about this question');
+    },
+    // Partway through (the "Session paused" tab): Julia has asked the question and the student
+    // is choosing an answer
+    midway() {
+      started = true;
+      video.pause();
+      avatar.classList.add('shrunk');
+      hintButton.tabIndex = 0;
+      setMic('muted');
+    },
     reset() {
       started = false;
       hintPlaying = false;
-      answers.forEach((a) => a.setAttribute('aria-checked', 'false'));
+      stopAdvance();
+      answers.forEach((a) => {
+        a.setAttribute('aria-checked', 'false');
+        a.classList.remove('wrong', 'just-correct', 'mine');
+      });
       confirmButton.disabled = true;
       avatar.classList.remove('shrunk', 'hint-playing');
       hintButton.tabIndex = -1;
@@ -150,8 +258,11 @@ function readAloudActivity(root) {
   const helpButton = avatar.querySelector('.hint-button');
   const readButton = root.querySelector('.read-button');
   const readLabel = readButton.querySelector('span');
+  const readArrow = readButton.querySelector('.read-arrow');
+  const readCheck = readButton.querySelector('.read-check');
+  const readAgainButton = root.querySelector('.read-again');
   let started = false;
-  let state = 'intro'; // intro -> reading -> done -> (Read again) reading ...
+  let state = 'intro'; // intro -> reading -> done -> (Read again) reading ... / (Continue) next step
   let helpPlaying = false;
 
   const helpSrc = 'assets/read out loud.mp4';
@@ -163,39 +274,52 @@ function readAloudActivity(root) {
     video.src = src;
   }
 
-  // Start reading: avatar shrinks, "Need help?" appears, button becomes "Done reading"
-  // Done reading: stop listening, avatar says "Awesome", button becomes "Read again"
-  // Read again: back to reading
+  // The main footer button (always DS primary): "Start reading" -> "✓ Done reading" -> "Continue ->".
+  // Once the reading is done, "Read again" (DS secondary) appears next to it, as in the reference.
+  function setReadButton(label, { finish = false, outlined = false, arrow = false } = {}) {
+    readLabel.textContent = label;
+    readButton.classList.toggle('outlined', outlined);
+    readCheck.hidden = !finish;
+    readArrow.hidden = !arrow;
+  }
+
+  // Start reading (or Read again): avatar shrinks, "Need help?" appears, button becomes "Done reading"
+  function startReading() {
+    state = 'reading';
+    video.pause();
+    setVideo(helpSrc);
+    helpPlaying = false;
+    avatar.classList.remove('hint-playing');
+    avatar.classList.add('shrunk');
+    helpButton.tabIndex = 0;
+    setReadButton('Done reading', { finish: true, outlined: true });
+    readAgainButton.hidden = true;
+    setMic('listening');
+    playStartSound();
+  }
+
+  // Done reading: stop listening, avatar says "Awesome", the main button becomes "Continue"
+  function finishReading() {
+    state = 'done';
+    setReadButton('Continue', { arrow: true });
+    readAgainButton.hidden = false;
+    setMic('idle');
+    playDoneSound();
+    // The avatar expands back to full size and reacts ("Need help?" only exists while shrunk)
+    helpPlaying = false;
+    avatar.classList.remove('hint-playing', 'shrunk');
+    helpButton.tabIndex = -1;
+    setVideo(doneSrc);
+    video.currentTime = 0;
+    video.play();
+  }
+
   readButton.addEventListener('click', () => {
-    if (state === 'intro' || state === 'done') {
-      state = 'reading';
-      video.pause();
-      setVideo(helpSrc);
-      helpPlaying = false;
-      avatar.classList.remove('hint-playing');
-      avatar.classList.add('shrunk');
-      helpButton.tabIndex = 0;
-      readLabel.textContent = 'Done reading';
-      readButton.classList.remove('again');
-      readButton.classList.add('outlined', 'finish');
-      setMic('listening');
-      playStartSound();
-    } else if (state === 'reading') {
-      state = 'done';
-      readButton.classList.remove('outlined', 'finish');
-      readButton.classList.add('again');
-      readLabel.textContent = 'Read again';
-      setMic('idle');
-      playDoneSound();
-      // The avatar expands back to full size and reacts ("Need help?" only exists while shrunk)
-      helpPlaying = false;
-      avatar.classList.remove('hint-playing', 'shrunk');
-      helpButton.tabIndex = -1;
-      setVideo(doneSrc);
-      video.currentTime = 0;
-      video.play();
-    }
+    if (state === 'intro') startReading();
+    else if (state === 'reading') finishReading();
+    else advanceLesson({}); // "Continue"
   });
+  readAgainButton.addEventListener('click', startReading);
 
   // "Need help?": the avatar repeats the instructions
   helpButton.addEventListener('click', () => {
@@ -218,15 +342,19 @@ function readAloudActivity(root) {
     enter() { setMic('idle'); },
     start() { if (!started) { started = true; video.play(); } },
     leave() { video.pause(); },
+    // Review mode (the text was read): the text stays, nothing to press but Continue
+    review() {
+      started = true;
+      showBarMessage('Ask Julia about this text');
+    },
     reset() {
       started = false;
       state = 'intro';
       helpPlaying = false;
       avatar.classList.remove('shrunk', 'hint-playing');
       helpButton.tabIndex = -1;
-      readLabel.textContent = 'Start reading';
-      readButton.classList.remove('again', 'finish');
-      readButton.classList.add('outlined');
+      setReadButton('Start reading', { outlined: true });
+      readAgainButton.hidden = true;
       video.pause();
       setVideo(helpSrc);
       video.currentTime = 0;
@@ -245,10 +373,25 @@ function inputActivity(root) {
   const helpButton = avatar.querySelector('.hint-button');
   let started = false;
   let helpPlaying = false;
+  let advanceTimer = null;
 
   input.addEventListener('input', () => {
+    if (advanceTimer) return;
     confirmButton.disabled = input.value.trim() === '';
   });
+
+  // "Confirm answer" (reference behavior): the field turns green, "Great answer!", and the
+  // lesson moves on
+  confirmButton.addEventListener('click', () => {
+    if (!input.value.trim() || advanceTimer) return;
+    input.classList.add('just-correct');
+    input.readOnly = true;
+    confirmButton.disabled = true;
+    showBarMessage('Great answer!');
+    const text = input.value.trim();
+    advanceTimer = setTimeout(() => { advanceTimer = null; advanceLesson({ text }); }, ANSWER_ADVANCE);
+  });
+  const stopAdvance = () => { clearTimeout(advanceTimer); advanceTimer = null; };
 
   helpButton.addEventListener('click', () => {
     helpPlaying = true;
@@ -274,16 +417,112 @@ function inputActivity(root) {
   return {
     enter() { setMic('idle'); },
     start() { if (!started) { started = true; video.play(); } },
-    leave() { video.pause(); },
+    leave() { video.pause(); stopAdvance(); },
+    // Review mode (the step was answered): the student's answer in a locked, green field
+    review({ text }) {
+      started = true;
+      input.value = text;
+      input.readOnly = true;
+      input.classList.add('just-correct');
+      confirmButton.disabled = true;
+      showBarMessage('Ask Julia about this question');
+    },
     reset() {
       started = false;
       helpPlaying = false;
+      stopAdvance();
       input.value = '';
+      input.readOnly = false;
+      input.classList.remove('just-correct');
       confirmButton.disabled = true;
       avatar.classList.remove('shrunk', 'hint-playing');
       helpButton.tabIndex = -1;
       video.pause();
       video.currentTime = 0;
+    },
+  };
+}
+
+// ---- Activity 10: card layout (layout trial) -----------------------------------
+// The lesson's steps in one big card, moved through with ‹ ›. Each step: pick an option (like a
+// radio group) or write your own answer and send it (the button, or Enter). "Go deeper" has no
+// destination yet, so it says so in a toast. This layout hides the mic bar and the top progress.
+function cardLayoutActivity(root) {
+  const view = document.querySelector('.avatar-view');
+  const stepEls = [...root.querySelectorAll('.cl-step')];
+  // Card footer (the same base as the other screens): Back, Skip for now, Confirm answer
+  const backButton = root.querySelector('.cl-back');
+  const skipButton = root.querySelector('.cl-skip');
+  const confirmButton = root.querySelector('.cl-confirm');
+  let index = 0;
+
+  // Confirm is on once this step has an answer: a chosen card or a sent "write your own"
+  function syncConfirm() {
+    const step = stepEls[index];
+    confirmButton.disabled = !step.querySelector('.answer[aria-checked="true"], .cl-own.sent');
+  }
+
+  function showStep(i) {
+    index = Math.min(Math.max(i, 0), stepEls.length - 1);
+    stepEls.forEach((step, k) => { step.hidden = k !== index; });
+    backButton.disabled = index === 0;
+    skipButton.disabled = index === stepEls.length - 1;
+    syncConfirm();
+  }
+
+  root.querySelectorAll('.cl-answers').forEach((group) => {
+    const answers = [...group.querySelectorAll('.answer')];
+    answers.forEach((answer) => answer.addEventListener('click', () => {
+      answers.forEach((a) => a.setAttribute('aria-checked', String(a === answer)));
+      syncConfirm();
+    }));
+  });
+
+  const fields = [...root.querySelectorAll('.cl-own')].map((own) => {
+    const input = own.querySelector('.cl-own-input');
+    const send = own.querySelector('.cl-send');
+    const icon = send.querySelector('ds-icon');
+    input.addEventListener('input', () => { send.disabled = input.value.trim() === ''; });
+    function submit() {
+      if (send.disabled) return;
+      own.classList.add('sent');
+      input.readOnly = true;
+      send.disabled = true;
+      send.setAttribute('aria-label', 'Answer sent');
+      icon.setAttribute('name', 'check');
+      syncConfirm();
+    }
+    send.addEventListener('click', submit);
+    // Enter sends (Shift+Enter is a new line in the open question)
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); }
+    });
+    return function reset() {
+      own.classList.remove('sent');
+      input.value = '';
+      input.readOnly = false;
+      send.disabled = true;
+      send.setAttribute('aria-label', 'Send answer');
+      icon.setAttribute('name', 'arrow-right');
+    };
+  });
+
+  backButton.addEventListener('click', () => showStep(index - 1));
+  skipButton.addEventListener('click', () => showStep(index + 1));
+  // the last step has nowhere to go yet: Confirm just locks the answer in
+  confirmButton.addEventListener('click', () => {
+    if (index < stepEls.length - 1) showStep(index + 1);
+    else confirmButton.disabled = true;
+  });
+
+  return {
+    enter() { view.classList.add('card-layout-on'); },
+    start() {},
+    leave() { view.classList.remove('card-layout-on'); },
+    reset() {
+      root.querySelectorAll('.answer').forEach((a) => a.setAttribute('aria-checked', 'false'));
+      fields.forEach((resetField) => resetField());
+      showStep(0);
     },
   };
 }
@@ -311,7 +550,6 @@ function watchActivity(root) {
     bottomBar.classList.toggle('watching', away);
     resumeButton.classList.toggle('ready', state === 'ended');
     setMic('idle');
-    micMessage.parentElement.classList.toggle('away', away);
   }
 
   function setupPlayer() {
@@ -348,6 +586,8 @@ function watchActivity(root) {
 
   // "I'm done watching": the player goes away, the avatar comes back and plays the post-video clip
   resumeButton.addEventListener('click', () => {
+    completedActivities.set(current, {}); // this step's segment turns blue
+    renderProgress();
     if (player) player.pause();
     state = 'done';
     render();
@@ -365,7 +605,6 @@ function watchActivity(root) {
       if (player) player.pause();
       avatarVideo.pause();
       bottomBar.classList.remove('watching');
-      micMessage.parentElement.classList.remove('away');
     },
     reset() {
       started = false;
@@ -426,7 +665,10 @@ function milestoneActivity(root) {
   const sparksLayer = document.getElementById('sparks');
   const video = root.querySelector('.avatar video');
   const continueButton = root.querySelector('.milestone-cta .cta-button');
+  const eyebrowEl = root.querySelector('.milestone-title .eyebrow');
   const introSrc = video.getAttribute('src');
+  const introEyebrow = eyebrowEl.textContent;
+  const introTitle = titleEl.textContent;
   const timers = [];
   const animations = [];
   // idle -> starting (video requested) -> talking (video playing) -> celebrating (animation)
@@ -440,7 +682,9 @@ function milestoneActivity(root) {
     timers.splice(0).forEach(clearTimeout);
     animations.splice(0).forEach((a) => a.cancel());
     sparksLayer.replaceChildren();
-    root.classList.remove('side', 'settled', 'reached', 'ready', 'consumed');
+    root.classList.remove('side', 'settled', 'reached', 'ready', 'consumed', 'skipped-mode');
+    eyebrowEl.textContent = introEyebrow;
+    titleEl.textContent = introTitle;
     if (stepsEl.parentElement !== header) header.append(stepsEl);
     stepsEl.classList.remove('lines-hidden', 'numbered', 'faded');
     steps.forEach((step) => step.classList.remove('celebrate', 'finale'));
@@ -750,6 +994,21 @@ function milestoneActivity(root) {
   // ("Next lesson" has no destination yet, so it has no click behavior)
   if (!lesson) continueButton.addEventListener('click', continueLearning);
 
+  // Steps were skipped (reference behavior): no celebration. The slate opens with "You skipped N
+  // questions"; "Return to questions" goes to the first skipped step, "Continue anyway" moves on.
+  function showSkipped(count) {
+    phase = 'skipped';
+    eyebrowEl.textContent = `Milestone ${BASE_REACHED + 1}`;
+    titleEl.textContent = `You skipped ${count} ${count === 1 ? 'question' : 'questions'}`;
+    root.classList.add('skipped-mode', 'side');
+    later(() => root.classList.add('settled', 'reached', 'ready'), CARD_OPEN);
+  }
+
+  if (!lesson) {
+    root.querySelector('.milestone-return').addEventListener('click', returnToSkipped);
+    root.querySelector('.milestone-continue-anyway').addEventListener('click', () => advanceLesson());
+  }
+
   function startAnimation() {
     phase = 'celebrating';
     moveTimelineIntoCard();
@@ -769,6 +1028,8 @@ function milestoneActivity(root) {
     start() {
       if (started) return;
       started = true;
+      const skippedCount = lesson ? 0 : skippedActivities.size;
+      if (skippedCount) { showSkipped(skippedCount); return; }
       phase = 'starting';
       video.play().catch((e) => {
         console.error(e.message);
@@ -804,8 +1065,74 @@ const steps = [...document.querySelectorAll('.step')];
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 let reached = BASE_REACHED; // milestones completed so far; the next one is in progress
 
+// The line from the current milestone to the next one is split into one segment per step of the
+// milestone (the tabs before "End of milestone", in tab-bar order): blue when the step is done,
+// hollow when it was skipped, and the step showing now breathes softly. The other lines stay whole.
+const screensStep = steps[BASE_REACHED + 1]; // that line belongs to the next milestone's item
+const screensEl = document.createElement('span');
+screensEl.className = 'step-screens';
+screensEl.setAttribute('aria-hidden', 'true');
+screensStep.prepend(screensEl);
+
+function milestoneScreens() {
+  const end = navLinks.findIndex((link) => link.dataset.value === '5');
+  return navLinks.slice(0, end).filter((link) => !link.hidden).map(targetOf);
+}
+
+// ---- Prototype-only: "Current step" options (panel "Progress", S) ---------------------------
+// 10 common ways to show the student which step they're on. app.css draws each one
+// (data-step-cue on <html>); renderProgress adds the text and marks they use.
+const STEP_LABELS = { 0: 'Quiz', 1: 'Reading', 7: 'Writing', 8: 'Short answer', 2: 'Video' };
+const HINT_ARROW_UP = '<svg width="14" height="9" viewBox="0 0 14 9" fill="none"><path d="M0 9L5.4 2Q7 0 8.6 2L14 9Z" fill="currentColor"/></svg>';
+const stepCountEl = document.createElement('span');
+stepCountEl.className = 'step-count';
+stepCountEl.setAttribute('aria-hidden', 'true');
+const milestoneLabelEl = document.createElement('span');
+milestoneLabelEl.className = 'step-milestone-label';
+milestoneLabelEl.setAttribute('aria-hidden', 'true');
+const stepCrumbEl = document.createElement('div');
+stepCrumbEl.className = 'step-crumb';
+stepCrumbEl.setAttribute('aria-hidden', 'true');
+document.querySelector('.product-header').append(stepCrumbEl);
+
 // holdNext: show the milestone as completed but don't activate the next one yet
 function renderProgress(holdNext = false) {
+  // segments only while the current milestone is still in progress (once it is reached, the
+  // whole line fills as before)
+  const showScreens = reached === BASE_REACHED && !holdNext;
+  const ids = showScreens ? milestoneScreens() : [];
+  const doneCount = ids.filter((id) => completedActivities.has(id)).length;
+  screensStep.classList.toggle('has-screens', showScreens);
+  screensEl.replaceChildren(...ids.map((id, i) => {
+    const seg = document.createElement('span');
+    seg.className = 'step-screen';
+    if (completedActivities.has(id)) seg.classList.add('done');
+    else if (skippedActivities.has(id)) seg.classList.add('skipped');
+    if (id === current) {
+      seg.classList.add('current');
+    }
+    // Prototype-only: extras for the "Current step" options (shown per option by app.css)
+    const name = STEP_LABELS[id] || '';
+    const state = completedActivities.has(id) ? 'done' : skippedActivities.has(id) ? 'skipped' : id === current ? 'you are here' : 'not started';
+    seg.innerHTML = `<span class="step-screen-num">${i + 1}</span>`
+      + `<div class="ds-hint ds-hint-bottom step-screen-hint"><div class="ds-hint-body">${i + 1}. ${name} · ${state}</div>`
+      + `<div class="ds-hint-arrow">${HINT_ARROW_UP}</div></div>`
+      + (id === current ? `<span class="step-screen-label">${name}</span><span class="step-screen-caret"></span>` : '');
+    return seg;
+  }));
+  const curIdx = ids.indexOf(current);
+  const hereText = curIdx >= 0 ? `Step ${curIdx + 1} of ${ids.length}` : '';
+  stepCountEl.textContent = hereText;
+  stepCountEl.hidden = !hereText;
+  screensEl.append(stepCountEl);
+  milestoneLabelEl.textContent = hereText ? `Milestone ${BASE_REACHED + 1} · ${hereText}` : '';
+  milestoneLabelEl.hidden = !hereText;
+  steps[BASE_REACHED].append(milestoneLabelEl);
+  stepCrumbEl.innerHTML = hereText
+    ? `<span>Milestone ${BASE_REACHED + 1}</span><ds-icon name="chevron-right" size="16" aria-hidden="true"></ds-icon><span class="step-crumb-here">${STEP_LABELS[current] || ''}</span>`
+    : '';
+  stepCrumbEl.hidden = !hereText;
+
   steps.forEach((step, i) => {
     const done = i < reached;
     const isCurrent = i === reached && !holdNext;
@@ -814,7 +1141,8 @@ function renderProgress(holdNext = false) {
     if (isCurrent) step.setAttribute('aria-current', 'step');
     else step.removeAttribute('aria-current');
     step.querySelector('.sr-only').textContent =
-      `Milestone ${i + 1}, ${done ? 'reached' : isCurrent ? 'in progress' : 'not started'}`;
+      `Milestone ${i + 1}, ${done ? 'reached' : isCurrent ? 'in progress' : 'not started'}` +
+      (isCurrent && showScreens ? `, ${doneCount} of ${ids.length} activities done` : '');
   });
 }
 
@@ -830,45 +1158,853 @@ const activities = [
   milestoneActivity(canvases[6]),
   inputActivity(canvases[7]),
   inputActivity(canvases[8]),
+  cardLayoutActivity(canvases[9]),
 ];
 const navLinks = [...document.querySelectorAll('.site-nav .ds-tab')];
+const pauseTab = navLinks.find((link) => link.dataset.value === 'pause');
+const miniTab = navLinks.find((link) => link.dataset.value === 'mini');
+const splashTab = navLinks.find((link) => link.dataset.value === 'splash');
+
+// ---- Prototype-only: splash screen ("Splash screen" tab) ---------------------------------------
+// Julia loads in the middle of the screen with the picked loading look and "Joining..." under her
+// (JOIN_MS), at the intro size (600 wide, as in production). Then she appears there, "Joining..."
+// fades, and she shrinks into her place in the lesson while the card fades in; the quiz starts.
+// Any other tab cancels it.
+const SPLASH_ARRIVED_MS = 1200; // she shows in the middle for a moment before moving
+const SPLASH_MOVE_MS = 700;
+let splashDemo = false;
+let splashTimers = [];
+function setSplashDemo(on) {
+  splashDemo = on;
+  document.querySelector('.avatar-view').classList.toggle('splash-demo', on);
+  document.querySelector('.avatar-view').classList.remove('splash-arrived');
+}
+function clearSplashTimers() { splashTimers.forEach(clearTimeout); splashTimers = []; }
+// stage 'joining' / 'intro' (Julia states panel): hold that stage instead of playing on
+function showSplash({ stage } = {}) {
+  goTo(0, { fresh: true });
+  activities[0].leave(); // no talking behind the loading look
+  if (!chatPanel.hidden) setChatOpen(false); // the chat isn't there yet
+  setSplashDemo(true);
+  setJoining(true);
+  syncTabs();
+  if (stage === 'joining') return;
+  if (stage === 'intro') {
+    setJoining(false);
+    document.querySelector('.avatar-view').classList.add('splash-arrived');
+    return;
+  }
+  splashTimers.push(setTimeout(() => {
+    setJoining(false); // she appears in the middle; "Joining..." fades
+    document.querySelector('.avatar-view').classList.add('splash-arrived');
+    splashTimers.push(setTimeout(enterLessonFromSplash, SPLASH_ARRIVED_MS));
+  }, JOIN_MS));
+}
+// she shrinks from the intro size in the middle into her place (FLIP); the lesson fades in around her
+function enterLessonFromSplash() {
+  splashTimers = [];
+  const canvas = canvases[0];
+  const avatar = canvas.querySelector('.avatar');
+  const from = avatar.getBoundingClientRect();
+  avatar.style.transition = 'none'; // the size change is part of the move below, not a CSS transition
+  setSplashDemo(false);
+  syncTabs();
+  const to = avatar.getBoundingClientRect();
+  requestAnimationFrame(() => { avatar.style.transition = ''; });
+  if (!reduceMotion.matches) {
+    avatar.animate([
+      { transformOrigin: 'top left', transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${from.width / to.width}, ${from.height / to.height})` },
+      { transformOrigin: 'top left', transform: 'none' },
+    ], { duration: SPLASH_MOVE_MS, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' });
+    const around = [...canvas.children].filter((el) => el !== avatar && !el.classList.contains('splash-loading'));
+    around.push(...document.querySelectorAll('.avatar-view .product-header, .avatar-view .chat-pill, .avatar-view .indicators'));
+    around.forEach((el) => el.animate([{ opacity: 0 }, { opacity: 1 }],
+      { duration: SPLASH_MOVE_MS, delay: SPLASH_MOVE_MS * 0.4, easing: 'ease-out', fill: 'backwards' }));
+  }
+  activities[0].start();
+}
+
+// ---- Prototype-only: minimize Julia ("Minimize Julia" tab), as in the LXP (lxp-teams demo1) -------
+// Her tile gets a "–" button: she shrinks into a 64px circle in the center of the bar, in place of
+// the mic (the mic leaves), and the card slides to the middle. A click on the circle floats her up
+// as a 200px circle at the bottom right to talk: the mic comes back, and the X takes her back
+// down to the circle. Every move is a FLIP animation (measure, switch, animate from the old spot).
+let miniDemo = false;
+const avatarView = document.querySelector('.avatar-view');
+
+function syncMiniView() {
+  const avatar = document.querySelector('.avatar.minimized');
+  avatarView.classList.toggle('julia-minimized', !!avatar && !avatar.classList.contains('talking'));
+  avatarView.classList.toggle('julia-talking', !!avatar && avatar.classList.contains('talking'));
+}
+
+function setMiniDemo(on) {
+  miniDemo = on;
+  avatarView.classList.toggle('mini-demo', on);
+  if (!on) document.querySelectorAll('.avatar.minimized').forEach((a) => a.classList.remove('minimized', 'talking'));
+  syncMiniView();
+}
+
+// As in the LXP: she travels to her new spot by changing her real position, size and corners
+// (0.7s), so you see her fly into the mic's place. Coming back into the lesson (where she is part
+// of the layout again) she grows from the circle with an even scale, so she never looks stretched.
+// The card and the other things around her slide to their new places (FLIP).
+const JULIA_MOVE = { duration: 700, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' };
+function flipAvatar(avatar, change) {
+  const moving = [...avatar.parentElement.children].filter((el) => el !== avatar && el.getBoundingClientRect().width);
+  const before = moving.map((el) => el.getBoundingClientRect());
+  const a = avatar.getBoundingClientRect();
+  const aRadius = getComputedStyle(avatar).borderRadius;
+  change();
+  syncMiniView();
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  moving.forEach((el, i) => {
+    const was = before[i];
+    const now = el.getBoundingClientRect();
+    if (!now.width || !now.height) return;
+    el.animate([
+      { transform: `translate(${was.left - now.left}px, ${was.top - now.top}px)` },
+      { transform: 'none' },
+    ], JULIA_MOVE);
+  });
+  const b = avatar.getBoundingClientRect();
+  const bRadius = getComputedStyle(avatar).borderRadius;
+  if (getComputedStyle(avatar).position === 'fixed') {
+    avatar.animate([
+      { left: `${a.left}px`, top: `${a.top}px`, width: `${a.width}px`, height: `${a.height}px`, borderRadius: aRadius },
+      { left: `${b.left}px`, top: `${b.top}px`, width: `${b.width}px`, height: `${b.height}px`, borderRadius: bRadius },
+    ], JULIA_MOVE);
+  } else {
+    const k = a.width / b.width; // even scale: from the circle's width, centered on it
+    const tx = a.left + a.width / 2 - (b.left + (b.width * k) / 2);
+    const ty = a.top + a.height / 2 - (b.top + (b.height * k) / 2);
+    avatar.animate([
+      { transformOrigin: 'top left', transform: `translate(${tx}px, ${ty}px) scale(${k})`, borderRadius: `${b.width / 2}px` },
+      { transformOrigin: 'top left', transform: 'none', borderRadius: bRadius },
+    ], JULIA_MOVE);
+  }
+}
+
+function setMinimized(avatar, on) {
+  flipAvatar(avatar, () => {
+    avatar.classList.toggle('minimized', on);
+    if (!on) avatar.classList.remove('talking');
+  });
+  const focusTarget = on ? avatar.querySelector('.mini-restore') : null;
+  if (focusTarget) focusTarget.focus({ preventScroll: true });
+}
+
+function setTalking(avatar, on) {
+  flipAvatar(avatar, () => avatar.classList.toggle('talking', on));
+  const focusTarget = on ? juliaTalkClose : avatar.querySelector('.mini-restore');
+  if (focusTarget) focusTarget.focus({ preventScroll: true });
+}
+
+// The X, as in the LXP: a badge on the talking circle's upper right, outside the circle so the
+// circle never clips it. One for the page; it closes whichever Julia is talking.
+const juliaTalkClose = document.createElement('button');
+juliaTalkClose.className = 'mini-talk-close';
+juliaTalkClose.type = 'button';
+juliaTalkClose.setAttribute('aria-label', 'Stop talking to Julia');
+juliaTalkClose.innerHTML = '<ds-icon name="close" size="16"></ds-icon>';
+juliaTalkClose.addEventListener('click', () => {
+  const avatar = document.querySelector('.avatar.minimized.talking');
+  if (avatar) setTalking(avatar, false);
+});
+avatarView.appendChild(juliaTalkClose);
+
+document.querySelectorAll('.avatar').forEach((avatar) => {
+  // the circle in the bar is a button: a click floats her up to talk
+  const talk = document.createElement('button');
+  talk.className = 'mini-restore';
+  talk.type = 'button';
+  talk.innerHTML = '<span class="sr-only">Talk to Julia</span>';
+  talk.addEventListener('click', () => setTalking(avatar, true));
+  avatar.append(talk);
+});
+
+// ---- Prototype-only: "Current step" options panel (S) --------------------------------------
+const STEP_CUES = [
+  { id: 'outline', name: '1. Outlined segment (now)', use: 'The step showing now is an empty segment with a blue outline, like the milestone’s blue ring. Quiet, no motion.' },
+  { id: 'half', name: '2. Half-filled segment', use: 'The current segment is half blue: “in progress”, between done (full) and not started (empty). A common pattern in step bars.' },
+  { id: 'caret', name: '3. Pointer under the step', use: 'A small blue pointer under the current segment, like a “you are here” mark on a map.' },
+  { id: 'name', name: '4. Step name under it', use: 'The name of the activity (“Quiz”) under the current segment. A label makes the step clear without guessing.' },
+  { id: 'count', name: '5. “Step 3 of 5”', use: 'A short count under the milestone’s segments: where I am and how much is left. The most common practice in lessons and forms.' },
+  { id: 'milestone', name: '6. Milestone + step', use: '“Milestone 2 · Step 3 of 5” under the current milestone: both levels in one line.' },
+  { id: 'crumb', name: '7. Breadcrumb', use: '“Milestone 2 › Quiz” to the left of the bar, so the bar stays clean and the text says where I am.' },
+  { id: 'section', name: '8. Highlighted milestone', use: 'The current milestone’s segments sit on a soft blue band, so it reads as “this part”, with the outlined step inside it.' },
+  { id: 'numbered', name: '9. Numbered steps', use: 'The segments become small numbered pills: done is blue, the current one is outlined, the rest grey. Clear count at a glance.' },
+  { id: 'hover', name: '10. Labels on hover', use: 'The outlined step, and a DS hint with the step’s name and state when the student points at any segment. Detail on demand.' },
+];
+const STEP_CUE_KEY = 'courseware-step-cue';
+const stepCuesPanel = document.getElementById('step-cues-panel');
+const stepCuesList = stepCuesPanel.querySelector('.mic-states');
+makeFloatingPanel(stepCuesPanel, 'courseware-step-cues-spot');
+stepCuesList.innerHTML = STEP_CUES.map((cue, i) => `<li><button class="mic-state" type="button" data-step-cue="${cue.id}">`
+  + `<span class="mic-state-pill step-cue-num" aria-hidden="true">${i + 1}</span>`
+  + `<span class="mic-state-text"><span class="mic-state-name">${cue.name}</span><span class="mic-state-use">${cue.use}</span></span>`
+  + '</button></li>').join('');
+function setStepCue(id) {
+  document.documentElement.dataset.stepCue = id;
+  stepCuesList.querySelectorAll('[data-step-cue]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.stepCue === id)));
+  try { localStorage.setItem(STEP_CUE_KEY, id); } catch (err) { /* not remembered */ }
+}
+stepCuesList.addEventListener('click', (e) => {
+  const button = e.target.closest('[data-step-cue]');
+  if (button) setStepCue(button.dataset.stepCue);
+});
+{
+  let saved = null;
+  try { saved = localStorage.getItem(STEP_CUE_KEY); } catch (err) { /* default */ }
+  setStepCue(STEP_CUES.some((c) => c.id === saved) ? saved : 'outline');
+}
+function toggleStepCues(open = stepCuesPanel.hidden) { stepCuesPanel.hidden = !open; }
+document.getElementById('step-cues-toggle').addEventListener('click', () => toggleStepCues());
+document.addEventListener('keydown', (e) => {
+  if (e.code !== 'KeyS' || e.repeat || e.metaKey || e.ctrlKey || e.altKey || isTyping(e)) return;
+  toggleStepCues();
+});
+
+// ---- Prototype-only: Julia states panel (J) -------------------------------------------------
+// Every state of Julia's tile (which use case each belongs to is not decided yet); a click shows it on the quiz.
+const juliaStatesPanel = document.getElementById('julia-states-panel');
+makeFloatingPanel(juliaStatesPanel, 'courseware-julia-states-spot');
+function toggleJuliaStates(open = juliaStatesPanel.hidden) { juliaStatesPanel.hidden = !open; }
+document.getElementById('julia-states-toggle').addEventListener('click', () => toggleJuliaStates());
+document.addEventListener('keydown', (e) => {
+  if (e.code !== 'KeyJ' || e.repeat || e.metaKey || e.ctrlKey || e.altKey || isTyping(e)) return;
+  toggleJuliaStates();
+});
+const quizAvatar = () => canvases[0].querySelector('.avatar');
+const nextFrame = (fn) => requestAnimationFrame(() => requestAnimationFrame(fn));
+const MOVE_GAP = JULIA_MOVE.duration + 50; // wait for one move to end before the next one starts
+
+// Where Julia is now, read from the screen (so it also follows the tabs, "–" and her circle)
+function juliaStateNow() {
+  if (current !== 0 || paused) return null;
+  if (splashDemo) return document.querySelector('.avatar-view').classList.contains('splash-arrived') ? 'intro' : 'joining';
+  const avatar = quizAvatar();
+  if (avatar.classList.contains('minimized')) return avatar.classList.contains('talking') ? 'talking' : 'minimized';
+  return 'lesson';
+}
+
+// Introduction back from the lesson: she slides from her place to the middle and grows (even scale)
+function lessonToIntro() {
+  clearSplashTimers();
+  const avatar = quizAvatar();
+  const from = avatar.getBoundingClientRect();
+  activities[0].leave();
+  if (!chatPanel.hidden) setChatOpen(false);
+  setMiniDemo(false);
+  avatar.style.transition = 'none';
+  setSplashDemo(true);
+  document.querySelector('.avatar-view').classList.add('splash-arrived');
+  syncTabs();
+  const to = avatar.getBoundingClientRect();
+  requestAnimationFrame(() => { avatar.style.transition = ''; });
+  if (reduceMotion.matches) return;
+  const k = from.width / to.width;
+  avatar.animate([
+    { transformOrigin: 'top left', transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${k})` },
+    { transformOrigin: 'top left', transform: 'none' },
+  ], JULIA_MOVE);
+}
+
+// One step between two neighboring states; returns false when there is no direct move
+function juliaStep(from, to) {
+  const avatar = quizAvatar();
+  if (from === 'joining' && to === 'intro') {
+    setJoining(false);
+    document.querySelector('.avatar-view').classList.add('splash-arrived');
+    return true;
+  }
+  if (from === 'intro' && to === 'lesson') { enterLessonFromSplash(); setMiniDemo(true); syncTabs(); return true; }
+  if (from === 'lesson' && to === 'intro') { lessonToIntro(); return true; }
+  if (from === 'lesson' && to === 'minimized') { setMiniDemo(true); setMinimized(avatar, true); syncTabs(); return true; }
+  if ((from === 'minimized' || from === 'talking') && to === 'lesson') { setMinimized(avatar, false); return true; }
+  if (from === 'minimized' && to === 'talking') { setTalking(avatar, true); return true; }
+  if (from === 'talking' && to === 'minimized') { setTalking(avatar, false); return true; }
+  if (from === 'lesson' && to === 'talking') {
+    setMiniDemo(true);
+    flipAvatar(avatar, () => avatar.classList.add('minimized', 'talking'));
+    syncTabs();
+    juliaTalkClose.focus({ preventScroll: true });
+    return true;
+  }
+  return false;
+}
+
+// The path between two states, through "In the lesson" when they aren't neighbors
+const JULIA_ORDER = ['joining', 'intro', 'lesson', 'minimized', 'talking'];
+function juliaPath(from, to) {
+  if (`${from}-${to}` === 'lesson-talking' || `${from}-${to}` === 'talking-lesson') return [from, to]; // a direct move
+  const i = JULIA_ORDER.indexOf(from);
+  const j = JULIA_ORDER.indexOf(to);
+  const path = [];
+  for (let k = i; k !== j; k += i < j ? 1 : -1) path.push(JULIA_ORDER[k]);
+  path.push(to);
+  return path;
+}
+
+let juliaMoveTimers = [];
+function goToJuliaState(target) {
+  juliaMoveTimers.forEach(clearTimeout);
+  juliaMoveTimers = [];
+  let from = juliaStateNow();
+  if (target === 'joining') { showSplash({ stage: 'joining' }); return; } // loading starts over
+  if (!from) { // not on the quiz: open it in the lesson, then move from there
+    goTo(0, { fresh: true });
+    setMiniDemo(true);
+    syncTabs();
+    from = 'lesson';
+    if (target === 'intro') { showSplash({ stage: 'intro' }); return; }
+  }
+  if (from === 'joining' && target !== 'intro') { // she has to arrive first
+    juliaStep('joining', 'intro');
+    juliaMoveTimers.push(setTimeout(() => goToJuliaState(target), 900));
+    return;
+  }
+  const path = juliaPath(from, target);
+  path.slice(1).forEach((state, n) => {
+    juliaMoveTimers.push(setTimeout(() => nextFrame(() => juliaStep(path[n], state)), n * MOVE_GAP));
+  });
+}
+
+const JULIA_STATES = {
+  joining: () => goToJuliaState('joining'),
+  intro: () => goToJuliaState('intro'),
+  lesson: () => goToJuliaState('lesson'),
+  minimized: () => goToJuliaState('minimized'),
+  talking: () => goToJuliaState('talking'),
+};
+juliaStatesPanel.querySelectorAll('[data-julia-state]').forEach((button) => {
+  button.addEventListener('click', () => {
+    if (!demoStarted) return;
+    JULIA_STATES[button.dataset.juliaState]();
+    juliaStatesPanel.querySelectorAll('[data-julia-state]').forEach((b) => b.setAttribute('aria-pressed', String(b === button)));
+  });
+});
 const targetOf = (link) => Number(link.dataset.value); // which activity a tab opens
 let current = 0;
 
+// ---- Paused session: the session ended midway ---------------------------------
+// Like a paused player: the activity and the bottom bar are washed out and locked (inert), the
+// progress bar stays live, and "Continue lesson" picks up where the student left off. The End
+// button pauses whatever activity is showing; the "Session paused" tab shows it on the quiz.
+const pauseView = document.querySelector('.avatar-view');
+const pauseLayer = document.getElementById('pause-layer');
+const continueLessonButton = document.getElementById('continue-lesson');
+const bottomBarEl = document.querySelector('.bottom-bar');
+const pauseStatus = document.getElementById('pause-status'); // screen-reader announcement
+let paused = false;
+let pausedVideos = []; // videos that were playing, resumed by "Continue lesson"
+
+function setPausedUI(on) {
+  paused = on;
+  pauseView.classList.toggle('paused', on);
+  pauseLayer.inert = !on;
+  canvases[current].inert = on;
+  bottomBarEl.inert = on;
+  syncTabs();
+  // deferred: a tab click focuses the tab after this runs
+  if (on) setTimeout(() => { if (paused) continueLessonButton.focus({ preventScroll: true }); }, 0);
+}
+
+function pauseSession() {
+  if (paused) return;
+  pausedVideos = [...canvases[current].querySelectorAll('video')].filter((v) => !v.paused);
+  pausedVideos.forEach((v) => v.pause());
+  setPausedUI(true);
+  pauseStatus.textContent = 'Lesson paused';
+}
+
+// Leaves the paused state without resuming anything (used when navigating away)
+function clearPause() {
+  if (!paused) return;
+  pausedVideos = [];
+  setPausedUI(false);
+  pauseStatus.textContent = '';
+}
+
+function continueLesson() {
+  if (!paused) return;
+  const resume = pausedVideos;
+  clearPause();
+  pauseStatus.textContent = 'Lesson resumed';
+  resume.forEach((v) => v.play().catch((e) => console.error(e.message)));
+}
+
+continueLessonButton.addEventListener('click', continueLesson);
+
+// ---- Prototype-only: speaking while muted --------------------------------------------
+// The student muted the mic and starts talking: the reminder (hint + ripple) shows for a few
+// seconds, as if the voice were picked up, then goes away. There is no real voice detection in the
+// prototype, so the T key plays the moment. Clicking the mic while it shows unmutes it (the action
+// the reminder asks for).
+const TALK_MUTED_MS = 3500;
+const TALK_MUTED_TEXT = 'You’re muted. Click the mic to talk';
+const talkMutedLive = document.getElementById('talk-muted-live');
+let talkMutedTimer = null;
+
+function endTalkingMuted() {
+  clearTimeout(talkMutedTimer);
+  if (!bottomBarEl.classList.contains('talking-muted')) return;
+  bottomBarEl.classList.remove('talking-muted');
+  talkMutedLive.textContent = '';
+  if (micPill.classList.contains('muted')) setMic('muted'); // puts the usual message state back
+}
+
+function simulateTalkingMuted({ hold = false } = {}) {
+  if (!demoStarted || paused || bottomBarEl.classList.contains('watching')) return;
+  setMic('muted');
+  bottomBarEl.classList.remove('talking-muted');
+  void bottomBarEl.offsetWidth; // restarts the ripple when played again
+  bottomBarEl.classList.add('talking-muted');
+  talkMutedLive.textContent = TALK_MUTED_TEXT;
+  clearTimeout(talkMutedTimer);
+  if (!hold) talkMutedTimer = setTimeout(endTalkingMuted, TALK_MUTED_MS);
+}
+
+micPill.addEventListener('click', () => {
+  if (!bottomBarEl.classList.contains('talking-muted')) return;
+  clearTimeout(talkMutedTimer);
+  talkMutedLive.textContent = '';
+  setMic('idle');
+});
+document.querySelector('.end-pill').addEventListener('click', pauseSession);
+
+// ---- Prototype-only: Julia joining (DS candidate: avatar joining tile) ----------------
+// The lesson opens (and the panel's Replay): Julia's tile on the screen showing now shows the
+// loading look picked in the panel for JOIN_MS, then fades to her video and the activity starts.
+const JOIN_MS = 2600;
+const JOIN_STYLE_KEY = 'courseware-join-style';
+let joinTimer = null;
+
+// Mic and chat are disabled while Julia is joining (and in the mic states panel's "Joining" state)
+function setBarLocked(on) {
+  document.querySelectorAll('.mic-pill, .chat-pill').forEach((b) => { b.disabled = on; });
+}
+
+function setJoining(on) {
+  document.querySelectorAll('.avatar.joining').forEach((a) => a.classList.remove('joining'));
+  setBarLocked(on);
+  if (!on) { revealFairyDust(); return null; }
+  stopFairyDust();
+  const avatar = canvases[current].querySelector('.avatar');
+  if (!avatar) { setBarLocked(false); return null; }
+  if (!avatar.querySelector('.avatar-joining')) {
+    const layer = document.createElement('div');
+    layer.className = 'avatar-joining';
+    layer.setAttribute('aria-hidden', 'true');
+    layer.innerHTML = '<span class="avatar-joining-text">Julia is joining</span><span class="avatar-joining-dots"><i></i><i></i><i></i></span>'
+      + '<span class="avatar-joining-wave"><i></i><i></i><i></i><i></i><i></i></span>'
+      + '<span class="avatar-joining-bubble"><i></i><i></i><i></i></span>';
+    avatar.appendChild(layer);
+  }
+  avatar.classList.add('joining');
+  if (document.documentElement.dataset.joinStyle === 'fairy' && !reduceMotion.matches) startFairyDust(avatar);
+  return avatar;
+}
+
+function cancelJoining() {
+  clearTimeout(joinTimer);
+  joinTimer = null;
+  setJoining(false);
+  stopFairyDust();
+}
+
+// ---- Prototype-only: loading colors from the image about to load --------------------------
+// Each avatar gets --app-image-dark / -mid / -light / -accent, the main colors of her image, and the
+// loading looks (4. Mist, 5. Fairy dust) use them, so the loading leads into her. In the product
+// the developers compute them from the image; here we try that first and fall back to data.js
+// (from file:// the browser won't let the page read the pixels).
+function avatarPaletteFrom(img) {
+  const size = 12;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, size, size);
+  const data = ctx.getImageData(0, 0, size, size).data; // throws when the image may not be read
+  const px = [];
+  for (let i = 0; i < data.length; i += 4) px.push([data[i], data[i + 1], data[i + 2]]);
+  const lum = (p) => 0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2];
+  const dist = (p, c) => (p[0] - c[0]) ** 2 + (p[1] - c[1]) ** 2 + (p[2] - c[2]) ** 2;
+  px.sort((a, b) => lum(a) - lum(b));
+  // three groups by color (k-means, started from dark / middle / light)
+  let cents = [px[Math.floor(px.length / 6)], px[Math.floor(px.length / 2)], px[Math.floor(px.length * 5 / 6)]];
+  for (let round = 0; round < 12; round += 1) {
+    const groups = [[], [], []];
+    px.forEach((p) => {
+      let best = 0;
+      cents.forEach((c, j) => { if (dist(p, c) < dist(p, cents[best])) best = j; });
+      groups[best].push(p);
+    });
+    cents = groups.map((g, j) => (g.length ? [0, 1, 2].map((k) => Math.round(g.reduce((sum, p) => sum + p[k], 0) / g.length)) : cents[j]));
+  }
+  cents.sort((a, b) => lum(a) - lum(b));
+  const sat = (p) => Math.max(...p) - Math.min(...p);
+  const accent = px.reduce((a, b) => (sat(b) > sat(a) ? b : a));
+  const hex = (c) => `#${c.map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+  return { dark: hex(cents[0]), mid: hex(cents[1]), light: hex(cents[2]), accent: hex(accent) };
+}
+function applyAvatarPalette(avatar) {
+  const img = avatar.querySelector('.avatar-glow');
+  if (!img) return;
+  const set = (palette) => {
+    if (!palette) return;
+    Object.entries(palette).forEach(([name, value]) => avatar.style.setProperty(`--app-image-${name}`, value));
+  };
+  const measure = () => {
+    try { set(avatarPaletteFrom(img)); } catch (err) { set(AVATAR_PALETTES[img.getAttribute('src')]); }
+  };
+  if (img.complete && img.naturalWidth) measure();
+  else { set(AVATAR_PALETTES[img.getAttribute('src')]); img.addEventListener('load', measure, { once: true }); }
+}
+document.querySelectorAll('.avatar').forEach(applyAvatarPalette);
+
+// The "Background" choice (Julia's backdrop instead of the blue) was tried and removed (2026-11-18).
+try { localStorage.removeItem('courseware-background'); } catch (err) { /* nothing saved */ }
+
+// ---- Prototype-only: 5. Fairy dust (canvas; DS candidate with the joining tile) ----------------
+// The same material as 4. Mist (the DS brand colors primary, primary-brighter, screen-green, softly
+// blurred), shaped as a magic trail: a soft head sweeps in from the lower left and curls around
+// where her face will be, leaving a misty ribbon that spreads and fades on its own. The ribbon
+// gathers into a haze on her face, and the haze opens up as she appears. A very few faint glints
+// in the ribbon, no stars. Colors are read from the tokens when it starts, so they follow the theme.
+let fairy = null;
+
+function startFairyDust(avatar) {
+  const canvas = document.createElement('canvas');
+  canvas.className = 'fairy-canvas';
+  canvas.setAttribute('aria-hidden', 'true');
+  avatar.appendChild(canvas);
+  avatar.classList.add('fairy-live');
+  const rect = avatar.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const w = rect.width;
+  const h = rect.height;
+  canvas.width = Math.round(w * dpr);
+  canvas.height = Math.round(h * dpr);
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const css = getComputedStyle(document.documentElement);
+  const token = (name) => css.getPropertyValue(name).trim();
+  // the colors of the image about to load (on her tile, applyAvatarPalette): along the trail it goes
+  // from deep to light as it reaches her, with her accent color here and there.
+  // Without image colors: the DS blues and teal.
+  const own = getComputedStyle(avatar);
+  const color = (image, fallback) => own.getPropertyValue(`--app-image-${image}`).trim() || token(fallback);
+  const colors = [color('dark', '--ds-primary-darker'), color('mid', '--ds-primary'), color('light', '--ds-primary-brighter')];
+  const accent = color('accent', '--ds-screen-green');
+  const glint = color('mid', '--ds-primary-brighter'); // a middle tone: shows in light and dark
+  const cx = w * 0.5;
+  const cy = h * 0.45; // her face
+  const R = Math.min(w, h) * 0.5;
+  const SWEEP_MS = JOIN_MS - 300;
+  const rand = (lo, hi) => lo + Math.random() * (hi - lo);
+  const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - ((-2 * t + 2) ** 2) / 2);
+  const headAt = (t) => {
+    const e = ease(t);
+    const angle = Math.PI * 0.85 - e * Math.PI * 2.4; // in from the lower left, one and a bit loops around her
+    const r = R * (1.25 - e * 1.15);
+    return { x: cx + Math.cos(angle) * r, y: cy + Math.sin(angle) * r * 0.85 };
+  };
+  const colorAt = (t) => (Math.random() < 0.12 ? accent
+    : colors[Math.floor(Math.min(Math.max(t + rand(-0.12, 0.12), 0), 0.999) * colors.length)]);
+  // a puff fades to a clear version of its own color (plain 'transparent' can leave a dark fringe)
+  const clearOf = (hex) => {
+    const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex);
+    if (!m) return 'rgba(0,0,0,0)';
+    const v = m[1].length === 3 ? m[1].replace(/./g, (c) => c + c) : m[1];
+    return `rgba(${parseInt(v.slice(0, 2), 16)},${parseInt(v.slice(2, 4), 16)},${parseInt(v.slice(4, 6), 16)},0)`;
+  };
+
+  const puffs = [];
+  const addPuff = (x, y, vx, vy, size, grow, life, color, alpha) => puffs.push({ x, y, vx, vy, size, grow, life, color, alpha, age: 0, glint: false });
+
+  const start = performance.now();
+  let last = start;
+  let head = headAt(0);
+  const state = { canvas, avatar, raf: 0, emitting: true, revealed: false };
+
+  state.reveal = () => { // the gathered haze opens up as she appears
+    if (state.revealed) return;
+    state.revealed = true;
+    state.emitting = false;
+    for (let i = 0; i < 18; i += 1) {
+      const a = rand(0, Math.PI * 2);
+      const speed = rand(20, 60);
+      addPuff(cx + rand(-8, 8), cy + rand(-8, 8), Math.cos(a) * speed, Math.sin(a) * speed,
+        R * rand(0.18, 0.3), R * 0.5, rand(0.9, 1.3), i % 6 === 5 ? accent : colors[i % colors.length], 0.22);
+    }
+  };
+
+  function frame(now) {
+    const dt = Math.min((now - last) / 1000, 0.05);
+    last = now;
+    const t = Math.min((now - start) / SWEEP_MS, 1);
+    const prev = head;
+    head = headAt(t);
+    if (t >= 1 && !state.revealed) state.reveal();
+
+    if (state.emitting) { // the ribbon: soft puffs left along the path the head just flew
+      for (let i = 0; i < 4; i += 1) {
+        const k = i / 4;
+        addPuff(prev.x + (head.x - prev.x) * k + rand(-3, 3), prev.y + (head.y - prev.y) * k + rand(-3, 3),
+          rand(-10, 10), rand(-12, 4), R * rand(0.06, 0.1), R * rand(0.12, 0.22), rand(1, 1.6), colorAt(t), 0.16);
+      }
+      if (Math.random() < 0.25) { // a very few faint glints in the ribbon
+        puffs.push({ x: head.x + rand(-6, 6), y: head.y + rand(-6, 6), vx: rand(-8, 8), vy: rand(-10, 6),
+          size: rand(0.8, 1.4), grow: 0, life: rand(0.6, 1.1), color: glint, alpha: 0.7, age: 0, glint: true });
+      }
+      if (t > 0.6) { // the haze gathers on her face as the trail curls in
+        addPuff(cx + rand(-R * 0.15, R * 0.15), cy + rand(-R * 0.15, R * 0.15), 0, 0,
+          R * rand(0.12, 0.2), R * 0.1, rand(0.8, 1.2), colorAt(rand(0, 1)), 0.08 * (t - 0.6) / 0.4);
+      }
+    }
+
+    ctx.clearRect(0, 0, w, h);
+    for (let i = puffs.length - 1; i >= 0; i -= 1) {
+      const p = puffs[i];
+      p.age += dt;
+      if (p.age >= p.life) { puffs.splice(i, 1); continue; }
+      const drag = 0.5 ** dt;
+      p.vx = (p.vx + rand(-20, 20) * dt) * drag; // each puff wanders a little on its own
+      p.vy = (p.vy + rand(-20, 20) * dt) * drag;
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      const k = p.age / p.life;
+      const fade = Math.min(k / 0.15, 1) * (1 - k) ** 1.5;
+      const r = p.size + p.grow * k;
+      ctx.globalAlpha = p.alpha * fade;
+      if (p.glint) {
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+        ctx.fill();
+        continue;
+      }
+      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+      g.addColorStop(0, p.color);
+      g.addColorStop(1, clearOf(p.color));
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    if (state.revealed && !puffs.length) { stopFairyDust(); return; }
+    state.raf = requestAnimationFrame(frame);
+  }
+  state.raf = requestAnimationFrame(frame);
+  fairy = state;
+}
+
+function revealFairyDust() { if (fairy) fairy.reveal(); }
+
+function stopFairyDust() {
+  if (!fairy) return;
+  cancelAnimationFrame(fairy.raf);
+  fairy.canvas.remove();
+  fairy.avatar.classList.remove('fairy-live');
+  fairy = null;
+}
+
+// shows the loading look, then calls done(); no avatar on this screen: done() right away
+function playJoining(done) {
+  cancelJoining();
+  if (!setJoining(true)) { done(); return; }
+  joinTimer = setTimeout(() => { setJoining(false); joinTimer = null; done(); }, JOIN_MS);
+}
+
+// The looks to compare, in the order the panel's ‹ › step through them
+const JOIN_STYLES = [
+  // the tile forms itself: no frame while she loads; she fades in edgeless and takes form
+  { id: 'becoming', name: '1. Becoming', desc: 'The tile forms itself: she breathes into being, each breath a little sharper, until she is a tile with edges.' },
+  { id: 'emerge', name: '2. Emerge', desc: 'The tile forms itself: a soft, edgeless presence breathes in place, then opens up and gains its edges.' },
+  { id: 'coalesce', name: '3. Coalesce', desc: 'The tile forms itself: she gathers from a wider, very blurred area and slowly condenses into her shape.' },
+  { id: 'mist', name: '4. Mist', desc: 'A haze of light gathers where she will be, with the DS brand colors (blue, bright blue, teal) slowly turning inside it. Nothing of her shows until she is fully there.' },
+  { id: 'fairy', name: '5. Fairy dust', desc: 'The Mist material shaped as a magic trail: a soft ribbon of the brand colors sweeps in and curls around where she will be, gathers on her face, and opens up as she appears.' },
+  { id: 'glow', name: 'A. Breathing glow', desc: 'Figma Loading 1: a soft blue shape that slowly breathes.' },
+  { id: 'rings', name: 'B. Rings', desc: 'Figma Loading 2: rings move out from the middle, so a longer wait doesn’t look frozen.' },
+  { id: 'blur', name: 'C. Blurred to sharp', desc: 'Her still shows blurred and sharpens as she arrives. Recommended: you see Julia from the first second.' },
+  { id: 'shimmer', name: 'D. Shimmer', desc: 'A soft band of light sweeps across the tile, like content loading.' },
+  { id: 'dots', name: 'E. “Julia is joining…”', desc: 'Plain words with three dots that light up in turn.' },
+  { id: 'wave', name: 'F. Voice wave', desc: 'Blue bars move like a voice warming up, then she starts to speak.' },
+  { id: 'iris', name: 'G. Iris', desc: 'A small window on her face pulses, then opens up to the whole tile, like a camera opening.' },
+  { id: 'aurora', name: 'H. Aurora', desc: 'Soft blue light drifts over the tile, like something gathering, then fades to her.' },
+  { id: 'rise', name: 'I. Sunrise', desc: 'A soft blue light rises from the bottom of the tile, then she rises into view.' },
+  { id: 'bubble', name: 'J. Speech bubble', desc: 'A bubble with three bouncing dots, like she’s about to say something.' },
+  { id: 'orbit', name: 'K. Orbit', desc: 'A small blue dot circles a faint ring, like something on its way.' },
+  { id: 'color', name: 'L. Color in', desc: 'Her still shows faded grey, gently breathing, and warms up to full color.' },
+  { id: 'curtain', name: 'M. Curtain', desc: 'A thin blue line fills along the bottom while she loads, then the cover lifts up.' },
+  // the futuristic direction: breathing gradients
+  { id: 'liquid', name: 'N. Liquid gradient', desc: 'New direction: a soft gradient of blues and teal turns slowly and breathes across the tile, like liquid light.' },
+  { id: 'orb', name: 'O. Glass orb', desc: 'New direction: a breathing orb with a turning gradient inside and a soft halo around it.' },
+  { id: 'edge', name: 'P. Edge glow', desc: 'New direction: a thin gradient light runs around the tile’s edge and breathes, like an assistant listening.' },
+  { id: 'holo', name: 'Q. Hologram', desc: 'New direction: her still in a blue-teal duotone that breathes, then she turns to full color.' },
+  { id: 'scan', name: 'R. Scan', desc: 'New direction: a soft band of light scans down her blurred still, like she’s being brought in.' },
+  { id: 'stardust', name: 'S. Stardust', desc: 'New direction: small points of light drift up around a soft breathing glow.' },
+  { id: 'prism', name: 'T. Prism', desc: 'New direction: an iridescent light moves slowly across a frosted tile and breathes.' },
+  // avatar-style: they work with Julia herself
+  { id: 'halftone', name: 'U. Halftone', desc: 'Avatar-style: she is built from a grid of dots that grow until she is whole, like a digital print.' },
+  { id: 'aura', name: 'V. Aura', desc: 'Avatar-style: a breathing gradient aura behind her tile glows and shifts, while she comes into focus.' },
+  { id: 'signal', name: 'W. Signal', desc: 'Avatar-style: she is half there, with fine scan lines and a faint flicker, like a hologram tuning in.' },
+  { id: 'focus', name: 'X. Focus', desc: 'Avatar-style: only her face is sharp, and the sharp area breathes, like a camera finding focus.' },
+  { id: 'halo', name: 'Y. Halo', desc: 'Avatar-style: a ring of light turns in perspective above her head while she is still blurred.' },
+];
+let joinIndex = 0;
+
+function showJoinStyle(i) {
+  joinIndex = (i + JOIN_STYLES.length) % JOIN_STYLES.length;
+  const look = JOIN_STYLES[joinIndex];
+  document.documentElement.dataset.joinStyle = look.id;
+  document.getElementById('join-count').textContent = `${joinIndex + 1} of ${JOIN_STYLES.length}`;
+  document.getElementById('join-name').textContent = look.name;
+  document.getElementById('join-desc').textContent = look.desc;
+  try { localStorage.setItem(JOIN_STYLE_KEY, look.id); } catch (e) { /* not remembered */ }
+}
+// The "Avatar loading" panel was removed (2026-11-18, my request): the look is fixed to 4. Mist,
+// the favorite. The other looks stay in the code (JOIN_STYLES) and can come back with the panel.
+showJoinStyle(Math.max(0, JOIN_STYLES.findIndex((l) => l.id === 'mist')));
+
+
+// The selected tab: "Session paused" while paused, otherwise the activity showing
+const isShowing = (link) => {
+  if (link === pauseTab) return paused;
+  if (link === miniTab) return !paused && miniDemo;
+  if (link === splashTab) return !paused && splashDemo;
+  return !paused && !miniDemo && !splashDemo && targetOf(link) === current;
+};
+function syncTabs() {
+  navLinks.forEach((link) => {
+    const on = isShowing(link);
+    link.setAttribute('aria-selected', String(on));
+    link.tabIndex = on ? 0 : -1;
+  });
+}
+
+function openTab(link) {
+  if (link === miniTab) { goTo(0, { fresh: true }); setMiniDemo(true); syncTabs(); return; }
+  if (link === splashTab) { showSplash(); return; }
+  if (link !== pauseTab) { goTo(targetOf(link)); return; }
+  goTo(0, { fresh: true }); // the quiz, partway through, then paused
+  activities[0].midway();
+  pauseSession();
+}
+
 // Every navigation (including clicking the tab you're already on) restarts the activity
-function goTo(index) {
+function goTo(index, { fresh = false, join = false } = {}) {
   if (index < 0 || index >= activities.length) return;
+  cancelJoining();
+  clearSplashTimers();
+  setMiniDemo(false);
+  setSplashDemo(false);
+  clearPause();
   activities[current].leave();
-  canvases[current].classList.remove('active');
+  canvases[current].classList.remove('active', 'reviewing');
   current = index;
   updateImageToggle();
   reached = canvases[current].classList.contains('lesson') ? LESSON_BASE_REACHED : BASE_REACHED;
   renderProgress();
   activities[current].reset();
+  // an answered step opens in review mode (locked, "Back" + "Continue"), unless asked fresh
+  const record = !fresh && activities[current].review ? completedActivities.get(current) : undefined;
+  canvases[current].classList.toggle('reviewing', !!record);
   canvases[current].classList.add('active');
-  navLinks.forEach((link) => {
-    link.setAttribute('aria-selected', String(targetOf(link) === current));
-    link.tabIndex = targetOf(link) === current ? 0 : -1;
-  });
+  syncTabs();
+  syncFooter();
   activities[current].enter();
-  activities[current].start(); // links and Space are user gestures, so sound is allowed
+  if (record) activities[current].review(record);
+  else if (join) playJoining(() => activities[current].start());
+  else activities[current].start(); // links and Space are user gestures, so sound is allowed
 }
+
+// Panel: picking a loading look, or Replay, plays it on the screen showing now from the start
+function replayJoining() {
+  if (!demoStarted || paused) return;
+  if (splashDemo) showSplash(); // the look plays only on the splash screen (no loading in the lesson spot)
+}
+document.getElementById('join-prev').addEventListener('click', () => { showJoinStyle(joinIndex - 1); replayJoining(); });
+document.getElementById('join-next').addEventListener('click', () => { showJoinStyle(joinIndex + 1); replayJoining(); });
+document.getElementById('join-replay').addEventListener('click', replayJoining);
 
 // A click always restarts the activity, even on the selected tab (ds-change only fires on a change)
 navLinks.forEach((link) => {
-  link.addEventListener('click', () => goTo(targetOf(link)));
+  link.addEventListener('click', () => openTab(link));
 });
 // Arrow keys / Home / End move the selection: the DS fires ds-change on the tablist
 document.querySelector('.site-nav').addEventListener('ds-change', (e) => {
-  const index = Number(e.detail.value);
-  if (index !== current) goTo(index);
+  const link = navLinks.find((l) => l.dataset.value === String(e.detail.value));
+  if (link && !isShowing(link)) openTab(link);
 });
 
-// Space steps through the tabs that are showing, in tab-bar order (-1: this is the last one)
-function nextTarget() {
-  const from = navLinks.findIndex((link) => targetOf(link) === current);
-  const next = navLinks.slice(from + 1).find((link) => !link.hidden);
-  return next ? targetOf(next) : -1;
+// Space steps through the tabs that are showing, in tab-bar order (null: this is the last one)
+function nextTab() {
+  const from = navLinks.findIndex(isShowing);
+  return navLinks.slice(from + 1).find((link) => !link.hidden) || null;
+}
+
+// ---- Card footer navigation (English Learning Module reference) ------------------
+// The lesson's steps are the tabs, in tab-bar order. "Back" opens the previous step (disabled on
+// the first), "Skip for now" marks the step as skipped and opens the next one, and a confirmed
+// answer / "Continue" un-marks it and opens the next one. The end of the milestone checks the
+// skipped steps ("You skipped N questions").
+const skippedActivities = new Set(); // activity indexes skipped in this session
+// Review mode: steps answered in this session, with what the student answered (cleared by a
+// page refresh). Opening one shows it locked, with only "Back" and "Continue".
+const completedActivities = new Map(); // activity index -> { answer } | { text } | {}
+
+function prevTab() {
+  const from = navLinks.findIndex(isShowing);
+  return navLinks.slice(0, Math.max(0, from)).reverse().find((link) => !link.hidden) || null;
+}
+
+function advanceLesson(record) {
+  skippedActivities.delete(current);
+  if (record) completedActivities.set(current, record);
+  const next = nextTab();
+  if (next) openTab(next);
+}
+
+function skipStep() {
+  skippedActivities.add(current);
+  const next = nextTab();
+  if (next) openTab(next);
+}
+
+function goBack() {
+  const prev = prevTab();
+  if (prev) openTab(prev);
+}
+
+// "Return to questions": the first skipped step, in tab-bar order
+function returnToSkipped() {
+  const link = navLinks.find((l) => !l.hidden && l !== pauseTab && skippedActivities.has(targetOf(l)));
+  if (link) openTab(link);
+}
+
+document.querySelectorAll('.foot-back').forEach((b) => b.addEventListener('click', goBack));
+document.querySelectorAll('.foot-skip').forEach((b) => b.addEventListener('click', skipStep));
+// review mode's "Continue": on to the next step (the answer is already saved)
+document.querySelectorAll('.foot-continue').forEach((b) => b.addEventListener('click', () => {
+  const next = nextTab();
+  if (next) openTab(next);
+}));
+
+// review mode's corner check, on every card that can be reviewed
+document.querySelectorAll('.card-foot .foot-continue').forEach((b) => {
+  b.closest('.flashcard, .reading-card').insertAdjacentHTML('afterbegin',
+    '<span class="review-stamp" role="img" aria-label="Completed"><ds-icon name="check" size="16"></ds-icon></span>');
+});
+
+// "Back" is disabled on the first step
+function syncFooter() {
+  const back = canvases[current].querySelector('.foot-back');
+  if (back) back.disabled = prevTab() === null;
 }
 
 // The image toggle (right end of the header) shows or hides the image on the input activities.
@@ -887,7 +2023,24 @@ imageToggle.addEventListener('ds-change', (e) => {
 document.getElementById('theme-toggle').addEventListener('ds-change', (e) => {
   DS.setTheme(e.detail.value ? 'dark' : 'light');
 });
+
+// Compare the same-token theme fixes: off brings back the earlier per-theme token swaps (app.css)
+document.getElementById('token-fixes-toggle').addEventListener('ds-change', (e) => {
+  document.documentElement.classList.toggle('before-token-fixes', !e.detail.value);
+});
+// Compare the card shadow: on = the LXP shadow (after), off = the earlier DS floating shadow (before)
+document.getElementById('card-shadow-toggle').addEventListener('ds-change', (e) => {
+  document.documentElement.classList.toggle('card-shadow-before', !e.detail.value);
+});
+// Shine trials: a soft white reflection layer on the cards / on the screen (app.css "shine")
+document.getElementById('card-shine-toggle').addEventListener('ds-change', (e) => {
+  document.documentElement.classList.toggle('card-shine', e.detail.value);
+});
+document.getElementById('screen-shine-toggle').addEventListener('ds-change', (e) => {
+  document.documentElement.classList.toggle('screen-shine', e.detail.value);
+});
 updateImageToggle();
+syncFooter();
 
 renderProgress();
 
@@ -901,7 +2054,7 @@ function startDemo() {
   demoStarted = true;
   splash.classList.add('hidden');
   activities[current].enter();
-  activities[current].start();
+  activities[current].start(); // no loading in her lesson spot: she only loads on the splash screen
 }
 
 startDemoButton.addEventListener('click', startDemo);
@@ -918,18 +2071,316 @@ document.addEventListener('keydown', (e) => {
   e.preventDefault(); // no page scroll / no "click" on a focused button
   if (e.repeat) return;
   if (!demoStarted) { startDemo(); return; }
+  if (paused) { continueLesson(); return; } // Space resumes, like a paused player
   if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
-  goTo(nextTarget());
+  const next = nextTab();
+  if (next) openTab(next);
 });
 // Some browsers fire a button's click on Space keyup
 document.addEventListener('keyup', (e) => {
   if (e.code === 'Space' && !spaceIsNative() && !isTyping(e)) e.preventDefault();
 });
 
-// The ambient mesh gradient background is on by default; B turns it off and on again, on any tab
-// (ignored with Cmd/Ctrl/Alt held, so browser shortcuts like Cmd+B keep working)
-const avatarViewEl = document.querySelector('.avatar-view');
+// ---- Prototype-only: floating demo panel, dragged from anywhere on it ----------------
+// The panel (activity tabs + switches) floats over the screen and can be dragged by any part of
+// it; it is kept fully on screen and its spot is remembered between visits.
+const demoPanel = document.getElementById('demo-panel');
+
+// Makes one floating panel draggable; spotKey remembers where it was left
+function makeFloatingPanel(panel, spotKey) {
+  function placePanel(x, y) {
+    const maxX = Math.max(0, window.innerWidth - panel.offsetWidth);
+    const maxY = Math.max(0, window.innerHeight - panel.offsetHeight);
+    panel.style.left = `${Math.min(Math.max(0, x), maxX)}px`;
+    panel.style.top = `${Math.min(Math.max(0, y), maxY)}px`;
+    panel.style.right = 'auto';  // leaves the default corner
+    panel.style.bottom = 'auto';
+  }
+
+  function savePanelSpot() {
+    try {
+      localStorage.setItem(spotKey, JSON.stringify({ x: panel.offsetLeft, y: panel.offsetTop }));
+    } catch (e) { /* storage unavailable: the panel just starts at its default spot */ }
+  }
+
+  try {
+    const spot = JSON.parse(localStorage.getItem(spotKey));
+    if (spot) placePanel(spot.x, spot.y);
+  } catch (e) { /* no saved spot */ }
+
+  // Press anywhere on the panel (grip, background, a tab or a switch) and move: once the pointer has
+  // moved DRAG_THRESHOLD px it is a drag, and the click that would follow is swallowed so the tab or
+  // switch under it isn't triggered. A press that doesn't move is a normal click.
+  const DRAG_THRESHOLD = 4;
+  let panelDrag = null;      // { id, startX, startY, offsetX, offsetY, moved } while a press is down
+  let swallowClick = false;
+
+  panel.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    panelDrag = {
+      id: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      offsetX: e.clientX - panel.offsetLeft,
+      offsetY: e.clientY - panel.offsetTop,
+      moved: false,
+    };
+  });
+
+  panel.addEventListener('pointermove', (e) => {
+    if (!panelDrag || e.pointerId !== panelDrag.id) return;
+    if (!panelDrag.moved) {
+      if (Math.hypot(e.clientX - panelDrag.startX, e.clientY - panelDrag.startY) < DRAG_THRESHOLD) return;
+      panelDrag.moved = true;
+      panel.classList.add('dragging');
+      try { panel.setPointerCapture(e.pointerId); } catch (err) { /* keeps working without capture */ }
+    }
+    placePanel(e.clientX - panelDrag.offsetX, e.clientY - panelDrag.offsetY);
+  });
+
+  function endPanelDrag(e) {
+    if (!panelDrag || e.pointerId !== panelDrag.id) return;
+    if (panelDrag.moved) {
+      panel.classList.remove('dragging');
+      savePanelSpot();
+      swallowClick = true;
+      setTimeout(() => { swallowClick = false; }, 0); // only the click of this very press
+    }
+    panelDrag = null;
+  }
+  panel.addEventListener('pointerup', endPanelDrag);
+  panel.addEventListener('pointercancel', endPanelDrag);
+
+  // capture phase: runs before the tab's / switch's own click handlers (and the DS's)
+  panel.addEventListener('click', (e) => {
+    if (!swallowClick) return;
+    swallowClick = false;
+    e.preventDefault();
+    e.stopPropagation();
+  }, true);
+
+  // a smaller window must not leave the panel off screen (only once it has been moved)
+  window.addEventListener('resize', () => {
+    if (panel.style.left) placePanel(panel.offsetLeft, panel.offsetTop);
+  });
+  // the saved spot is restored while the panel is still hidden (no size yet), so it could sit off
+  // screen: each time the panel opens, pull it fully back into the window
+  new MutationObserver(() => {
+    if (!panel.hidden && panel.style.left) placePanel(panel.offsetLeft, panel.offsetTop);
+  }).observe(panel, { attributes: true, attributeFilter: ['hidden'] });
+}
+
+makeFloatingPanel(demoPanel, 'courseware-demo-panel-spot');
+
+// The second panel (Julia's loading looks) is removed from view: kept hidden in index.html so the
+// code that fills it keeps working
+const joinPanel = document.getElementById('join-panel');
+joinPanel.hidden = true;
+
+// The demo panels P hides and shows
+const demoPanels = [demoPanel];
+
+// End button: bottom right (default) or top right; then minimized Julia goes to the bottom right
+// End button: decided (2026-11-18) it always stays at the bottom right. The "top right" option and
+// its panel control were removed; data-end-spot="top" styles in app.css are no longer used.
+document.documentElement.dataset.endSpot = 'bottom';
+try { localStorage.removeItem('courseware-end-spot'); } catch (err) { /* nothing saved */ }
+
+// ---- Prototype-only: chat with Julia -------------------------------------------------------
+// The chat icon sits in the bar, next to the mic (my decision); it opens the chat side panel. Messages are fake: Julia answers each one after a short pause.
+const chatPanel = document.getElementById('chat-panel');
+const chatMessages = document.getElementById('chat-messages');
+const chatInput = document.getElementById('chat-input');
+const CHAT_REPLIES = [
+  'Good question! Let’s look at it together. Which part is not clear?',
+  'Nice! Try saying it out loud too, it helps you remember.',
+  'Sure. Keep going with the lesson, and write to me whenever you need.',
+];
+let chatReply = 0;
+
+let chatOpener = null;
+function setChatOpen(open, opener, { focus = true } = {}) {
+  chatPanel.hidden = !open;
+  document.querySelector('.frame').classList.toggle('chat-docked', open); // the layout moves left
+  document.querySelectorAll('.chat-open').forEach((b) => b.setAttribute('aria-expanded', String(open)));
+  if (open) { chatOpener = opener || null; if (focus) chatInput.focus(); }
+  else if (chatOpener && document.contains(chatOpener)) chatOpener.focus(); // focus back to the icon
+}
+document.addEventListener('click', (e) => {
+  const opener = e.target.closest('.chat-open');
+  if (opener) setChatOpen(chatPanel.hidden, opener);
+  else if (e.target.closest('.chat-close')) setChatOpen(false);
+});
 document.addEventListener('keydown', (e) => {
-  if (e.code !== 'KeyB' || e.repeat || e.metaKey || e.ctrlKey || e.altKey || isTyping(e)) return;
-  avatarViewEl.classList.toggle('mesh-on');
+  if (e.key === 'Escape' && !chatPanel.hidden) setChatOpen(false);
+});
+
+// "View new messages": when the student has scrolled up, a new message from Julia doesn't pull the
+// chat down; this button shows instead, and a click (or scrolling down) brings them to it.
+const chatNewMessages = document.getElementById('chat-new-messages');
+const chatAtBottom = () => chatMessages.scrollHeight - chatMessages.scrollTop - chatMessages.clientHeight < 24;
+function scrollChatDown(smooth) {
+  chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: smooth && !reduceMotion.matches ? 'smooth' : 'auto' });
+}
+chatNewMessages.addEventListener('click', () => {
+  scrollChatDown(true);
+  chatNewMessages.hidden = true;
+  chatInput.focus();
+});
+chatMessages.addEventListener('scroll', () => { if (chatAtBottom()) chatNewMessages.hidden = true; });
+
+function addChatBubble(text, who) {
+  const stayDown = who === 'me' || chatAtBottom();
+  const bubble = document.createElement('p');
+  bubble.className = `chat-bubble from-${who}`;
+  bubble.dir = 'auto'; // a Hebrew message reads right to left
+  bubble.textContent = text;
+  chatMessages.appendChild(bubble);
+  if (stayDown) scrollChatDown(false);
+  else chatNewMessages.hidden = false;
+}
+
+// "Julia is typing": her bubble with three dots, from the moment the student sends until she answers
+let chatTypingTimer = null;
+function showChatTyping() {
+  hideChatTyping();
+  const stayDown = chatAtBottom();
+  const bubble = document.createElement('p');
+  bubble.className = 'chat-bubble from-julia chat-typing';
+  bubble.setAttribute('aria-label', 'Julia is typing');
+  bubble.innerHTML = '<i></i><i></i><i></i>';
+  chatMessages.appendChild(bubble);
+  if (stayDown) scrollChatDown(false);
+}
+function hideChatTyping() { chatMessages.querySelectorAll('.chat-typing').forEach((b) => b.remove()); }
+
+const chatSend = document.getElementById('chat-send');
+chatInput.addEventListener('input', () => { chatSend.disabled = !chatInput.value.trim(); });
+document.getElementById('chat-compose').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const text = chatInput.value.trim();
+  if (!text) return;
+  addChatBubble(text, 'me');
+  chatInput.value = '';
+  chatSend.disabled = true;
+  showChatTyping();
+  clearTimeout(chatTypingTimer);
+  chatTypingTimer = setTimeout(() => {
+    hideChatTyping();
+    addChatBubble(CHAT_REPLIES[chatReply % CHAT_REPLIES.length], 'julia');
+    chatReply += 1;
+  }, 1200);
+});
+
+// ---- Prototype-only: chat states panel (C) ---------------------------------------------------
+// Every chat state with its use case; a click opens the chat in that state (fake messages).
+const CHAT_GREETING = 'Hi! You can write to me here any time during the lesson. What would you like to ask?';
+const CHAT_HISTORY = [
+  ['julia', CHAT_GREETING],
+  ['me', 'What does “rehearse” mean?'],
+  ['julia', 'To rehearse is to practice something before you do it for real, like a play or a talk.'],
+  ['me', 'Can you give me an example?'],
+  ['julia', 'Sure: “The band rehearsed the new song all afternoon before the concert.”'],
+  ['me', 'Is it the same as “practice”?'],
+  ['julia', 'Very close! “Rehearse” is mostly for a performance. You practice tennis, but you rehearse a speech.'],
+  ['me', 'Got it, thanks!'],
+];
+const chatStatesPanel = document.getElementById('chat-states-panel');
+makeFloatingPanel(chatStatesPanel, 'courseware-chat-states-spot');
+function toggleChatStates(open = chatStatesPanel.hidden) { chatStatesPanel.hidden = !open; }
+document.addEventListener('keydown', (e) => {
+  if (e.code !== 'KeyC' || e.repeat || e.metaKey || e.ctrlKey || e.altKey || isTyping(e)) return;
+  toggleChatStates();
+});
+
+function resetChat(messages) {
+  clearTimeout(chatTypingTimer);
+  chatMessages.replaceChildren();
+  chatNewMessages.hidden = true;
+  chatInput.value = '';
+  chatSend.disabled = true;
+  messages.forEach(([who, text]) => addChatBubble(text, who));
+  scrollChatDown(false);
+}
+const CHAT_STATES = {
+  open: () => resetChat([['julia', CHAT_GREETING]]),
+  writing: () => {
+    resetChat([['julia', CHAT_GREETING]]);
+    chatInput.value = 'What does “rehearse” mean?';
+    chatSend.disabled = false;
+  },
+  typing: () => { resetChat(CHAT_HISTORY.slice(0, 2)); showChatTyping(); },
+  conversation: () => resetChat(CHAT_HISTORY),
+  'new-messages': () => {
+    resetChat([...CHAT_HISTORY, // a long chat, so there is somewhere to scroll up to
+      ['me', 'And what about “perform”?'],
+      ['julia', '“Perform” is doing it for real, in front of people. First you rehearse, then you perform.'],
+      ['me', 'So actors rehearse a play and then perform it?'],
+      ['julia', 'Exactly! That’s a perfect sentence.'],
+      ['me', 'Can I use both words in my answer?'],
+      ['julia', 'Of course. Using both shows you know the difference.']]);
+    chatMessages.scrollTop = 0; // the student scrolled up to read from the start
+    addChatBubble('By the way, you can use “rehearse” in the next writing task. Want to try?', 'julia');
+    chatNewMessages.hidden = false; // shown even on a screen tall enough to fit it all
+  },
+};
+chatStatesPanel.querySelectorAll('[data-chat-state]').forEach((button) => {
+  button.addEventListener('click', () => {
+    if (chatPanel.hidden) setChatOpen(true, null, { focus: false });
+    CHAT_STATES[button.dataset.chatState]();
+    chatStatesPanel.querySelectorAll('[data-chat-state]').forEach((b) => b.setAttribute('aria-pressed', String(b === button)));
+  });
+});
+
+// P hides and shows the floating demo panels, on any tab (ignored with Cmd/Ctrl/Alt held or while typing). The choice is
+// remembered between visits. The key is matched by position (e.code), so it also works with a
+// Hebrew keyboard layout (where that key types פ).
+const PANEL_HIDDEN_KEY = 'courseware-demo-panel-hidden';
+function setPanelHidden(hidden) {
+  if (hidden && demoPanels.some((p) => p.contains(document.activeElement))) document.activeElement.blur();
+  demoPanels.forEach((p) => { p.hidden = hidden; });
+  try { localStorage.setItem(PANEL_HIDDEN_KEY, hidden ? '1' : ''); } catch (err) { /* not remembered */ }
+}
+try { if (localStorage.getItem(PANEL_HIDDEN_KEY)) demoPanels.forEach((p) => { p.hidden = true; }); } catch (err) { /* shown */ }
+document.addEventListener('keydown', (e) => {
+  if (e.code !== 'KeyP' || e.repeat || e.metaKey || e.ctrlKey || e.altKey || isTyping(e)) return;
+  setPanelHidden(!demoPanel.hidden);
+});
+
+// T plays "speaking while muted" (same guards as B; matched by position, so it also works with a
+// Hebrew keyboard layout, where that key types א)
+document.addEventListener('keydown', (e) => {
+  if (e.code !== 'KeyT' || e.repeat || e.metaKey || e.ctrlKey || e.altKey || isTyping(e)) return;
+  toggleMicStates();
+});
+document.getElementById('mic-states-toggle').addEventListener('click', () => toggleMicStates());
+
+// ---- Prototype-only: mic states panel (T) ---------------------------------------------------
+// Every mic state with its use case; a click puts that state on the real bar of the screen showing now.
+const micStatesPanel = document.getElementById('mic-states-panel');
+makeFloatingPanel(micStatesPanel, 'courseware-mic-states-spot');
+function toggleMicStates(open = micStatesPanel.hidden) { micStatesPanel.hidden = !open; }
+const MIC_STATES = {
+  joining: () => { setMic('idle'); setBarLocked(true); },
+  idle: () => setMic('idle'),
+  listening: () => setMic('listening'),
+  thinking: () => startThinking(),
+  feedback: () => { setMic('idle'); showBarMessage('Correct! Excellent job!'); },
+  muted: () => setMic('muted'),
+  'system-off': () => setMic('muted'),
+  'talk-muted': () => simulateTalkingMuted({ hold: true }),
+  permission: () => { setMic('idle'); showBarChip('Allow access to your mic', { icon: true }); },
+  blocked: () => { setMic('muted'); showBarChip('Enable your mic to talk'); },
+  video: () => goTo(2),
+};
+micStatesPanel.querySelectorAll('.mic-state').forEach((button) => {
+  button.addEventListener('click', () => {
+    if (!demoStarted || paused) return;
+    const state = button.dataset.state;
+    if (state !== 'video' && bottomBarEl.classList.contains('watching')) goTo(0, { fresh: true }); // the mic is hidden on the video screen
+    endTalkingMuted();
+    setBarLocked(false);
+    MIC_STATES[state]();
+    micStatesPanel.querySelectorAll('.mic-state').forEach((b) => b.setAttribute('aria-pressed', String(b === button)));
+  });
 });

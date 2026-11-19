@@ -223,9 +223,63 @@
 
   // ----- Avatar call -----
   var avatarCall = document.getElementById('avatar-call');
+
+  // Prototype-only: loading colors from the avatar image (same method as the courseware).
+  // Sets --app-image-dark / -mid / -light / -accent on the call; the "Joining..." glow uses them.
+  // In the product the developers compute them; here we try the pixels first and fall back to
+  // data.js, because from file:// the browser won't let the page read them.
+  function paletteFrom(img) {
+    var size = 12;
+    var canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, size, size);
+    var d = ctx.getImageData(0, 0, size, size).data; // throws when the image may not be read
+    var px = [];
+    for (var i = 0; i < d.length; i += 4) px.push([d[i], d[i + 1], d[i + 2]]);
+    function lum(p) { return 0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2]; }
+    function dist(p, c) { return Math.pow(p[0] - c[0], 2) + Math.pow(p[1] - c[1], 2) + Math.pow(p[2] - c[2], 2); }
+    function sat(p) { return Math.max.apply(null, p) - Math.min.apply(null, p); }
+    px.sort(function (a, b) { return lum(a) - lum(b); });
+    var cents = [px[Math.floor(px.length / 6)], px[Math.floor(px.length / 2)], px[Math.floor(px.length * 5 / 6)]];
+    for (var round = 0; round < 12; round++) {
+      var groups = [[], [], []];
+      px.forEach(function (p) {
+        var best = 0;
+        cents.forEach(function (c, j) { if (dist(p, c) < dist(p, cents[best])) best = j; });
+        groups[best].push(p);
+      });
+      cents = groups.map(function (g, j) {
+        if (!g.length) return cents[j];
+        return [0, 1, 2].map(function (k) {
+          return Math.round(g.reduce(function (sum, p) { return sum + p[k]; }, 0) / g.length);
+        });
+      });
+    }
+    cents.sort(function (a, b) { return lum(a) - lum(b); });
+    var accent = px.reduce(function (a, b) { return sat(b) > sat(a) ? b : a; });
+    function hex(c) { return '#' + c.map(function (v) { return ('0' + v.toString(16)).slice(-2); }).join(''); }
+    return { dark: hex(cents[0]), mid: hex(cents[1]), light: hex(cents[2]), accent: hex(accent) };
+  }
+
+  (function applyPalette() {
+    var img = avatarCall.querySelector('.app-avatar-call-video');
+    var src = img.getAttribute('src');
+    function set(p) {
+      if (!p) return;
+      Object.keys(p).forEach(function (k) { avatarCall.style.setProperty('--app-image-' + k, p[k]); });
+    }
+    function measure() {
+      try { set(paletteFrom(img)); } catch (err) { set(data.avatarPalettes[src]); }
+    }
+    if (img.complete && img.naturalWidth) measure();
+    else { set(data.avatarPalettes[src]); img.addEventListener('load', measure, { once: true }); }
+  })();
   var joinTimer = null;
   function setAvatarCall(on) {
     avatarCall.hidden = !on;
+    if (!on && typeof setMicMenu === 'function') setMicMenu(false);
     clearTimeout(joinTimer);
     avatarCall.classList.toggle('is-joining', on);
     if (on) {
@@ -233,8 +287,83 @@
     }
   }
 
+  // ----- Mic device menu (prototype-only: menu that opens upward) -----
+  var micBtn = document.getElementById('mic-menu-btn');
+  var micMenu = document.getElementById('mic-menu');
+  var CHECK = '<ds-icon class="ds-select-item-trailing" name="check" size="16"></ds-icon>';
+
+  micMenu.innerHTML = data.devices.map(function (g, gi) {
+    return '<div class="ds-select-separator">' +
+        (gi > 0 ? '<hr class="ds-select-separator-line">' : '') +
+        '<span class="ds-select-separator-title">' + esc(g.title) + '</span></div>' +
+      g.items.map(function (d) {
+        return '<button class="ds-select-item" type="button" role="menuitemradio" data-device-group="' + g.group + '"' +
+          ' aria-checked="' + (d.checked ? 'true' : 'false') + '" title="' + esc(d.label) + '">' +
+          '<span class="ds-select-item-label ds-text-truncate">' + esc(d.label) + '</span>' +
+          (d.checked ? CHECK : '') + '</button>';
+      }).join('');
+  }).join('');
+
+  function menuItems() { return Array.prototype.slice.call(micMenu.querySelectorAll('.ds-select-item')); }
+
+  function setMicMenu(open, focusFirst) {
+    micMenu.hidden = !open;
+    micBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open && focusFirst) menuItems()[0].focus();
+  }
+
+  micBtn.addEventListener('click', function (e) {
+    setMicMenu(micMenu.hidden, e.detail === 0);
+  });
+
+  micMenu.addEventListener('click', function (e) {
+    var item = e.target.closest('.ds-select-item');
+    if (!item) return;
+    var group = item.getAttribute('data-device-group');
+    micMenu.querySelectorAll('[data-device-group="' + group + '"]').forEach(function (b) {
+      b.setAttribute('aria-checked', 'false');
+      var c = b.querySelector('.ds-select-item-trailing');
+      if (c) c.remove();
+    });
+    item.setAttribute('aria-checked', 'true');
+    item.insertAdjacentHTML('beforeend', CHECK);
+    setMicMenu(false);
+    micBtn.focus();
+  });
+
+  micMenu.addEventListener('keydown', function (e) {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    e.preventDefault();
+    var items = menuItems();
+    var i = items.indexOf(document.activeElement);
+    i = e.key === 'ArrowDown' ? (i + 1) % items.length : (i - 1 + items.length) % items.length;
+    items[i].focus();
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!micMenu.hidden && !e.target.closest('.app-avatar-call-mic-wrap')) setMicMenu(false);
+  });
+
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && !avatarCall.hidden) setAvatarCall(false);
+    if (e.key !== 'Escape') return;
+    if (!micMenu.hidden) { setMicMenu(false); micBtn.focus(); return; }
+    if (!avatarCall.hidden) setAvatarCall(false);
+  });
+
+  // ----- Theme panel (prototype-only) -----
+  var themeSwitch = document.getElementById('theme-switch');
+  function syncThemeSwitch() {
+    var theme = DS.getTheme();
+    themeSwitch.querySelectorAll('.ds-segmented-item').forEach(function (b) {
+      b.setAttribute('aria-checked', b.getAttribute('data-value') === theme ? 'true' : 'false');
+    });
+  }
+  syncThemeSwitch();
+  themeSwitch.addEventListener('ds-change', function (e) { DS.setTheme(e.detail.value); });
+  document.addEventListener('ds-theme-change', syncThemeSwitch);
+  // TEMP: avatar glow before/after comparison
+  document.getElementById('glow-switch').addEventListener('ds-change', function (e) {
+    document.documentElement.classList.toggle('app-glow-before', e.detail.value === 'before');
   });
 
   // ----- Clicks -----
