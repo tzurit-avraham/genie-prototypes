@@ -1461,7 +1461,7 @@ body {
 
 /* =========================================================
    Prototype-only: form "After" look = the ARE meeting wizard (../agentic-revenue-enablement)
-   Blue wash card, no border; small title left + step pills right; fields cascade in;
+   Paper card (was a blue wash), no border; small title left + step pills right; fields cascade in;
    buttons right; steps slide; done = green wash, badge ripples, icon list in a bordered box.
    On <html data-form-look="after">. "Before" is the look above.
    ========================================================= */
@@ -1470,8 +1470,7 @@ body {
   --app-form-dy: var(--ds-space-2);
   position: relative;
   isolation: isolate;
-  background-color: var(--ds-background);
-  background-image: linear-gradient(160deg, var(--ds-primary-tint-10), var(--ds-primary-tint-6) 50%);
+  background-color: var(--ds-paper); /* was a blue wash (primary-tint-10 -> 6); now the DS card surface */
   border: 0;
   border-radius: var(--ds-roundness-2);
   overflow: clip; /* clips the wash like hidden, but keeps the sticky footer in the call sheet working */
@@ -1658,17 +1657,15 @@ body {
 @keyframes app-form-out-left { to { opacity: 0; transform: translateX(calc(var(--ds-space-4) * -1)); } }
 @keyframes app-form-out-right { to { opacity: 0; transform: translateX(var(--ds-space-4)); } }
 
-/* In the call: wide = the wash card beside the avatar; narrow = the wash fills the sheet */
+/* In the call: wide = the paper card beside the avatar; narrow = the paper fills the sheet */
 [data-form-look="after"] .app-genie:not(.app-genie-narrow) .app-call-form .app-form { border: 0; }
-[data-form-look="after"] .app-call-form .app-form { background-color: var(--ds-elevated); }
+[data-form-look="after"] .app-call-form .app-form { background-color: var(--ds-paper); }
 [data-form-look="after"] .app-genie-narrow .app-call-form .app-form { border-radius: 0; }
 
 /* The sheet keeps room for the scrollbar on both sides (see the call sheet below). That room is
-   the sheet's, not the card's: paint it like the card, so the card's wash reaches the edges */
+   the sheet's, not the card's: paint it like the card (paper), so the card reaches the edges */
 [data-form-look="after"] .app-genie-narrow .app-call-form {
-  background-color: var(--ds-elevated);
-  background-image: linear-gradient(160deg, var(--ds-primary-tint-10), var(--ds-primary-tint-6) 50%);
-  background-attachment: local; /* scrolls with the card */
+  background-color: var(--ds-paper);
 }
 
 [data-form-look="after"][data-done-wash="plain"] .app-genie-narrow .app-call-form:has(.app-form[data-step="done"]) {
@@ -1838,11 +1835,9 @@ body {
   mask-image: linear-gradient(to bottom, transparent, var(--ds-tone-1) var(--app-sheet-fade));
 }
 
-/* ARE look: the sheet has the blue wash, so the protection carries it too */
+/* ARE look: the sheet is paper, so the protection is too */
 [data-form-look="after"] .app-genie-narrow .app-call-form [data-step-name="fields"] .app-form-footer::before {
-  background:
-    linear-gradient(var(--ds-primary-tint-6), var(--ds-primary-tint-6)),
-    color-mix(in srgb, var(--ds-elevated) 97%, transparent);
+  background: color-mix(in srgb, var(--ds-paper) 97%, transparent);
 }
 
 /* =========================================================
@@ -1901,9 +1896,7 @@ body {
   mask-image: linear-gradient(to bottom, transparent, var(--ds-tone-1) var(--app-sheet-fade));
 }
 
-/* ARE look: the card is the blue wash on the page background, so the protection is too */
+/* ARE look: the card is paper, so the protection is too */
 [data-form-look="after"] .app-genie-narrow .app-form-chat [data-step-name="fields"] .app-form-footer::before {
-  background:
-    linear-gradient(var(--ds-primary-tint-6), var(--ds-primary-tint-6)),
-    color-mix(in srgb, var(--ds-background) 97%, transparent);
+  background: color-mix(in srgb, var(--ds-paper) 97%, transparent);
 }

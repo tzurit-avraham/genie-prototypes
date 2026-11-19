@@ -877,17 +877,8 @@
     if (e.key === 'Escape' && !fieldsPanel.hidden && fieldsPanel.contains(e.target)) { setFieldsPanel(false); fieldsBtn.focus(); }
   });
 
-  // ----- Form look (prototype-only): Before = first version, After = the ARE wizard look -----
-  var lookSwitch = document.getElementById('look-switch');
-  var LOOK_KEY = 'genie-form-look';
-  function setLook(look) {
-    document.documentElement.setAttribute('data-form-look', look);
-    syncSegmented(lookSwitch, look);
-    if (!EMBED) store(LOOK_KEY, look);
-    document.querySelectorAll('.app-form').forEach(function (card) { if (card.redraw) card.redraw(); });
-    sendThemeToPhone();
-  }
-  lookSwitch.addEventListener('ds-change', function (e) { setLook(e.detail.value); });
+  // ----- Form look (prototype-only): always the ARE wizard look (the "Before" look was dropped) -----
+  document.documentElement.setAttribute('data-form-look', 'after');
 
   // ----- Done step background in the ARE look (prototype-only): green = the ARE wash, plain = --ds-background -----
   var washSwitch = document.getElementById('wash-switch');
@@ -904,14 +895,13 @@
   // The phone frame is the same page in an iframe: send it the theme and the form look
   function sendThemeToPhone() {
     if (phoneScreen.getAttribute('src') && phoneScreen.contentWindow) {
-      phoneScreen.contentWindow.postMessage({ type: 'app-theme', theme: DS.getTheme(), look: formLook(), fields: fieldCount, wash: doneWash() }, '*');
+      phoneScreen.contentWindow.postMessage({ type: 'app-theme', theme: DS.getTheme(), fields: fieldCount, wash: doneWash() }, '*');
     }
   }
   phoneScreen.addEventListener('load', sendThemeToPhone);
   window.addEventListener('message', function (e) {
     if (!EMBED || !e.data || e.data.type !== 'app-theme') return;
     if (e.data.theme !== DS.getTheme()) DS.setTheme(e.data.theme);
-    if (e.data.look && e.data.look !== formLook()) setLook(e.data.look);
     if (e.data.fields && e.data.fields !== fieldCount) setFieldCount(e.data.fields);
     if (e.data.wash && e.data.wash !== doneWash()) setWash(e.data.wash);
   });
@@ -920,7 +910,6 @@
   phoneSwitch.addEventListener('ds-change', function (e) { setPhone(e.detail.value); });
   setFieldCount(EMBED ? data.form.fields.length : (stored(FIELDS_KEY) || data.form.fields.length));
   setWash(EMBED ? 'plain' : (stored(WASH_KEY) || 'plain'));
-  setLook(EMBED ? 'after' : (stored(LOOK_KEY) || 'after'));
   setPhone(stored(PHONE_KEY) || '375');
   setView(EMBED ? 'full' : (stored(VIEW_KEY) || 'full'));
 
