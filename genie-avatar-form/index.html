@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Genie + form | Kaltura</title>
+  <link rel="stylesheet" href="../ds/styles.css">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+  <!-- Kaltura app header (Figma 14402:24174) -->
+  <header class="app-header">
+    <div class="app-header-start">
+      <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless ds-btn-icon app-header-btn" type="button" aria-label="Menu">
+        <ds-icon name="menu"></ds-icon>
+      </button>
+      <img class="app-header-logo" src="assets/kaltura-logo-dark.svg" width="149.444" height="36" alt="Kaltura">
+    </div>
+    <div class="app-header-end">
+      <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless app-header-btn app-header-ask" type="button" data-action="ask-anything" aria-label="Ask anything">
+        <ds-icon name="gen-ai"></ds-icon> <span class="app-btn-label">Ask anything</span>
+      </button>
+      <label class="app-header-search">
+        <ds-icon name="search"></ds-icon>
+        <input class="ds-input ds-input-md" type="search" placeholder="Search" aria-label="Search">
+      </label>
+      <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless ds-btn-icon app-header-btn" type="button" aria-label="Profile">
+        <ds-icon name="user"></ds-icon>
+      </button>
+      <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless app-header-btn" type="button" aria-label="Language: English">
+        EN <ds-icon name="chevron-down" size="16"></ds-icon>
+      </button>
+    </div>
+  </header>
+
+  <main class="app-main">
+
+    <!-- Prototype-only: the page behind the Genie side panel (Side panel view) -->
+    <section class="app-page" id="page" aria-labelledby="page-title">
+      <h1 class="app-page-title" id="page-title">Explore recommended channels</h1>
+      <div class="app-channels-grid" id="page-grid"></div>
+    </section>
+
+    <!-- Genie screen: fills the viewport under the header -->
+    <section class="app-genie" id="genie">
+
+      <!-- Genie app bar (Figma 14452:56182) -->
+      <div class="app-genie-bar">
+        <div class="app-genie-bar-crumbs" id="genie-crumbs"></div>
+        <div class="app-genie-bar-actions">
+          <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless app-bar-btn" type="button" data-action="new-thread" aria-label="New thread">
+            <ds-icon name="create"></ds-icon> <span class="app-btn-label">New thread</span>
+          </button>
+          <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless app-bar-btn" type="button" data-action="history" aria-label="History">
+            <ds-icon name="time"></ds-icon> <span class="app-btn-label">History</span>
+          </button>
+          <!-- Side panel only: open full screen / close the panel -->
+          <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless ds-btn-icon app-panel-only" type="button" data-action="expand-panel" aria-label="Open full screen">
+            <ds-icon name="expand"></ds-icon>
+          </button>
+          <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless ds-btn-icon app-panel-only" type="button" data-action="close-panel" aria-label="Close">
+            <ds-icon name="clear"></ds-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Scrollable content: start screen, then the conversation -->
+      <div class="app-genie-body" id="genie-body">
+        <div class="app-genie-column">
+
+          <!-- Start screen (Figma 14402:24183) -->
+          <div class="app-genie-initial" id="genie-initial">
+            <div class="app-genie-title">
+              <img class="app-genie-title-icon" src="assets/gen-ai-gradient.svg" alt="">
+              <h1 class="app-genie-heading">Ask me anything</h1>
+            </div>
+
+            <!-- Holder: the avatar + its soft glow (the card clips its contents, so the glow sits beside it) -->
+            <div class="app-avatar-holder app-genie-avatar-holder">
+              <div class="app-genie-avatar">
+                <img class="app-genie-avatar-img" src="assets/avatar.png" alt="Your AI avatar">
+                <div class="app-genie-avatar-overlay"></div>
+                <button class="ds-btn ds-btn-lg ds-btn-primary app-genie-start" type="button" data-action="start-avatar-call">
+                  <ds-icon name="voice" size="16"></ds-icon> Start conversation
+                </button>
+              </div>
+              <img class="app-avatar-glow" src="assets/avatar.png" alt="" aria-hidden="true">
+            </div>
+
+            <p class="app-genie-or">or</p>
+
+            <div class="app-initial-composer-slot" id="initial-composer-slot">
+              <div class="app-suggestions" id="suggestions"></div>
+            </div>
+          </div>
+
+          <!-- Conversation turns -->
+          <div class="app-chat-stream" id="chat-stream"></div>
+
+          <!-- Processing indicator -->
+          <div class="app-processing" id="processing-indicator" hidden>
+            <div class="app-processing-avatar"><img src="assets/avatar.png" alt=""></div>
+            <div class="app-processing-bubble">
+              <span class="app-processing-dot"></span>
+              <span class="app-processing-dot"></span>
+              <span class="app-processing-dot"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recommended channels, below the fold on the start screen -->
+        <section class="app-channels" id="channels" aria-labelledby="channels-title">
+          <h2 class="app-channels-title" id="channels-title">Explore recommended channels</h2>
+          <div class="app-channels-grid" id="channels-grid"></div>
+          <button class="ds-btn ds-btn-md ds-btn-secondary" type="button" data-action="show-more">Show more</button>
+        </section>
+      </div>
+
+      <!-- Bottom composer bar (shown after the first question) -->
+      <div class="app-composer-bar" id="bottom-composer-bar" hidden>
+        <div class="app-genie-column">
+          <div class="app-followups" id="followups" hidden></div>
+          <div class="app-composer-wrap" id="composer-wrap">
+            <button class="app-composer-avatar-btn" type="button" aria-label="Start conversation" data-action="start-avatar-call">
+              <img class="app-composer-avatar-img" src="assets/avatar.png" alt="">
+              <div class="app-composer-avatar-scrim"></div>
+              <span class="app-composer-avatar-badge"><ds-icon name="voice" size="16"></ds-icon><span>Start</span></span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shared composer (starts in the start screen, moves to the bottom bar) -->
+      <div class="app-composer" id="composer-box">
+        <textarea class="app-composer-input" id="prompt-input" rows="1" placeholder="Ask me anything" aria-label="Ask me anything"></textarea>
+        <div class="app-composer-menu">
+          <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless app-composer-preset" type="button" data-preset="flashcards" aria-pressed="false" aria-label="Flashcards">
+            <ds-icon name="copy"></ds-icon> <span class="app-btn-label">Flashcards</span>
+          </button>
+          <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless app-composer-preset" type="button" data-preset="text" aria-pressed="false" aria-label="Text">
+            <ds-icon name="document"></ds-icon> <span class="app-btn-label">Text</span>
+          </button>
+          <div class="ds-select-wrapper" id="mode-select">
+            <button class="ds-select ds-select-borderless" aria-haspopup="listbox" aria-label="Answer mode">
+              <span>Fast answer</span>
+              <ds-icon class="ds-select-chevron" name="chevron-down" size="16"></ds-icon>
+            </button>
+            <div class="ds-select-menu" role="listbox"></div>
+          </div>
+          <span class="app-composer-spacer"></span>
+          <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-icon app-submit-btn" id="prompt-submit" type="button" aria-label="Send" disabled>
+            <ds-icon name="arrow-right"></ds-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Footer disclaimer -->
+      <p class="app-disclaimer">AI-generated content may contain errors or omissions.</p>
+
+      <!-- Avatar call: covers the Genie screen (repurposed from Agentic Revenue Enablement) -->
+      <div class="app-avatar-call" id="avatar-call" hidden>
+        <header class="app-avatar-call-header">
+          <span class="app-avatar-call-header-icon"><ds-icon name="gen-ai"></ds-icon></span>
+          <h2 class="app-avatar-call-title">Ask anything</h2>
+          <button class="ds-btn ds-btn-md ds-btn-secondary ds-btn-borderless ds-btn-icon" type="button" aria-label="Back to chat" data-action="end-avatar-call">
+            <ds-icon name="minimize"></ds-icon>
+          </button>
+        </header>
+        <!-- Avatar + its captions, and the form beside it (wide) or under it (narrow) -->
+        <div class="app-avatar-call-body">
+          <div class="app-avatar-call-stage">
+            <div class="app-avatar-call-joining" aria-live="polite">
+              <span class="app-avatar-call-glow" aria-hidden="true"></span>
+              <p class="app-avatar-call-joining-text">Joining...</p>
+            </div>
+            <div class="app-avatar-holder app-avatar-call-holder">
+              <img class="app-avatar-call-video" src="assets/avatar.png" alt="Your AI avatar">
+              <img class="app-avatar-glow" src="assets/avatar.png" alt="" aria-hidden="true">
+              <p class="app-call-caption" id="call-caption" aria-live="polite" hidden></p>
+            </div>
+          </div>
+          <!-- The form card is rendered here by app.js once the avatar has joined -->
+          <section class="app-call-form" id="call-form" aria-label="A few details about you" hidden></section>
+        </div>
+        <div class="app-avatar-call-controls">
+          <!-- Mic pill + device menu (menu items rendered from data.js) -->
+          <div class="app-avatar-call-mic-wrap">
+            <button class="app-avatar-call-mic" id="mic-menu-btn" type="button" aria-label="Microphone and speaker settings" aria-haspopup="true" aria-expanded="false" aria-controls="mic-menu">
+              <ds-icon name="microphone"></ds-icon>
+              <ds-icon name="chevron-up" size="16"></ds-icon>
+            </button>
+            <div class="ds-select-menu app-device-menu" id="mic-menu" role="menu" aria-label="Audio devices" hidden></div>
+          </div>
+          <!-- End: same as the courseware End button -->
+          <button class="ds-btn ds-btn-xl ds-btn-danger app-avatar-call-end" type="button" data-action="end-avatar-call">
+            <span>End</span>
+            <ds-icon name="exit"></ds-icon>
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Prototype-only: the Mobile view shows this same page in a phone-size frame -->
+  <div class="app-phone-stage" id="phone-stage" hidden>
+    <div class="app-phone" id="phone">
+      <iframe class="app-phone-screen" id="phone-screen" title="Genie on a phone"></iframe>
+    </div>
+  </div>
+
+  <!-- Prototype-only: demo panel (view, phone size, theme) -->
+  <div class="app-theme-panel" id="demo-panel">
+    <span class="app-theme-panel-label">View</span>
+    <div class="ds-segmented" role="radiogroup" aria-label="View" id="view-switch">
+      <button class="ds-segmented-item" role="radio" aria-checked="true" data-value="full"><span>Full screen</span></button>
+      <button class="ds-segmented-item" role="radio" aria-checked="false" data-value="panel"><span>Side panel</span></button>
+      <button class="ds-segmented-item" role="radio" aria-checked="false" data-value="mobile"><span>Mobile</span></button>
+    </div>
+    <span class="app-theme-panel-label">Form look</span>
+    <div class="ds-segmented" role="radiogroup" aria-label="Form look" id="look-switch">
+      <button class="ds-segmented-item" role="radio" aria-checked="false" data-value="before"><span>Before</span></button>
+      <button class="ds-segmented-item" role="radio" aria-checked="true" data-value="after"><span>After (ARE)</span></button>
+    </div>
+    <span class="app-theme-panel-label app-after-only">Done step</span>
+    <div class="ds-segmented app-after-only" role="radiogroup" aria-label="Done step background" id="wash-switch">
+      <button class="ds-segmented-item" role="radio" aria-checked="false" data-value="green"><span>Before (green)</span></button>
+      <button class="ds-segmented-item" role="radio" aria-checked="true" data-value="plain"><span>After (plain)</span></button>
+    </div>
+    <span class="app-theme-panel-label">Fields</span>
+    <button class="ds-btn ds-btn-sm ds-btn-secondary app-fields-btn" id="fields-btn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="fields-panel">
+      <span>Form fields: 8</span> <ds-icon name="chevron-up" size="16"></ds-icon>
+    </button>
+    <span class="app-theme-panel-label app-phone-only">Width</span>
+    <div class="ds-segmented app-phone-only" role="radiogroup" aria-label="Screen width" id="phone-switch"></div>
+    <span class="app-theme-panel-label">Theme</span>
+    <div class="ds-segmented" role="radiogroup" aria-label="Theme" id="theme-switch">
+      <button class="ds-segmented-item" role="radio" aria-checked="true" data-value="light"><ds-icon class="ds-segmented-icon" name="light"></ds-icon><span>Light</span></button>
+      <button class="ds-segmented-item" role="radio" aria-checked="false" data-value="dark"><ds-icon class="ds-segmented-icon" name="contrast"></ds-icon><span>Dark</span></button>
+    </div>
+  </div>
+
+  <!-- Prototype-only: "Form fields" panel, opened from the demo panel. How many fields the form shows. -->
+  <section class="app-fields-panel" id="fields-panel" role="dialog" aria-labelledby="fields-panel-title" hidden>
+    <header class="app-fields-panel-header">
+      <h2 class="app-fields-panel-title" id="fields-panel-title">Form fields</h2>
+      <button class="ds-btn ds-btn-sm ds-btn-secondary ds-btn-borderless ds-btn-icon" type="button" data-action="close-fields" aria-label="Close">
+        <ds-icon name="close" size="16"></ds-icon>
+      </button>
+    </header>
+    <p class="app-fields-panel-desc">How many fields the form shows. It takes the first ones, in the Figma order.</p>
+    <div class="ds-segmented" role="radiogroup" aria-label="Number of fields" id="fields-switch"></div>
+    <ul class="app-fields-list" id="fields-list"></ul>
+  </section>
+
+  <script src="../ds/ds-icons.js"></script>
+  <script src="../ds/ds.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
