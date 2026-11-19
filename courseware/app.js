@@ -1325,9 +1325,9 @@ document.querySelectorAll('.avatar').forEach((avatar) => {
 
 // ---- Prototype-only: "Current step" options panel (S) --------------------------------------
 const STEP_CUES = [
-  { id: 'outline', name: '1. Outlined segment (now)', use: 'The step showing now is an empty segment with a blue outline, like the milestone’s blue ring. Quiet, no motion.' },
+  { id: 'outline', name: '1. Outlined segment', use: 'The step showing now is an empty segment with a blue outline, like the milestone’s blue ring. Quiet, no motion.' },
   { id: 'half', name: '2. Half-filled segment', use: 'The current segment is half blue: “in progress”, between done (full) and not started (empty). A common pattern in step bars.' },
-  { id: 'caret', name: '3. Pointer under the step', use: 'A small blue pointer under the current segment, like a “you are here” mark on a map.' },
+  { id: 'caret', name: '3. Pointer under the step (picked)', use: 'The current segment is filled blue, with a small blue pointer under it, like a “you are here” mark on a map.' },
   { id: 'name', name: '4. Step name under it', use: 'The name of the activity (“Quiz”) under the current segment. A label makes the step clear without guessing.' },
   { id: 'count', name: '5. “Step 3 of 5”', use: 'A short count under the milestone’s segments: where I am and how much is left. The most common practice in lessons and forms.' },
   { id: 'milestone', name: '6. Milestone + step', use: '“Milestone 2 · Step 3 of 5” under the current milestone: both levels in one line.' },
@@ -1356,7 +1356,7 @@ stepCuesList.addEventListener('click', (e) => {
 {
   let saved = null;
   try { saved = localStorage.getItem(STEP_CUE_KEY); } catch (err) { /* default */ }
-  setStepCue(STEP_CUES.some((c) => c.id === saved) ? saved : 'outline');
+  setStepCue(STEP_CUES.some((c) => c.id === saved) ? saved : 'caret'); // the pick (2026-11-19)
 }
 function toggleStepCues(open = stepCuesPanel.hidden) { stepCuesPanel.hidden = !open; }
 document.getElementById('step-cues-toggle').addEventListener('click', () => toggleStepCues());
@@ -2038,6 +2038,15 @@ document.getElementById('card-shine-toggle').addEventListener('ds-change', (e) =
 });
 document.getElementById('screen-shine-toggle').addEventListener('ds-change', (e) => {
   document.documentElement.classList.toggle('screen-shine', e.detail.value);
+});
+// Prototype-only: share screen (icon only). A click toggles sharing: the primary ring, the
+// "stop sharing" icon and label. No real sharing in the prototype.
+const sharePill = document.querySelector('.share-pill');
+sharePill.addEventListener('click', () => {
+  const on = sharePill.getAttribute('aria-pressed') !== 'true';
+  sharePill.setAttribute('aria-pressed', String(on));
+  sharePill.setAttribute('aria-label', on ? 'Stop sharing screen' : 'Share screen');
+  sharePill.querySelector('ds-icon').setAttribute('name', on ? 'share-screen-close' : 'share-screen');
 });
 updateImageToggle();
 syncFooter();

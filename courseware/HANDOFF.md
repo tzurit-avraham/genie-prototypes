@@ -68,7 +68,7 @@ Tabs (`.site-nav`, value = activity index): Quiz (0) · Reading activity (1) · 
 ### Top progress bar
 - 4 milestones; milestone 2 in progress. **The line after milestone 2 is split into 5 segments** (the tabs before "End of milestone"): blue = done, hollow = skipped. The other lines are whole. At the end of the milestone the segments disappear and the whole line fills.
 - **The current step:** the old breathing animation is gone (I asked: no animation). It's marked by a **blue outline** on its segment (empty, 1px `--ds-primary`, like the milestone's blue ring); my pick, 2026-11-18. My earlier tries I rejected: a big dot in the middle, and a thick glowing segment.
-- **"Progress: current step" panel (S, or the button in the main panel), 2026-11-18, my request:** 10 best-practice ways to show the student which step they're on, waiting for my pick: 1. Outlined segment (now, default) · 2. Half-filled segment · 3. Pointer under the step (CSS triangle) · 4. Step name under it ("Writing") · 5. "Step 3 of 5" · 6. "Milestone 2 · Step 3 of 5" under the milestone ring · 7. Breadcrumb "Milestone 2 › Writing" left of the bar · 8. Highlighted milestone (`primary-tint-10` band behind its segments) · 9. Numbered step pills · 10. Labels on hover (DS hint with name + state). Code: `STEP_CUES`, `STEP_LABELS` (student names: Quiz, Reading, Writing, Short answer, Video), `setStepCue` (`data-step-cue` on `<html>`, remembered in `courseware-step-cue`); CSS "Current step options" in app.css. Hidden on the pause screen.
+- **"Progress: current step" panel (S, or the button in the main panel), 2026-11-18, my request:** 10 best-practice ways to show the student which step they're on, **My pick (2026-11-19): 3. Pointer, with the current segment filled blue (not outlined)**; it's the default (`caret`). The others stay in the panel: 1. Outlined segment · 2. Half-filled segment · 3. Pointer under the step (CSS triangle) · 4. Step name under it ("Writing") · 5. "Step 3 of 5" · 6. "Milestone 2 · Step 3 of 5" under the milestone ring · 7. Breadcrumb "Milestone 2 › Writing" left of the bar · 8. Highlighted milestone (`primary-tint-10` band behind its segments) · 9. Numbered step pills · 10. Labels on hover (DS hint with name + state). Code: `STEP_CUES`, `STEP_LABELS` (student names: Quiz, Reading, Writing, Short answer, Video), `setStepCue` (`data-step-cue` on `<html>`, remembered in `courseware-step-cue`); CSS "Current step options" in app.css. Hidden on the pause screen.
 - The **current milestone number** is regular `--ds-primary` (4.6:1 in both themes), in a blue ring.
 - Accessibility: hollow rings `tone-3` (3.59:1), white fill, numbers `tone-2`; done = filled, current = empty blue ring (no center dot: I asked for the cleanest look), not started = grey ring. All three dots draw the same 2px border, so they're exactly the same size. sr-only: "Milestone 2, in progress, N of 5 activities done". Reduced motion respected.
 
@@ -85,6 +85,12 @@ Tabs (`.site-nav`, value = activity index): Quiz (0) · Reading activity (1) · 
 
 ### Eyebrows (blue labels)
 - "QUIZ", "TRY IT", "Congratulations"… are `--ds-primary-brighter` in both themes (a trial I asked for). Under 4.5:1 in both (2.9:1 on white, 4.3:1 on the #333 card): no single blue passes on both white and #333.
+
+### Share screen (bottom bar) – DS candidate (2026-11-19, my request)
+- An icon-only round button **16px left of the mic**, the chat pill mirrored (`.chat-pill.share-pill`, DS icon `share-screen`). A click toggles "sharing": primary ring, `share-screen-close` icon, label "Stop sharing screen" (no real sharing). Disabled while Julia joins and hidden during a video, like the chat. Since the mic now sits between share and chat, the splash no longer shifts the pair (the three are centered as they are).
+
+### Card subtitles (2026-11-19, my request) – DS candidate
+- Every card has a one-line subtitle under its title (`.title .subtitle`: 16px regular, `tone-2`, line-height 24; centered on the milestone cards; hidden when the skip message shows). Texts are mine to change.
 
 ### Mic pill (bottom bar)
 - Fill `tone-6`, hover `tone-5` (the DS secondary-button fill; `tone-7` vanished in dark). The "I'm done watching" pill matches.
