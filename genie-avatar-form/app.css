@@ -1055,8 +1055,7 @@ body {
 
 /* ===== Prototype-only: fields step mark (DS candidate) =====
    An illustration left of the title (introMarkSvg in app.js) in a 56px circle, like the done mark: the
-   done mark's language in the Gen AI sparkle colors. The circle is a neutral tint of the text tone, so it
-   reads on the white and the gray card, in both themes. On arrival the sparkle twinkles in once. */
+   done mark's language in the Gen AI sparkle colors, the circle a light tint of them. On arrival the sparkle twinkles in once. */
 .app-form-intro-mark {
   display: block;
   flex-shrink: 0;
@@ -1064,7 +1063,9 @@ body {
   width: calc(var(--ds-space-10) + var(--ds-space-4)); /* 56px: the art inside stays the size it was */
   height: calc(var(--ds-space-10) + var(--ds-space-4));
   border-radius: 50%;
-  background: color-mix(in srgb, var(--ds-tone-1) 10%, transparent); /* the DS has no neutral tint; 10% so it reads on the dark theme too */
+  /* A light lilac tint after the art (its pink sheet and blue sparkle), as the done mark's circle is a tint
+     of its green. Same tint in both themes. */
+  background: color-mix(in srgb, color-mix(in srgb, var(--app-genai-pink) 65%, var(--ds-primary)) 14%, transparent);
 }
 
 .app-intro-art { display: block; width: 100%; height: 100%; overflow: visible; }
