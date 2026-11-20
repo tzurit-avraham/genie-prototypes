@@ -182,8 +182,20 @@
       processing.hidden = true;
       play(popSound);
       then();
-      scrollToBottom();
+      revealLatest();
     }, delay || 1200);
+  }
+
+  // After a new agent message: to the bottom, but never past the message's start. A message taller
+  // than the chat (the form, on mobile) shows from its top, and the user scrolls down through it.
+  function revealLatest() {
+    var msgs = chatStream.querySelectorAll('.app-agent-msg');
+    var msg = msgs[msgs.length - 1];
+    if (!msg) { scrollToBottom(); return; }
+    var gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ds-space-4')) || 0;
+    var start = msg.getBoundingClientRect().top - genieBody.getBoundingClientRect().top + genieBody.scrollTop - gap;
+    var bottom = genieBody.scrollHeight - genieBody.clientHeight;
+    genieBody.scrollTo({ top: Math.max(0, Math.min(bottom, start)), behavior: reduceMotion ? 'auto' : 'smooth' });
   }
 
   // Prototype rule: whatever the user writes, the agent answers with the form
@@ -472,14 +484,30 @@
         card.style.height = endH + 'px';
         var focusEl = focusSel && card.querySelector(focusSel);
         if (focusEl) focusEl.focus({ preventScroll: true });
+        revealTop();
         setTimeout(function () {
           card.style.height = '';
           card.classList.remove('app-form-resizing', 'app-form-entering');
           card.removeAttribute('data-dir');
           busy = false;
-          if (opts.context === 'chat') scrollToBottom();
         }, dsMs('--ds-duration-enter'));
       }, dsMs('--ds-duration-slow'));
+    }
+
+    // New step: the user scrolled down to Submit (or Edit), so the step's start is above the view (mostly
+    // on mobile). Bring the card's top into view before the step builds up (the done mark, the first field).
+    // Chat: the chat scrolls (the next messages scroll it down again once the mark is done). Call: the sheet
+    // scrolls to its top.
+    function revealTop() {
+      var behavior = reduceMotion ? 'auto' : 'smooth';
+      if (opts.context === 'call') {
+        var sheet = card.parentElement;
+        if (sheet && sheet.scrollTop > 0) sheet.scrollTo({ top: 0, behavior: behavior });
+        return;
+      }
+      var gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ds-space-4')) || 0;
+      var above = card.getBoundingClientRect().top - genieBody.getBoundingClientRect().top - gap;
+      if (above < 0) genieBody.scrollTo({ top: genieBody.scrollTop + above, behavior: behavior });
     }
 
     function fieldById(id) {
@@ -564,17 +592,16 @@
       if (skipped) card.querySelectorAll('input, button').forEach(function (el) { el.disabled = true; });
     };
 
-    // Narrow Genie (phone, side panel): the form ends at the 4th row, where the fading footer
-    // starts; the rest scrolls under it. Call: the sheet is capped. Chat: the card's content is
-    // capped (--app-form-cap, read by app.css while the fields step shows).
-    if (window.ResizeObserver) {
+    // Narrow Genie (phone, side panel), call only: the sheet ends at the 4th row, where the buttons
+    // start; the rest scrolls under them. In the chat the card grows with its content and only the chat scrolls.
+    if (opts.context === 'call' && window.ResizeObserver) {
       var topWithin = function (el, root) {
         var t = 0;
         while (el && el !== root) { t += el.offsetTop; el = el.offsetParent; }
         return t;
       };
       var fitNarrow = function () {
-        var root = opts.context === 'call' ? card.parentElement : card.querySelector('.app-form-stack');
+        var root = card.parentElement;
         if (!root) return;
         // Rows, not fields: fields side by side (two columns) are one row
         var rows = [];
@@ -585,9 +612,7 @@
         var foot = card.querySelector('[data-step-name="fields"] .app-form-footer');
         var on = genie.classList.contains('app-genie-narrow') && rows.length > 4 && foot;
         var h = on ? Math.round(topWithin(rows[3], root) + rows[3].offsetHeight * 0.4 + foot.offsetHeight) : 0;
-        if (opts.context === 'call') root.style.maxHeight = on ? 'min(62%, ' + h + 'px)' : '';
-        else if (on) card.style.setProperty('--app-form-cap', h + 'px');
-        else card.style.removeProperty('--app-form-cap');
+        root.style.maxHeight = on ? 'min(62%, ' + h + 'px)' : '';
       };
       new ResizeObserver(fitNarrow).observe(card);
     }

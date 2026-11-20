@@ -1451,7 +1451,7 @@ body {
   position: fixed;
   inset: 0;
   display: flex;
-  overflow: auto; /* the frame is shown at real size; the stage scrolls when it's bigger than the window */
+  overflow: auto; /* only sideways, when the window is narrower than the phone: the screen's height fits the window */
   padding: var(--ds-space-6);
   background: var(--ds-tone-7);
 }
@@ -1469,7 +1469,9 @@ body {
 .app-phone-screen {
   display: block;
   width: var(--app-phone-w);
-  height: var(--app-phone-h);
+  /* Real height, or the window's when it is shorter: the stage around the phone never scrolls,
+     only the page inside the phone does (no double scroll) */
+  height: min(var(--app-phone-h), calc(100dvh - (var(--ds-space-6) + var(--ds-space-3)) * 2));
   border: 0;
   border-radius: calc(var(--ds-roundness-3) * 3);
   background: var(--ds-background);
@@ -1848,10 +1850,12 @@ body {
   scrollbar-gutter: stable both-edges;
 }
 
-/* The footer overlaps the fields by the fade; the grid makes up for it at the end of the scroll */
+/* The footer overlaps the content by the fade (in both steps: the done step looks like the fields step,
+   no divider); the content makes up for it at the end of the scroll */
 .app-genie-narrow .app-call-form [data-step-name="fields"] .app-form-grid { padding-bottom: var(--app-sheet-fade); }
+.app-genie-narrow .app-call-form [data-step-name="done"] .app-form-done { padding-bottom: var(--app-sheet-fade); }
 
-.app-genie-narrow .app-call-form [data-step-name="fields"] .app-form-footer {
+.app-genie-narrow .app-call-form .app-form-footer {
   z-index: 1;
   margin-top: calc(var(--app-sheet-fade) * -1);
   padding-top: var(--app-sheet-fade);
@@ -1860,14 +1864,14 @@ body {
   pointer-events: none; /* the fade does not block the field under it */
 }
 
-[data-form-look="after"] .app-genie-narrow .app-call-form [data-step-name="fields"] .app-form-footer {
+[data-form-look="after"] .app-genie-narrow .app-call-form .app-form-footer {
   margin: calc(var(--app-sheet-fade) * -1) calc(var(--ds-space-4) * -1) 0;
   padding: var(--app-sheet-fade) var(--ds-space-4) var(--ds-space-3);
 }
 
-.app-genie-narrow .app-call-form [data-step-name="fields"] .app-form-footer > * { pointer-events: auto; }
+.app-genie-narrow .app-call-form .app-form-footer > * { pointer-events: auto; }
 
-.app-genie-narrow .app-call-form [data-step-name="fields"] .app-form-footer::before {
+.app-genie-narrow .app-call-form .app-form-footer::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -1878,9 +1882,15 @@ body {
 }
 
 /* ARE look: the sheet is the white card, so the protection is too */
-[data-form-look="after"] .app-genie-narrow .app-call-form [data-step-name="fields"] .app-form-footer::before {
+[data-form-look="after"] .app-genie-narrow .app-call-form .app-form-footer::before {
   background: color-mix(in srgb, var(--ds-background) 97%, transparent);
 }
+
+/* Done: the fade takes the done card's surface (elevated when white; none on the green wash, so the buttons sit on it) */
+[data-form-look="after"][data-done-wash="plain"] .app-genie-narrow .app-call-form [data-step-name="done"] .app-form-footer::before {
+  background: color-mix(in srgb, var(--ds-elevated) 97%, transparent);
+}
+[data-form-look="after"][data-done-wash="green"] .app-genie-narrow .app-call-form [data-step-name="done"] .app-form-footer::before { background: none; }
 
 /* =========================================================
    Prototype-only: browser autofill keeps the DS field colors
@@ -1894,19 +1904,12 @@ body {
 }
 
 /* =========================================================
-   Prototype-only: chat form on a narrow Genie (phone, side panel), short with a fading footer
-   (DS candidate: same as the call sheet above). app.js sets --app-form-cap so the fields end
-   at the 4th field; the card's content scrolls under the sticky footer. The done step shows
-   in full (the cap is only on the fields step).
+   Prototype-only: chat form on a narrow Genie (phone, side panel) with a fading footer
+   (DS candidate: same as the call sheet above). The card grows with its content and only the
+   chat scrolls (no height cap, no scroll inside the card); the footer sticks to the bottom of
+   the chat while the fields scroll under it.
    ========================================================= */
 .app-genie-narrow .app-form-chat { --app-sheet-fade: var(--ds-space-10); }
-
-.app-genie-narrow .app-form-chat[data-step="fields"] .app-form-stack {
-  position: relative; /* app.js measures the fields from here */
-  max-height: var(--app-form-cap, none);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
 
 .app-genie-narrow .app-form-chat [data-step-name="fields"].app-form-step { padding-bottom: 0; }
 
@@ -2003,7 +2006,8 @@ body {
   box-shadow: none;
 }
 [data-page-bg="plain"][data-form-card="gray"][data-form-look="after"] .app-genie-narrow .app-call-form { background-color: var(--ds-paper); }
-[data-page-bg="plain"][data-form-card="gray"][data-form-look="after"] .app-genie-narrow :is(.app-call-form, .app-form-chat) [data-step-name="fields"] .app-form-footer::before {
+[data-page-bg="plain"][data-form-card="gray"][data-form-look="after"] .app-genie-narrow .app-call-form .app-form-footer::before,
+[data-page-bg="plain"][data-form-card="gray"][data-form-look="after"] .app-genie-narrow .app-form-chat [data-step-name="fields"] .app-form-footer::before {
   background: color-mix(in srgb, var(--ds-paper) 97%, transparent);
 }
 
