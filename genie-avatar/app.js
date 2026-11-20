@@ -225,7 +225,8 @@
   var avatarCall = document.getElementById('avatar-call');
 
   // Prototype-only: loading colors from the avatar image (same method as the courseware).
-  // Sets --app-image-dark / -mid / -light / -accent on the call; the "Joining..." glow uses them.
+  // Sets --app-image-dark / -mid / -light / -accent on the call. Not used now: the "Joining..." glow
+  // takes the Gen AI sparkle colors (--app-genai-*, app.css). Kept to switch back.
   // In the product the developers compute them; here we try the pixels first and fall back to
   // data.js, because from file:// the browser won't let the page read them.
   function paletteFrom(img) {

@@ -153,13 +153,12 @@
     play(sendSound);
   }
 
-  // Agent message: avatar + name, then the content (HTML string). Returns the content element.
+  // Agent message: avatar (no name), then the content (HTML string). Returns the content element.
   function addAgentMsg(html, withActions) {
     var msg = document.createElement('div');
     msg.className = 'app-agent-msg';
     msg.innerHTML =
-      '<div class="app-agent-header"><span class="app-agent-avatar"><img src="assets/avatar.png" alt=""></span>' +
-      '<span class="app-agent-name">Genie</span></div>' +
+      '<div class="app-agent-header"><span class="app-agent-avatar"><img src="assets/avatar.png" alt="Genie"></span></div>' +
       '<div class="app-agent-content">' + html + (withActions ? actionsHtml() : '') + '</div>';
     chatStream.appendChild(msg);
     return msg.querySelector('.app-agent-content');
@@ -261,6 +260,35 @@
       '</g>' +
     '</svg>';
   }
+  // Fields step mark, left of the title: the same language as the done mark (a details sheet behind, one
+  // shape in front, translucent and darker where they meet, one crisp white detail), in the Gen AI sparkle
+  // colors: the sheet goes green -> pink -> lilac, a blue sparkle sits on its corner. The sparkle is the
+  // large one of the Gen AI icon on the home page (assets/gen-ai-gradient.svg, its 32px path, scaled 1.6x).
+  // Artwork, so its colors are its own. ids are per form.
+  var GENAI_SPARK = 'M12.6069 26.6648C12.3701 27.1859 11.6299 27.1859 11.3931 26.6648L8.66667 20.6667L2.66854 17.9402C2.14747 17.7034 2.14747 16.9633 2.66854 16.7264L8.66667 14L11.3931 8.00187C11.6299 7.48081 12.3701 7.48081 12.6069 8.00187L15.3333 14L21.3315 16.7264C21.8525 16.9633 21.8525 17.7034 21.3315 17.9402L15.3333 20.6667L12.6069 26.6648Z';
+  function introMarkSvg(id) {
+    var spark = '<path transform="translate(46.8 35.3) scale(1.6)" d="' + GENAI_SPARK + '"/>';
+    return '<svg class="app-intro-art" viewBox="0 0 100 100" fill="none" aria-hidden="true" focusable="false">' +
+      '<defs>' +
+        '<linearGradient id="' + id + '-back" x1="18" y1="72" x2="66" y2="18" gradientUnits="userSpaceOnUse"><stop stop-color="#7fd6a0"/><stop offset=".55" stop-color="#f7a8f2"/><stop offset="1" stop-color="#c9a4ff"/></linearGradient>' +
+        '<linearGradient id="' + id + '-hi" x1="18" y1="18" x2="48" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
+        '<linearGradient id="' + id + '-front" x1=".5" y1="0" x2=".5" y2="1"><stop stop-color="#5b8dff"/><stop offset="1" stop-color="#006efa"/></linearGradient>' +
+        '<clipPath id="' + id + '-clip">' + spark + '</clipPath>' +
+      '</defs>' +
+      '<g transform="translate(4 3)">' + // optical centering: the sheet is the heavy part, top left
+      '<g class="app-intro-sheet">' +
+        '<rect x="18" y="18" width="48" height="54" rx="5" fill="url(#' + id + '-back)"/>' +
+        '<rect x="18" y="18" width="48" height="54" rx="5" fill="url(#' + id + '-hi)"/>' +
+        '<rect x="26" y="28" width="22" height="4" rx="2" fill="#fff" fill-opacity=".8"/>' +
+        '<rect x="26" y="37" width="14" height="4" rx="2" fill="#fff" fill-opacity=".8"/>' +
+      '</g>' +
+      '<g class="app-intro-spark">' +
+        '<g fill="url(#' + id + '-front)" fill-opacity=".92">' + spark + '</g>' +
+        '<g clip-path="url(#' + id + '-clip)"><rect x="18" y="18" width="48" height="54" rx="5" fill="#2a1a8a" fill-opacity=".3"/></g>' +
+      '</g>' +
+      '</g>' +
+    '</svg>';
+  }
   var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   // Prototype-only: two looks for the form, switched in the demo panel.
@@ -336,6 +364,7 @@
     function fieldsStepHtml() {
       return '<div class="app-form-step"' + stepAttrs('fields') + '>' +
           '<header class="app-form-header">' +
+            '<span class="app-form-intro-mark">' + introMarkSvg(uid + '-intro') + '</span>' +
             '<div class="app-form-heading">' +
               '<h3 class="app-form-title" id="' + uid + '-title">' + esc(f.title) + '</h3>' +
               '<p class="app-form-subtitle">' + esc(f.subtitle) + '</p>' +
@@ -591,7 +620,8 @@
   var avatarCall = document.getElementById('avatar-call');
 
   // Prototype-only: loading colors from the avatar image (same method as the courseware).
-  // Sets --app-image-dark / -mid / -light / -accent on the call; the "Joining..." glow uses them.
+  // Sets --app-image-dark / -mid / -light / -accent on the call. Not used now: the "Joining..." glow
+  // takes the Gen AI sparkle colors (--app-genai-*, app.css). Kept to switch back.
   // In the product the developers compute them; here we try the pixels first and fall back to
   // data.js, because from file:// the browser won't let the page read them.
   function paletteFrom(img) {
@@ -892,10 +922,46 @@
   }
   washSwitch.addEventListener('ds-change', function (e) { setWash(e.detail.value); });
 
+  // ----- Form card (prototype-only): white = --ds-background + stroke, gray = --ds-paper, no stroke -----
+  var cardSwitch = document.getElementById('card-switch');
+  var CARD_KEY = 'genie-form-card';
+  function formCard() { return document.documentElement.getAttribute('data-form-card') || 'white'; }
+  function setFormCard(c) {
+    document.documentElement.setAttribute('data-form-card', c);
+    syncSegmented(cardSwitch, c);
+    if (!EMBED) store(CARD_KEY, c);
+    sendThemeToPhone();
+  }
+  cardSwitch.addEventListener('ds-change', function (e) { setFormCard(e.detail.value); });
+
+  // ----- Follow-up chips (prototype-only): on/off for the chips above the bottom composer after the form is sent -----
+  var chipsSwitch = document.getElementById('chips-switch');
+  var CHIPS_KEY = 'genie-chips';
+  function chipsState() { return document.documentElement.getAttribute('data-chips') || 'on'; }
+  function setChips(c) {
+    document.documentElement.setAttribute('data-chips', c);
+    syncSegmented(chipsSwitch, c);
+    if (!EMBED) store(CHIPS_KEY, c);
+    sendThemeToPhone();
+  }
+  chipsSwitch.addEventListener('ds-change', function (e) { setChips(e.detail.value); });
+
+  // ----- Page background (prototype-only): plain = --ds-background, gradient = background -> tone-7, gradient-dark = -> tone-6, gradient-gray = tone-7 -> tone-6 -----
+  var bgSwitch = document.getElementById('bg-switch');
+  var BG_KEY = 'genie-page-bg';
+  function pageBg() { return document.documentElement.getAttribute('data-page-bg') || 'plain'; }
+  function setPageBg(bg) {
+    document.documentElement.setAttribute('data-page-bg', bg);
+    syncSegmented(bgSwitch, bg);
+    if (!EMBED) store(BG_KEY, bg);
+    sendThemeToPhone();
+  }
+  bgSwitch.addEventListener('ds-change', function (e) { setPageBg(e.detail.value); });
+
   // The phone frame is the same page in an iframe: send it the theme and the form look
   function sendThemeToPhone() {
     if (phoneScreen.getAttribute('src') && phoneScreen.contentWindow) {
-      phoneScreen.contentWindow.postMessage({ type: 'app-theme', theme: DS.getTheme(), fields: fieldCount, wash: doneWash() }, '*');
+      phoneScreen.contentWindow.postMessage({ type: 'app-theme', theme: DS.getTheme(), fields: fieldCount, wash: doneWash(), bg: pageBg(), card: formCard(), chips: chipsState() }, '*');
     }
   }
   phoneScreen.addEventListener('load', sendThemeToPhone);
@@ -904,12 +970,18 @@
     if (e.data.theme !== DS.getTheme()) DS.setTheme(e.data.theme);
     if (e.data.fields && e.data.fields !== fieldCount) setFieldCount(e.data.fields);
     if (e.data.wash && e.data.wash !== doneWash()) setWash(e.data.wash);
+    if (e.data.bg && e.data.bg !== pageBg()) setPageBg(e.data.bg);
+    if (e.data.card && e.data.card !== formCard()) setFormCard(e.data.card);
+    if (e.data.chips && e.data.chips !== chipsState()) setChips(e.data.chips);
   });
 
   viewSwitch.addEventListener('ds-change', function (e) { setView(e.detail.value); });
   phoneSwitch.addEventListener('ds-change', function (e) { setPhone(e.detail.value); });
   setFieldCount(EMBED ? data.form.fields.length : (stored(FIELDS_KEY) || data.form.fields.length));
   setWash(EMBED ? 'plain' : (stored(WASH_KEY) || 'plain'));
+  setPageBg(EMBED ? 'plain' : (stored(BG_KEY) || 'plain'));
+  setFormCard(EMBED ? 'white' : (stored(CARD_KEY) || 'white'));
+  setChips(EMBED ? 'on' : (stored(CHIPS_KEY) || 'on'));
   setPhone(stored(PHONE_KEY) || '375');
   setView(EMBED ? 'full' : (stored(VIEW_KEY) || 'full'));
 

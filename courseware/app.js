@@ -1615,7 +1615,8 @@ function cancelJoining() {
 
 // ---- Prototype-only: loading colors from the image about to load --------------------------
 // Each avatar gets --app-image-dark / -mid / -light / -accent, the main colors of her image, and the
-// loading looks (4. Mist, 5. Fairy dust) use them, so the loading leads into her. In the product
+// loading looks (4. Mist, 5. Fairy dust) used them. Not used now: they take the Gen AI sparkle colors
+// (--app-genai-*, app.css). Kept to switch back. In the product
 // the developers compute them from the image; here we try that first and fall back to data.js
 // (from file:// the browser won't let the page read the pixels).
 function avatarPaletteFrom(img) {
@@ -1694,11 +1695,10 @@ function startFairyDust(avatar) {
   // the colors of the image about to load (on her tile, applyAvatarPalette): along the trail it goes
   // from deep to light as it reaches her, with her accent color here and there.
   // Without image colors: the DS blues and teal.
-  const own = getComputedStyle(avatar);
-  const color = (image, fallback) => own.getPropertyValue(`--app-image-${image}`).trim() || token(fallback);
-  const colors = [color('dark', '--ds-primary-darker'), color('mid', '--ds-primary'), color('light', '--ds-primary-brighter')];
-  const accent = color('accent', '--ds-screen-green');
-  const glint = color('mid', '--ds-primary-brighter'); // a middle tone: shows in light and dark
+  // Now: the Gen AI sparkle colors (--app-genai-*, app.css), as in Mist and the Genie Avatar prototypes.
+  const colors = [token('--app-genai-pink'), token('--ds-primary'), token('--app-genai-pink')];
+  const accent = token('--app-genai-green');
+  const glint = token('--ds-primary'); // a middle tone: shows in light and dark
   const cx = w * 0.5;
   const cy = h * 0.45; // her face
   const R = Math.min(w, h) * 0.5;

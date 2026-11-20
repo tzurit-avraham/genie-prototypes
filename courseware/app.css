@@ -21,6 +21,10 @@
   --app-row-min: calc(var(--ds-space-16) * 3 + var(--ds-space-2));                       /* 200px */
   --app-image-min: calc(var(--ds-space-16) * 3 - var(--ds-space-2) - var(--ds-space-0-5)); /* 182px */
   --app-blur: var(--ds-space-4);                                                          /* 16px */
+  /* Prototype-only: Gen AI sparkle colors (DS candidate, the DS has no green or pink for Gen AI),
+     for the avatar loading (Mist). The third color is the DS primary blue. */
+  --app-genai-green: #5bc686;
+  --app-genai-pink: #ff9dff;
 
   /* Radius roles: controls var(--ds-roundness-2), answers and inner boxes var(--ds-roundness-3),
      large cards and panels this one token (the DS tops out at 12px). Circles and pills keep their
@@ -1817,13 +1821,14 @@ p { margin: 0; }
        → screen-green (a small accent patch, so it reads alive, not flat blue)
      No clear shape: each patch drifts on its own path, so the haze keeps changing form and the
      colors move through it. Later layers sit below: teal is on top but the smallest. */
-  /* The colors come from the image about to load (--app-image-*, set per avatar by app.js, computed
-     by the developers in the product), so the haze leads into her. Without them: the DS blues. */
+  /* Prototype-only (DS candidate: Gen AI gradient colors): the colors of the Gen AI sparkle, as in
+     the Genie Avatar prototypes: green, pink, and the DS primary blue (--app-genai-*, top of this
+     file; the DS has no green or pink for Gen AI). Was: the colors of the image about to load. */
   background-image:
-    radial-gradient(22% 20% at var(--app-mist-d), var(--app-image-accent, var(--ds-screen-green)), transparent),
-    radial-gradient(36% 28% at var(--app-mist-a), var(--app-image-light, var(--ds-primary-brighter)), transparent),
-    radial-gradient(44% 34% at var(--app-mist-c), var(--app-image-mid, var(--ds-primary)), transparent),
-    radial-gradient(40% 30% at var(--app-mist-b), var(--app-image-dark, var(--ds-primary-darker)), transparent);
+    radial-gradient(22% 20% at var(--app-mist-d), var(--app-genai-green), transparent),
+    radial-gradient(36% 28% at var(--app-mist-a), var(--app-genai-pink), transparent),
+    radial-gradient(44% 34% at var(--app-mist-c), var(--ds-primary), transparent),
+    radial-gradient(40% 30% at var(--app-mist-b), var(--app-genai-pink), transparent);
   /* very faded edges: the fade starts right at the middle and runs all the way out */
   -webkit-mask-image: radial-gradient(closest-side, black, rgb(0 0 0 / 0.5) 45%, transparent 100%);
   mask-image: radial-gradient(closest-side, black, rgb(0 0 0 / 0.5) 45%, transparent 100%);

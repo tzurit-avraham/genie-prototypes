@@ -11,6 +11,10 @@
   --app-composer-height: calc(var(--ds-space-16) + var(--ds-space-8) + var(--ds-space-1-5)); /* 102px */
   --app-radius-lg: calc(var(--ds-roundness-2) * 2);                            /* 16px */
   --app-font-size-h2: calc(var(--ds-font-size-5) * 2);                         /* 32px */
+  /* Prototype-only: Gen AI sparkle colors (assets/gen-ai-gradient.svg; DS candidate, the DS has no
+     green or pink for Gen AI). The third color is the DS primary blue. */
+  --app-genai-green: #5bc686;
+  --app-genai-pink: #ff9dff;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -796,13 +800,14 @@ body {
   width: calc(var(--ds-space-16) * 2);
   height: calc(var(--ds-space-16) * 2);
   border-radius: 50%;
-  /* Prototype-only: the glow takes the colors of the avatar about to load (--app-image-*, set by
-     app.js from the image, same as the courseware loading). Without them: the DS blues and teal. */
+  /* Prototype-only (DS candidate: Gen AI gradient colors): the glow takes the colors of the
+     Gen AI sparkle (assets/gen-ai-gradient.svg): green, pink, and the DS primary blue.
+     The DS has no green or pink for this, so they live in --app-genai-* (top of this file). */
   background:
-    radial-gradient(circle at 30% 35%, var(--app-image-accent, var(--ds-screen-green)) 0 25%, transparent 60%),
-    radial-gradient(circle at 70% 35%, var(--app-image-light, var(--ds-primary-brighter)) 0 25%, transparent 60%),
-    radial-gradient(circle at 50% 70%, var(--app-image-mid, var(--ds-primary)) 0 30%, transparent 65%),
-    radial-gradient(circle at 50% 50%, var(--app-image-dark, var(--ds-primary-darker)) 0 35%, transparent 70%);
+    radial-gradient(circle at 30% 35%, var(--app-genai-green) 0 25%, transparent 60%),
+    radial-gradient(circle at 70% 35%, var(--app-genai-pink) 0 25%, transparent 60%),
+    radial-gradient(circle at 50% 70%, var(--ds-primary) 0 30%, transparent 65%),
+    radial-gradient(circle at 50% 50%, var(--app-genai-pink) 0 35%, transparent 70%);
   filter: blur(var(--ds-space-10));
   transform: translate(-50%, -50%);
   animation: app-avatar-glow 1.6s ease-in-out infinite;

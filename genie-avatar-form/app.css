@@ -8,9 +8,13 @@
   --app-avatar-max: calc(var(--ds-space-16) * 9 + var(--ds-space-6));          /* 600px */
   --app-channels-width: calc(var(--ds-space-16) * 15 + var(--ds-space-2));     /* 968px */
   --app-search-width: calc(var(--ds-space-16) * 3 + var(--ds-space-5));        /* 212px */
-  --app-composer-height: calc(var(--ds-space-16) + var(--ds-space-8) + var(--ds-space-1-5)); /* 102px */
+  --app-composer-height: calc(var(--ds-space-16) + var(--ds-space-10) + var(--ds-space-0-5)); /* 106px: 16 + 24 text + 16 gap + 32 buttons + 16, + 2 border */
   --app-radius-lg: calc(var(--ds-roundness-2) * 2);                            /* 16px */
   --app-font-size-h2: calc(var(--ds-font-size-5) * 2);                         /* 32px */
+  /* Prototype-only: Gen AI sparkle colors (assets/gen-ai-gradient.svg; DS candidate, the DS has no
+     green or pink for Gen AI). The third color is the DS primary blue. */
+  --app-genai-green: #5bc686;
+  --app-genai-pink: #ff9dff;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -227,7 +231,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: var(--ds-space-2);
+  gap: var(--ds-space-4); /* text -> buttons: 16px (was 8, about 12 with the fixed height) */
   width: 100%;
   min-height: var(--app-composer-height);
   padding: var(--ds-space-4);
@@ -434,11 +438,6 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-.app-agent-name {
-  font-size: var(--ds-font-size-4);
-  font-weight: var(--ds-font-weight-bold);
 }
 
 .app-agent-content {
@@ -778,7 +777,7 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: var(--app-radius-lg);
+  border-radius: var(--ds-roundness-3); /* same corners as the form card beside / under it */
   animation: app-fade-in var(--ds-duration-enter) var(--ds-ease-out);
 }
 
@@ -805,13 +804,14 @@ body {
   width: calc(var(--ds-space-16) * 2);
   height: calc(var(--ds-space-16) * 2);
   border-radius: 50%;
-  /* Prototype-only: the glow takes the colors of the avatar about to load (--app-image-*, set by
-     app.js from the image, same as the courseware loading). Without them: the DS blues and teal. */
+  /* Prototype-only (DS candidate: Gen AI gradient colors): the glow takes the colors of the
+     Gen AI sparkle (assets/gen-ai-gradient.svg): green, pink, and the DS primary blue.
+     The DS has no green or pink for this, so they live in --app-genai-* (top of this file). */
   background:
-    radial-gradient(circle at 30% 35%, var(--app-image-accent, var(--ds-screen-green)) 0 25%, transparent 60%),
-    radial-gradient(circle at 70% 35%, var(--app-image-light, var(--ds-primary-brighter)) 0 25%, transparent 60%),
-    radial-gradient(circle at 50% 70%, var(--app-image-mid, var(--ds-primary)) 0 30%, transparent 65%),
-    radial-gradient(circle at 50% 50%, var(--app-image-dark, var(--ds-primary-darker)) 0 35%, transparent 70%);
+    radial-gradient(circle at 30% 35%, var(--app-genai-green) 0 25%, transparent 60%),
+    radial-gradient(circle at 70% 35%, var(--app-genai-pink) 0 25%, transparent 60%),
+    radial-gradient(circle at 50% 70%, var(--ds-primary) 0 30%, transparent 65%),
+    radial-gradient(circle at 50% 50%, var(--app-genai-pink) 0 35%, transparent 70%);
   filter: blur(var(--ds-space-10));
   transform: translate(-50%, -50%);
   animation: app-avatar-glow 1.6s ease-in-out infinite;
@@ -1052,6 +1052,35 @@ body {
 
 /* Skipped (chat): the card stays in the conversation, locked */
 .app-form-skipped .app-form-step { opacity: var(--ds-opacity-disabled); }
+
+/* ===== Prototype-only: fields step mark (DS candidate) =====
+   An illustration left of the title (introMarkSvg in app.js) in a 56px circle, like the done mark: the
+   done mark's language in the Gen AI sparkle colors. The circle is a neutral tint of the text tone, so it
+   reads on the white and the gray card, in both themes. On arrival the sparkle twinkles in once. */
+.app-form-intro-mark {
+  display: block;
+  flex-shrink: 0;
+  align-self: center;
+  width: calc(var(--ds-space-10) + var(--ds-space-4)); /* 56px: the art inside stays the size it was */
+  height: calc(var(--ds-space-10) + var(--ds-space-4));
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ds-tone-1) 10%, transparent); /* the DS has no neutral tint; 10% so it reads on the dark theme too */
+}
+
+.app-intro-art { display: block; width: 100%; height: 100%; overflow: visible; }
+.app-intro-spark { transform-box: fill-box; transform-origin: 50% 50%; }
+
+:is(.app-form-arriving, .app-form-entering) .app-intro-spark {
+  animation: app-intro-spark var(--ds-duration-enter) var(--ds-ease-out) var(--ds-duration-exit) backwards;
+}
+
+@keyframes app-intro-spark {
+  from { opacity: 0; transform: scale(0.4) rotate(-45deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-intro-spark { animation: none !important; }
+}
 
 /* ----- Step 2: done ----- */
 .app-form-done {
@@ -1344,7 +1373,11 @@ body {
    the form's width changes with it (1 <-> 2 columns, the 4-row cap on and off) and the form shakes */
 .app-genie-narrow .app-genie-body { padding: 0 var(--ds-space-3); scrollbar-gutter: stable; }
 .app-genie-narrow .app-disclaimer { padding: var(--ds-space-2) var(--ds-space-3) var(--ds-space-3); }
-.app-genie-narrow .app-composer { padding: var(--ds-space-3) var(--ds-space-3) var(--ds-space-2); }
+.app-genie-narrow .app-composer {
+  padding: var(--ds-space-3) var(--ds-space-3) var(--ds-space-2);
+  gap: var(--ds-space-3); /* text -> buttons: 12px, like the 12px padding around it */
+  min-height: 0; /* the wide fixed height would push the extra room into the gap */
+}
 .app-genie-narrow .app-composer-menu { margin-left: calc(var(--ds-space-2) * -1); gap: 0; }
 .app-genie-narrow .app-composer-avatar-btn { width: calc(var(--ds-space-16) + var(--ds-space-2)); }
 .app-genie-narrow .app-composer-input { font-size: var(--ds-font-size-5); }
@@ -1470,8 +1503,8 @@ body {
   --app-form-dy: var(--ds-space-2);
   position: relative;
   isolation: isolate;
-  background-color: var(--ds-paper); /* was a blue wash (primary-tint-10 -> 6); now the DS card surface */
-  border: 0;
+  background-color: var(--ds-background); /* white card with a light stroke (was paper, before that a blue wash) */
+  border: 1px solid var(--ds-tone-5); /* a real border: scrolling content and the sticky footer can't cover it */
   border-radius: var(--ds-roundness-2);
   overflow: clip; /* clips the wash like hidden, but keeps the sticky footer in the call sheet working */
 }
@@ -1494,6 +1527,12 @@ body {
   gap: var(--ds-space-2);
   padding-bottom: var(--ds-space-4);
   text-align: left;
+}
+
+/* Fields step: the mark, then the title and subtitle, from the left */
+[data-form-look="after"] .app-form-step[data-step-name="fields"] .app-form-header {
+  justify-content: flex-start;
+  gap: var(--ds-space-3);
 }
 
 [data-form-look="after"] .app-genie-narrow .app-form-header { padding-bottom: var(--ds-space-2); }
@@ -1603,21 +1642,21 @@ body {
   line-height: var(--ds-line-height-20);
 }
 
-/* Done, plain (default, "After" in the Done step switch): only DS tokens. The card is
-   --ds-background (no blue, no green); the green is only on the check badge. */
+/* Done, white (default, "White" in the Done step switch): the card stays as in the fields step,
+   --ds-background with a tone-5 stroke; the green is only on the check badge. */
 [data-form-look="after"][data-done-wash="plain"] .app-form[data-step="done"] {
   background-color: var(--ds-background);
   background-image: none;
   /* Same color as the page, so a border keeps the card's edge visible (in dark it vanished) */
-  box-shadow: inset 0 0 0 1px var(--ds-tone-5);
+  border: 1px solid var(--ds-tone-5);
 }
 
 /* In the call sheet on narrow screens the sheet is the surface: no edge */
-[data-form-look="after"][data-done-wash="plain"] .app-genie-narrow .app-call-form .app-form[data-step="done"] { box-shadow: none; }
+[data-form-look="after"][data-done-wash="plain"] .app-genie-narrow .app-call-form .app-form[data-step="done"] { border: 0; }
 
 [data-form-look="after"][data-done-wash="plain"] .app-call-form .app-form[data-step="done"] { background-color: var(--ds-elevated); }
 
-/* Done, green wash ("Before" in the Done step switch): the card turns green (ARE "booked") */
+/* Done, green ("Green" in the Done step switch): the card turns light green (ARE "booked") */
 [data-form-look="after"][data-done-wash="green"] .app-form[data-step="done"]::before {
   content: '';
   position: absolute;
@@ -1657,15 +1696,18 @@ body {
 @keyframes app-form-out-left { to { opacity: 0; transform: translateX(calc(var(--ds-space-4) * -1)); } }
 @keyframes app-form-out-right { to { opacity: 0; transform: translateX(var(--ds-space-4)); } }
 
-/* In the call: wide = the paper card beside the avatar; narrow = the paper fills the sheet */
-[data-form-look="after"] .app-genie:not(.app-genie-narrow) .app-call-form .app-form { border: 0; }
-[data-form-look="after"] .app-call-form .app-form { background-color: var(--ds-paper); }
+/* In the call: wide = the white card beside the avatar, with its stroke; narrow = the card fills the sheet (no stroke) */
+[data-form-look="after"] .app-call-form .app-form { background-color: var(--ds-background); }
+/* Wide: the scrolling sheet clips its content to its own corners: give it the card's corners, so it doesn't cut the card's stroke */
+[data-form-look="after"] .app-genie:not(.app-genie-narrow) .app-call-form,
+[data-form-look="after"] .app-genie:not(.app-genie-narrow) .app-call-form .app-form { border-radius: var(--ds-roundness-3); } /* 12px, like the avatar */
+[data-form-look="after"] .app-genie-narrow .app-call-form .app-form { border: 0; }
 [data-form-look="after"] .app-genie-narrow .app-call-form .app-form { border-radius: 0; }
 
 /* The sheet keeps room for the scrollbar on both sides (see the call sheet below). That room is
-   the sheet's, not the card's: paint it like the card (paper), so the card reaches the edges */
+   the sheet's, not the card's: paint it like the card, so the card reaches the edges */
 [data-form-look="after"] .app-genie-narrow .app-call-form {
-  background-color: var(--ds-paper);
+  background-color: var(--ds-background);
 }
 
 [data-form-look="after"][data-done-wash="plain"] .app-genie-narrow .app-call-form:has(.app-form[data-step="done"]) {
@@ -1758,8 +1800,7 @@ body {
 /* The Done step switch is for the ARE look only */
 [data-form-look="before"] .app-after-only { display: none; }
 
-/* Plain done step: the badge is the only green; the detail icons are neutral */
-[data-form-look="after"][data-done-wash="plain"] .app-form-detail ds-icon { color: var(--ds-tone-2); }
+/* White done step: the detail icons stay --ds-success green, as in the green one */
 
 /* =========================================================
    Prototype-only: both steps in one cell; only the current one shows, so the card
@@ -1835,9 +1876,9 @@ body {
   mask-image: linear-gradient(to bottom, transparent, var(--ds-tone-1) var(--app-sheet-fade));
 }
 
-/* ARE look: the sheet is paper, so the protection is too */
+/* ARE look: the sheet is the white card, so the protection is too */
 [data-form-look="after"] .app-genie-narrow .app-call-form [data-step-name="fields"] .app-form-footer::before {
-  background: color-mix(in srgb, var(--ds-paper) 97%, transparent);
+  background: color-mix(in srgb, var(--ds-background) 97%, transparent);
 }
 
 /* =========================================================
@@ -1896,7 +1937,89 @@ body {
   mask-image: linear-gradient(to bottom, transparent, var(--ds-tone-1) var(--app-sheet-fade));
 }
 
-/* ARE look: the card is paper, so the protection is too */
+/* ARE look: the card is white, so the protection is too */
 [data-form-look="after"] .app-genie-narrow .app-form-chat [data-step-name="fields"] .app-form-footer::before {
+  background: color-mix(in srgb, var(--ds-background) 97%, transparent);
+}
+
+/* =========================================================
+   Prototype-only: page background "Gradient" (Background switch in the demo panel)
+   (DS candidate: the DS has no gradient surface)
+   Top --ds-background, bottom --ds-tone-7: white -> #f5f5f5 in light, #121212 -> #212121 in dark.
+   On the Genie screen (full screen, side panel, phone) and behind the avatar call.
+   ========================================================= */
+[data-page-bg="gradient"] :is(.app-genie, .app-view-panel .app-genie, .app-avatar-call) {
+  background: linear-gradient(to bottom, var(--ds-background), var(--ds-tone-7));
+}
+
+/* "Darker": the same, ending on --ds-tone-6 (#ebebeb in light, #383838 in dark) */
+[data-page-bg="gradient-dark"] :is(.app-genie, .app-view-panel .app-genie, .app-avatar-call) {
+  background: linear-gradient(to bottom, var(--ds-background), var(--ds-tone-6));
+}
+
+/* "Darker" background: white surfaces sit on the gray without a stroke (as in the Maya reference) */
+/* Composer: white, no stroke; the focus ring stays (primary border) */
+[data-page-bg^="gradient-"] .app-composer { border-color: transparent; }
+[data-page-bg^="gradient-"] .app-composer:focus-within { border-color: var(--ds-primary); }
+
+/* Suggestion chips (DS secondary buttons): white instead of tone-6; hover goes to tone-6 */
+[data-page-bg^="gradient-"] .app-suggestion { background: var(--ds-background); }
+[data-page-bg^="gradient-"] .app-suggestion:hover:not(:disabled) { background: var(--ds-tone-6); }
+
+/* =========================================================
+   Prototype-only: no visible scrollbars on a narrow Genie (phone, side panel)
+   Everything still scrolls (touch, wheel, trackpad); only the bar is hidden.
+   ========================================================= */
+.app-genie-narrow,
+.app-genie-narrow * { scrollbar-width: none; }
+.app-genie-narrow::-webkit-scrollbar,
+.app-genie-narrow *::-webkit-scrollbar { display: none; }
+.app-genie-narrow .app-genie-body { scrollbar-gutter: auto; }
+.app-genie-narrow .app-call-form { scrollbar-gutter: auto; }
+
+/* Form card: white with the lightest DS stroke (tone-6, "light dividers"), in both steps.
+   It shows where the gradient is still white (top) and blends in where the gray matches it (bottom),
+   where the white card already stands out. Same in dark: #383838 on #121212 at the top. */
+[data-page-bg="gradient-dark"][data-form-look="after"] .app-form[data-step] { border-color: var(--ds-tone-6); box-shadow: none; }
+
+/* "Gray top": the other fix for the card's top edge. The gradient starts on --ds-tone-7 instead
+   of white (#f5f5f5 -> #ebebeb in light, #212121 -> #383838 in dark), so the white card stands out
+   from top to bottom and needs no stroke. Composer and chips as in "Darker" (rules above). */
+[data-page-bg="gradient-gray"] :is(.app-genie, .app-view-panel .app-genie, .app-avatar-call) {
+  background: linear-gradient(to bottom, var(--ds-tone-7), var(--ds-tone-6));
+}
+[data-page-bg="gradient-gray"][data-form-look="after"] .app-form[data-step] { border-color: transparent; box-shadow: none; }
+
+/* =========================================================
+   Prototype-only: form card "Gray" (Card switch in the demo panel)
+   Only with the Plain page background (the switch shows only then; with a gradient the card
+   stays white). The card is --ds-paper (#f5f5f5 / #242424) with no stroke, in both steps. The call sheet and the protection behind the sticky footer follow it.
+   ========================================================= */
+[data-page-bg="plain"][data-form-card="gray"][data-form-look="after"] .app-form[data-step],
+[data-page-bg="plain"][data-form-card="gray"][data-form-look="after"] .app-call-form .app-form[data-step] {
+  background-color: var(--ds-paper);
+  border-color: transparent;
+  box-shadow: none;
+}
+[data-page-bg="plain"][data-form-card="gray"][data-form-look="after"] .app-genie-narrow .app-call-form { background-color: var(--ds-paper); }
+[data-page-bg="plain"][data-form-card="gray"][data-form-look="after"] .app-genie-narrow :is(.app-call-form, .app-form-chat) [data-step-name="fields"] .app-form-footer::before {
   background: color-mix(in srgb, var(--ds-paper) 97%, transparent);
+}
+
+/* Prototype-only: "Follow-ups: Off" in the demo panel hides only the follow-up chips that appear
+   above the bottom composer after the form is sent (prototype-only, not in the DS or the product).
+   The suggestion chips on the start screen always show. */
+[data-chips="off"] .app-followups { display: none !important; }
+
+/* The Card switch is only for the Plain page background */
+[data-page-bg]:not([data-page-bg="plain"]) .app-plain-only { display: none; }
+
+/* =========================================================
+   Prototype-only: the form under the avatar (narrow: phone, side panel) is a floating card,
+   not a sheet glued to the panel: the same side room as the avatar (stage padding), rounded on
+   all four corners, so its bottom doesn't look cut off above the call buttons.
+   ========================================================= */
+.app-genie-narrow .app-call-form {
+  margin: 0 var(--ds-space-4);
+  border-radius: var(--ds-roundness-3);
 }
