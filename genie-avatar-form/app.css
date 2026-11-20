@@ -1904,49 +1904,6 @@ body {
 }
 
 /* =========================================================
-   Prototype-only: chat form on a narrow Genie (phone, side panel) with a fading footer
-   (DS candidate: same as the call sheet above). The card grows with its content and only the
-   chat scrolls (no height cap, no scroll inside the card); the footer sticks to the bottom of
-   the chat while the fields scroll under it.
-   ========================================================= */
-.app-genie-narrow .app-form-chat { --app-sheet-fade: var(--ds-space-10); }
-
-.app-genie-narrow .app-form-chat [data-step-name="fields"].app-form-step { padding-bottom: 0; }
-
-.app-genie-narrow .app-form-chat [data-step-name="fields"] .app-form-grid { padding-bottom: var(--app-sheet-fade); }
-
-.app-genie-narrow .app-form-chat [data-step-name="fields"] .app-form-footer {
-  position: sticky;
-  bottom: 0;
-  z-index: 1;
-  margin: calc(var(--app-sheet-fade) * -1) calc(var(--ds-space-5) * -1) 0;
-  padding: var(--app-sheet-fade) var(--ds-space-5) var(--ds-space-6);
-  pointer-events: none; /* the fade does not block the field under it */
-}
-
-[data-form-look="after"] .app-genie-narrow .app-form-chat [data-step-name="fields"] .app-form-footer {
-  margin: calc(var(--app-sheet-fade) * -1) calc(var(--ds-space-4) * -1) 0;
-  padding: var(--app-sheet-fade) var(--ds-space-4) var(--ds-space-4);
-}
-
-.app-genie-narrow .app-form-chat [data-step-name="fields"] .app-form-footer > * { pointer-events: auto; }
-
-.app-genie-narrow .app-form-chat [data-step-name="fields"] .app-form-footer::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: color-mix(in srgb, var(--ds-paper) 97%, transparent);
-  -webkit-mask-image: linear-gradient(to bottom, transparent, var(--ds-tone-1) var(--app-sheet-fade));
-  mask-image: linear-gradient(to bottom, transparent, var(--ds-tone-1) var(--app-sheet-fade));
-}
-
-/* ARE look: the card is white, so the protection is too */
-[data-form-look="after"] .app-genie-narrow .app-form-chat [data-step-name="fields"] .app-form-footer::before {
-  background: color-mix(in srgb, var(--ds-background) 97%, transparent);
-}
-
-/* =========================================================
    Prototype-only: page background "Gradient" (Background switch in the demo panel)
    (DS candidate: the DS has no gradient surface)
    Top --ds-background, bottom --ds-tone-7: white -> #f5f5f5 in light, #121212 -> #212121 in dark.
@@ -2006,8 +1963,7 @@ body {
   box-shadow: none;
 }
 [data-page-bg="plain"][data-form-card="gray"][data-form-look="after"] .app-genie-narrow .app-call-form { background-color: var(--ds-paper); }
-[data-page-bg="plain"][data-form-card="gray"][data-form-look="after"] .app-genie-narrow .app-call-form .app-form-footer::before,
-[data-page-bg="plain"][data-form-card="gray"][data-form-look="after"] .app-genie-narrow .app-form-chat [data-step-name="fields"] .app-form-footer::before {
+[data-page-bg="plain"][data-form-card="gray"][data-form-look="after"] .app-genie-narrow .app-call-form .app-form-footer::before {
   background: color-mix(in srgb, var(--ds-paper) 97%, transparent);
 }
 
